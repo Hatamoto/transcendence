@@ -1,4 +1,4 @@
-import Fastify from 'fastify';
+import Fastify, { FastifyInstance } from 'fastify';
 import sqlite3 from 'sqlite3';
 import { open, Database } from 'sqlite';
 import fp from 'fastify-plugin';
@@ -23,7 +23,7 @@ const initDB = async (): Promise<Database> => {
 };
 
 // Fastify plugin to register the database
-const dbPlugin = fp(async (fastify: Fastify.FastifyInstance) => {
+const dbPlugin = fp(async (fastify: FastifyInstance) => {
     const db = await initDB();
     fastify.decorate('db', db);
 });
