@@ -22,7 +22,7 @@ fastify.get("/", async (request, reply) => {
       <body>
         <h1>Welcome to the Game!</h1>
         <canvas id="gameCanvas" width="800" height="600"></canvas>
-        <script type="text/javascript" src="/public/game.js"></script>
+        <script type="text/javascript" src="/src/Game/game.js"></script>
       </body>
     </html>
   `);
