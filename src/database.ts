@@ -28,5 +28,5 @@ const dbPlugin = fp(async (fastify: FastifyInstance) => {
     fastify.decorate('db', db);
 });
 
-export default dbPlugin;
+export { dbPlugin, initDB };
 

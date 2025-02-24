@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import path from "path";
+import { dbPlugin } from './database';
 
 const fastify = Fastify({ logger: true });
 
@@ -8,6 +9,8 @@ fastify.register(require('@fastify/static'), {
   root: path.join(__dirname, 'public'),
   prefix: '/public/',
 });
+
+fastify.register(dbPlugin);
 
 // Declare a route to serve the HTML page with the canvas
 fastify.get("/", async (request, reply) => {
