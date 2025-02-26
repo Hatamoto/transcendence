@@ -9,6 +9,7 @@ class Game {
 	private ctx: CanvasRenderingContext2D;
 	private ball: ball;
 	private player: player;
+	private computer: computer;
 
 	constructor() {
 		this.gameCanvas = document.createElement("canvas");
@@ -19,6 +20,8 @@ class Game {
 		
 		this.player = new player(50, 20, 200, 0);
 		this.ball = new ball(20, 20, this.gameCanvas.height / 2, this.gameCanvas.width / 2 - 10);
+		this.computer = new computer(50, 20, 200, 780);
+
   
 		document.addEventListener('keydown', (e) => 
 		{
@@ -37,6 +40,7 @@ class Game {
 		gameInstance.updateGraphics();
 		gameInstance.ball.draw(gameInstance.ctx);
 		gameInstance.player.draw(gameInstance.ctx);
+		gameInstance.computer.draw(gameInstance.ctx);
 
 		requestAnimationFrame(() => Game.gameLoop(gameInstance));
 	}
@@ -55,8 +59,9 @@ class Game {
 		{
 			gameInstance.player.setvel(0);
 		}
-		gameInstance.ball.update(this.player);
+		gameInstance.ball.update(this.player, this.computer);
 		gameInstance.player.move();
+		gameInstance.computer.move(this.ball, this.gameCanvas);
 	}
 
 	updateGraphics()
@@ -100,7 +105,7 @@ class entity
 
 class ball extends entity
 {
-	private speed:number = 2;
+	private speed:number = 6;
 
 	constructor(h:number, w:number, y:number, x:number)
 	{
@@ -119,7 +124,7 @@ class ball extends entity
         }
 	}
 
-	update(player:player)
+	update(player:player, computer:computer)
 	{
 		console.log(this.xPos + " :x:y: " + this.yPos);
 
@@ -128,12 +133,18 @@ class ball extends entity
 		else if (this.yPos <= 0)
 			this.yVel = 1;
 
-        if(this.xPos <= player.xPos + player.width)
+		if (this.xPos <= player.xPos + player.width &&
+			this.yPos + this.height >= player.yPos && 
+			this.yPos <= player.yPos + player.height) 
 		{
-            if(this.yPos >= player.yPos && this.yPos + this.height <= player.yPos + player.height)
-			{
-                this.xVel = 1;
-            }
+			this.xVel = 1;
+		}
+
+		if (this.xPos + this.width >= computer.xPos &&
+			this.yPos + this.height >= computer.yPos && 
+			this.yPos <= computer.yPos + computer.height) 
+		{
+			this.xVel = -1;
 		}
 
 		this.xPos += this.xVel * this.speed;
@@ -143,7 +154,7 @@ class ball extends entity
 
 class player extends entity
 {
-	private speed:number = 2;
+	private speed:number = 4;
 	
 	constructor(h:number, w:number, y:number, x:number)
 	{
@@ -169,7 +180,7 @@ class player extends entity
 
 class computer extends entity
 {
-	private speed:number = 2;
+	private speed:number = 4;
 	
 	constructor(h:number, w:number, y:number, x:number)
 	{
@@ -181,9 +192,27 @@ class computer extends entity
 		this.yVel = velocityY;
 	}
 
-	move()
+	move(ball:ball, canvas:HTMLCanvasElement)
 	{
-		this.yPos += this.yVel * this.speed;
+		if(ball.yPos < this.yPos && ball.xVel == 1){
+            this.yVel = -1; 
+            
+            if(this.yPos <= 20){
+                this.yVel = 0;
+            }
+       }
+       else if(ball.yPos > this.yPos + this.height && ball.xVel == 1){
+           this.yVel = 1;
+           
+           if(this.yPos + this.height >= canvas.height - 20){
+               this.yVel = 0;
+           }
+       }
+       else{
+           this.yVel = 0;
+       }
+       
+        this.yPos += this.yVel * this.speed;
 	}
 
 	getpos()
