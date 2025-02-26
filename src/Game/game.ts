@@ -29,11 +29,6 @@ class Game {
 		{
 			Game.keysPressed[e.code] = false;
 		});
-	  
-		for (var i = 0; i + 30 < this.gameCanvas.height; i += 30) {
-			this.ctx.fillStyle = "red";
-			this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 10, 15, 20);
-		}
 	}
 
 	static gameLoop(gameInstance: Game) 
@@ -71,7 +66,7 @@ class Game {
 		
 		for (var i = 0; i <= this.gameCanvas.height; i += 30) {
 			this.ctx.fillStyle = "red";
-			this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 10, 15, 20);
+			this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 5, 15, 20);
 		}
 
 		//this.ctx.fillStyle = "red";
@@ -170,6 +165,33 @@ class player extends entity
 		return [this.yPos, this.xPos];
 	}
 }
+
+
+class computer extends entity
+{
+	private speed:number = 2;
+	
+	constructor(h:number, w:number, y:number, x:number)
+	{
+		super(h, w, y, x);
+	}
+
+	setvel(velocityY:number)
+	{
+		this.yVel = velocityY;
+	}
+
+	move()
+	{
+		this.yPos += this.yVel * this.speed;
+	}
+
+	getpos()
+	{
+		return [this.yPos, this.xPos];
+	}
+}
+
 
 const game = new Game();
 requestAnimationFrame(() => Game.gameLoop(game));

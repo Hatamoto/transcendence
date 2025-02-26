@@ -33,10 +33,6 @@ var Game = /** @class */ (function () {
         document.addEventListener('keyup', function (e) {
             Game.keysPressed[e.code] = false;
         });
-        for (var i = 0; i + 30 < this.gameCanvas.height; i += 30) {
-            this.ctx.fillStyle = "red";
-            this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 10, 15, 20);
-        }
     }
     Game.gameLoop = function (gameInstance) {
         gameInstance.update(gameInstance);
@@ -63,7 +59,7 @@ var Game = /** @class */ (function () {
         this.ctx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
         for (var i = 0; i <= this.gameCanvas.height; i += 30) {
             this.ctx.fillStyle = "red";
-            this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 10, 15, 20);
+            this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 5, 15, 20);
         }
         //this.ctx.fillStyle = "red";
         //this.ctx.fillRect(20, Game.testnum, 10, 50);
