@@ -20,22 +20,19 @@ var KeyBindings;
 })(KeyBindings || (KeyBindings = {}));
 var Game = /** @class */ (function () {
     function Game() {
-        this.player = new player(50, 20, 200, 0);
-        this.ball = new ball(20, 20, 100, 300);
         this.gameCanvas = document.createElement("canvas");
         document.body.appendChild(this.gameCanvas);
+        this.ctx = this.gameCanvas.getContext("2d");
         this.gameCanvas.width = 800;
         this.gameCanvas.height = 600;
-        this.ctx = this.gameCanvas.getContext("2d");
+        this.player = new player(50, 20, 200, 0);
+        this.ball = new ball(20, 20, this.gameCanvas.height / 2, this.gameCanvas.width / 2 - 10);
         document.addEventListener('keydown', function (e) {
             Game.keysPressed[e.code] = true;
         });
         document.addEventListener('keyup', function (e) {
             Game.keysPressed[e.code] = false;
         });
-        this.ctx.strokeStyle = "red";
-        this.ctx.lineWidth = 5;
-        this.ctx.strokeRect(10, 10, this.gameCanvas.width - 20, this.gameCanvas.height - 20);
         for (var i = 0; i + 30 < this.gameCanvas.height; i += 30) {
             this.ctx.fillStyle = "red";
             this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 10, 15, 20);
@@ -64,7 +61,7 @@ var Game = /** @class */ (function () {
     Game.prototype.updateGraphics = function () {
         this.ctx.fillStyle = "#000";
         this.ctx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
-        for (var i = 0; i + 30 < this.gameCanvas.height; i += 30) {
+        for (var i = 0; i <= this.gameCanvas.height; i += 30) {
             this.ctx.fillStyle = "red";
             this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 10, 15, 20);
         }
@@ -73,7 +70,6 @@ var Game = /** @class */ (function () {
         //Game.testnum
     };
     Game.keysPressed = [];
-    Game.testnum = 50;
     return Game;
 }());
 var entity = /** @class */ (function () {
@@ -103,14 +99,20 @@ var ball = /** @class */ (function (_super) {
         else {
             _this.xVel = -1;
         }
-        _this.yVel = 1;
+        randomDirection = Math.floor(Math.random() * 2) + 1;
+        if (randomDirection % 2) {
+            _this.yVel = 1;
+        }
+        else {
+            _this.yVel = -1;
+        }
         return _this;
     }
     ball.prototype.update = function (player) {
         console.log(this.xPos + " :x:y: " + this.yPos);
-        if (this.yPos >= 500)
+        if (this.yPos >= 580)
             this.yVel = -1;
-        else if (this.yPos <= 20)
+        else if (this.yPos <= 0)
             this.yVel = 1;
         if (this.xPos <= player.xPos + player.width) {
             if (this.yPos >= player.yPos && this.yPos + this.height <= player.yPos + player.height) {

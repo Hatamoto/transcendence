@@ -7,19 +7,18 @@ class Game {
 	private static keysPressed: boolean[] = [];
 	private gameCanvas: HTMLCanvasElement;
 	private ctx: CanvasRenderingContext2D;
-	private static testnum: number = 50;
 	private ball: ball;
 	private player: player;
 
 	constructor() {
-		this.player = new player(50, 20, 200, 0);
-		this.ball = new ball(20, 20, 100, 300);
-
 		this.gameCanvas = document.createElement("canvas");
 		document.body.appendChild(this.gameCanvas);
+		this.ctx = this.gameCanvas.getContext("2d")!;
 		this.gameCanvas.width = 800;
 		this.gameCanvas.height = 600;
-		this.ctx = this.gameCanvas.getContext("2d")!;
+		
+		this.player = new player(50, 20, 200, 0);
+		this.ball = new ball(20, 20, this.gameCanvas.height / 2, this.gameCanvas.width / 2 - 10);
   
 		document.addEventListener('keydown', (e) => 
 		{
@@ -30,10 +29,6 @@ class Game {
 		{
 			Game.keysPressed[e.code] = false;
 		});
-
-		this.ctx.strokeStyle = "red";
-		this.ctx.lineWidth = 5;
-		this.ctx.strokeRect(10,10,this.gameCanvas.width - 20 ,this.gameCanvas.height - 20);
 	  
 		for (var i = 0; i + 30 < this.gameCanvas.height; i += 30) {
 			this.ctx.fillStyle = "red";
@@ -72,9 +67,9 @@ class Game {
 	updateGraphics()
 	{  
 		this.ctx.fillStyle = "#000";
-        this.ctx.fillRect(0,0,this.gameCanvas.width,this.gameCanvas.height);
+        this.ctx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
 		
-		for (var i = 0; i + 30 < this.gameCanvas.height; i += 30) {
+		for (var i = 0; i <= this.gameCanvas.height; i += 30) {
 			this.ctx.fillStyle = "red";
 			this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 10, 15, 20);
 		}
@@ -121,16 +116,21 @@ class ball extends entity
         }else{
             this.xVel = -1;
         }
-        this.yVel = 1;
+        randomDirection = Math.floor(Math.random() * 2) + 1; 
+        if(randomDirection % 2){
+            this.yVel = 1;
+        }else{
+            this.yVel = -1;
+        }
 	}
 
 	update(player:player)
 	{
 		console.log(this.xPos + " :x:y: " + this.yPos);
 
-		if (this.yPos >= 500)
+		if (this.yPos >= 580)
 			this.yVel = -1;
-		else if (this.yPos <= 20)
+		else if (this.yPos <= 0)
 			this.yVel = 1;
 
         if(this.xPos <= player.xPos + player.width)
