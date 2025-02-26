@@ -20,7 +20,8 @@ var KeyBindings;
 })(KeyBindings || (KeyBindings = {}));
 var Game = /** @class */ (function () {
     function Game() {
-        this.ball = new ball(20, 20, 20, 20);
+        this.player = new player(50, 20, 200, 0);
+        this.ball = new ball(20, 20, 100, 300);
         this.gameCanvas = document.createElement("canvas");
         document.body.appendChild(this.gameCanvas);
         this.gameCanvas.width = 800;
@@ -41,21 +42,24 @@ var Game = /** @class */ (function () {
         }
     }
     Game.gameLoop = function (gameInstance) {
-        gameInstance.update();
-        gameInstance.ball.update();
+        gameInstance.update(gameInstance);
         gameInstance.updateGraphics();
         gameInstance.ball.draw(gameInstance.ctx);
+        gameInstance.player.draw(gameInstance.ctx);
         requestAnimationFrame(function () { return Game.gameLoop(gameInstance); });
     };
-    Game.prototype.update = function () {
+    Game.prototype.update = function (gameInstance) {
         if (Game.keysPressed[KeyBindings.UP]) {
-            if (Game.testnum != 20)
-                Game.testnum -= 10;
+            gameInstance.player.setvel(-1);
         }
         else if (Game.keysPressed[KeyBindings.DOWN]) {
-            if (Game.testnum != 500)
-                Game.testnum += 10;
+            gameInstance.player.setvel(1);
         }
+        else {
+            gameInstance.player.setvel(0);
+        }
+        gameInstance.ball.update(this.player);
+        gameInstance.player.move();
     };
     Game.prototype.updateGraphics = function () {
         this.ctx.fillStyle = "#000";
@@ -64,8 +68,8 @@ var Game = /** @class */ (function () {
             this.ctx.fillStyle = "red";
             this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 10, 15, 20);
         }
-        this.ctx.fillStyle = "red";
-        this.ctx.fillRect(20, Game.testnum, 10, 50);
+        //this.ctx.fillStyle = "red";
+        //this.ctx.fillRect(20, Game.testnum, 10, 50);
         //Game.testnum
     };
     Game.keysPressed = [];
@@ -92,19 +96,49 @@ var ball = /** @class */ (function (_super) {
     function ball(h, w, y, x) {
         var _this = _super.call(this, h, w, y, x) || this;
         _this.speed = 2;
+        var randomDirection = Math.floor(Math.random() * 2) + 1;
+        if (randomDirection % 2) {
+            _this.xVel = 1;
+        }
+        else {
+            _this.xVel = -1;
+        }
         _this.yVel = 1;
         return _this;
     }
-    ball.prototype.update = function () {
+    ball.prototype.update = function (player) {
         console.log(this.xPos + " :x:y: " + this.yPos);
         if (this.yPos >= 500)
             this.yVel = -1;
         else if (this.yPos <= 20)
             this.yVel = 1;
+        if (this.xPos <= player.xPos + player.width) {
+            if (this.yPos >= player.yPos && this.yPos + this.height <= player.yPos + player.height) {
+                this.xVel = 1;
+            }
+        }
         this.xPos += this.xVel * this.speed;
         this.yPos += this.yVel * this.speed;
     };
     return ball;
+}(entity));
+var player = /** @class */ (function (_super) {
+    __extends(player, _super);
+    function player(h, w, y, x) {
+        var _this = _super.call(this, h, w, y, x) || this;
+        _this.speed = 2;
+        return _this;
+    }
+    player.prototype.setvel = function (velocityY) {
+        this.yVel = velocityY;
+    };
+    player.prototype.move = function () {
+        this.yPos += this.yVel * this.speed;
+    };
+    player.prototype.getpos = function () {
+        return [this.yPos, this.xPos];
+    };
+    return player;
 }(entity));
 var game = new Game();
 requestAnimationFrame(function () { return Game.gameLoop(game); });
