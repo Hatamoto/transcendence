@@ -1,20 +1,19 @@
-
 enum KeyBindings{
     UP = 'KeyW',
     DOWN = 'KeyS'
 }
 
 class Game {
-	public static keysPressed: boolean[] = [];
+	private static keysPressed: boolean[] = [];
 	private gameCanvas: HTMLCanvasElement;
 	private ctx: CanvasRenderingContext2D;
 	private static testnum: number = 50;
 	private ball: ball;
-
+	private player: player;
 
 	constructor() {
-		this.ball = new ball(20, 20, 20, 20);
-
+		this.player = new player(50, 20, 200, 0);
+		this.ball = new ball(20, 20, 100, 300);
 
 		this.gameCanvas = document.createElement("canvas");
 		document.body.appendChild(this.gameCanvas);
@@ -32,7 +31,6 @@ class Game {
 			Game.keysPressed[e.code] = false;
 		});
 
-
 		this.ctx.strokeStyle = "red";
 		this.ctx.lineWidth = 5;
 		this.ctx.strokeRect(10,10,this.gameCanvas.width - 20 ,this.gameCanvas.height - 20);
@@ -45,26 +43,30 @@ class Game {
 
 	static gameLoop(gameInstance: Game) 
 	{
-		gameInstance.update();
-		gameInstance.ball.update();
+		gameInstance.update(gameInstance);
 		gameInstance.updateGraphics();
 		gameInstance.ball.draw(gameInstance.ctx);
+		gameInstance.player.draw(gameInstance.ctx);
 
 		requestAnimationFrame(() => Game.gameLoop(gameInstance));
 	}
 	
-	update()
+	update(gameInstance: Game)
 	{
 		if (Game.keysPressed[KeyBindings.UP])
 		{
-			if (Game.testnum != 20)
-				Game.testnum -= 10;
+			gameInstance.player.setvel(-1);
 		}
 		else if (Game.keysPressed[KeyBindings.DOWN])
 		{
-			if (Game.testnum != 500)
-				Game.testnum += 10;
+			gameInstance.player.setvel(1);
 		}
+		else
+		{
+			gameInstance.player.setvel(0);
+		}
+		gameInstance.ball.update(this.player);
+		gameInstance.player.move();
 	}
 
 	updateGraphics()
@@ -77,8 +79,8 @@ class Game {
 			this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 10, 15, 20);
 		}
 
-		this.ctx.fillStyle = "red";
-		this.ctx.fillRect(20, Game.testnum, 10, 50);
+		//this.ctx.fillStyle = "red";
+		//this.ctx.fillRect(20, Game.testnum, 10, 50);
 		//Game.testnum
 	}
 }
@@ -113,10 +115,16 @@ class ball extends entity
 	constructor(h:number, w:number, y:number, x:number)
 	{
 		super(h, w, y, x);
-		this.yVel = 1;
+		var randomDirection = Math.floor(Math.random() * 2) + 1; 
+        if(randomDirection % 2){
+            this.xVel = 1;
+        }else{
+            this.xVel = -1;
+        }
+        this.yVel = 1;
 	}
 
-	update()
+	update(player:player)
 	{
 		console.log(this.xPos + " :x:y: " + this.yPos);
 
@@ -125,8 +133,41 @@ class ball extends entity
 		else if (this.yPos <= 20)
 			this.yVel = 1;
 
+        if(this.xPos <= player.xPos + player.width)
+		{
+            if(this.yPos >= player.yPos && this.yPos + this.height <= player.yPos + player.height)
+			{
+                this.xVel = 1;
+            }
+		}
+
 		this.xPos += this.xVel * this.speed;
 		this.yPos += this.yVel * this.speed;
+	}
+}
+
+class player extends entity
+{
+	private speed:number = 2;
+	
+	constructor(h:number, w:number, y:number, x:number)
+	{
+		super(h, w, y, x);
+	}
+
+	setvel(velocityY:number)
+	{
+		this.yVel = velocityY;
+	}
+
+	move()
+	{
+		this.yPos += this.yVel * this.speed;
+	}
+
+	getpos()
+	{
+		return [this.yPos, this.xPos];
 	}
 }
 
