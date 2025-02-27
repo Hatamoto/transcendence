@@ -123,6 +123,10 @@ var ball = /** @class */ (function (_super) {
             this.yPos <= computer.yPos + computer.height) {
             this.xVel = -1;
         }
+        if (this.xPos <= 0)
+            this.xPos = 400 - 10;
+        else if (this.xPos >= 800)
+            this.xPos = 400 - 10;
         this.xPos += this.xVel * this.speed;
         this.yPos += this.yVel * this.speed;
     };
