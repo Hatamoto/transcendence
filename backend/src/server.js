@@ -1,12 +1,19 @@
 import Fastify from 'fastify'
+import fastifyStatic from '@fastify/static'
 import { root, userRoutes } from './routes/routes.js'
 import dbInit from './database.js'
 import dotenv from "dotenv";
+import path from 'path'
 
 dotenv.config();
 
 const fastify = Fastify({
   logger: true
+})
+
+fastify.register(fastifyStatic, {
+  root: path.join(process.cwd(), '../public'),
+  prefix: '/', // Serve files from the root URL
 })
 
 await fastify.register(dbInit)

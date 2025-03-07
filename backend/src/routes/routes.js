@@ -87,7 +87,11 @@ const updatePasswordOpts = {
 
 async function root (fastify, options) {
   fastify.get('/', async (request, reply) => {
-    return { hello: 'world' }
+    try {
+      return reply.sendFile('index.html')
+    } catch (error) {
+      console.log(error)
+    }
   })
 }
 
