@@ -1,89 +1,11 @@
-import { getUsers, addUser, getUser, deleteUser, updateUser, updatePassword } from '../controllers/UserController.js'
-
-const User = {
-  type: 'object',
-  properties: {
-    id: { type: 'string' },
-    name: { type: 'string' },
-    email: { type: 'string' },
-  },
-}
-
-const getUsersOpts = {
-  schema: {
-    response: {
-      200: {
-        type: 'array',
-        items: User,
-      },
-    },
-  },
-  handler: getUsers,
-}
-
-const addUserOpts = {
-  schema: {
-    body: {
-      type: 'object',
-      required: ['name', 'email', 'password'],
-      properties: {
-        name: { type: 'string' },
-        email: { type: 'string' },
-        password: { type: 'string' },
-      },
-    },
-    response: {
-      201: User,
-    },
-  },
-  handler: addUser,
-}
-
-const getUserOpts = {
-  schema: {
-    response: {
-      200: User,
-    },
-  },
-  handler: getUser,
-}
-
-const deleteUserOpts = {
-  schema: {
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          message: { type: 'string' },
-        },
-      },
-    },
-  },
-  handler: deleteUser,
-}
-
-const updateUserOpts = {
-  schema: {
-    response: {
-      200: User,
-    },
-  },
-  handler: updateUser,
-}
-
-const updatePasswordOpts = {
-  schema: {
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          message: { type: 'string' },
-        },
-      },
-    },
-  },
-  handler: updatePassword,
-}
+import { 
+  getUserOpts, 
+  getUsersOpts, 
+  addUserOpts, 
+  deleteUserOpts, 
+  updateUserOpts, 
+  updatePasswordOpts 
+} from '../schemas/userSchemas.js'
 
 async function root (fastify, options) {
   fastify.get('/', async (request, reply) => {
