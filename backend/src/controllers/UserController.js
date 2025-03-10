@@ -34,7 +34,12 @@ const addUser = async function (req, reply) {
     
     return reply.code(201).send(user)
   } catch (error) {
+    console.log(error)
+    if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      return reply.code(409).send({ error: "Username already in use" })
+    } else {
       return reply.code(500).send({ error: error.message })
+    }
   }
 }
 
@@ -118,11 +123,36 @@ const updatePassword = async function (req, reply) {
   }
 }
 
+const loginUser = async function (req, reply) {
+  const { username, password } = req.body
+
+  try {
+    const getStatement = req.server.db.prepare('SELECT * FROM users WHERE name = ?')
+    const user = getStatement.get(username)
+
+    if (!user) {
+      return reply.code(401).send({ error: 'Incorrect username or password' })
+    }
+    const isMatch = await bcrypt.compare(password, user.password)
+    if (!isMatch) {
+      return reply.code(401).send({ error: 'Incorrect username or password' })
+    }
+
+    req.session.user = username
+    console.log(`Session set for user: ${req.session.user}`)  // Log here to check the session
+    console.log('Session:', req.session)
+    return reply.redirect('/api/dashboard')
+  } catch (error) {
+    return reply.code(500).send({ error: error.message })
+  }
+}
+
 export { 
   getUser,
   addUser,
   getUsers,
   deleteUser,
   updateUser,
-  updatePassword
+  updatePassword,
+  loginUser
 }

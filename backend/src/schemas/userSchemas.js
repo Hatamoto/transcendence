@@ -1,4 +1,12 @@
-import { getUsers, addUser, getUser, deleteUser, updateUser, updatePassword } from '../controllers/UserController.js'
+import { 
+  getUsers,
+  addUser,
+  getUser,
+  deleteUser,
+  updateUser,
+  updatePassword,
+  loginUser
+} from '../controllers/UserController.js'
 
 const User = {
   type: 'object',
@@ -6,6 +14,9 @@ const User = {
     id: { type: 'string' },
     name: { type: 'string' },
     email: { type: 'string' },
+    status: { type: 'integer' },
+    wins: { type: 'integer' },
+    losses: { type: 'integer' }
   },
 }
 
@@ -109,11 +120,29 @@ const updatePasswordOpts = {
   handler: updatePassword,
 }
 
+const loginUserOpts = {
+  schema: {
+    body: {
+      type: 'object',
+      required: ['username', 'password'],
+      properties: {
+        username: { type: 'string' },
+        password: { type: 'string' },
+      },
+    },
+    response: {
+      200: {},
+    },
+  },
+  handler: loginUser,
+}
+
 export {
   getUserOpts,
   getUsersOpts,
   addUserOpts,
   deleteUserOpts,
   updateUserOpts,
-  updatePasswordOpts
+  updatePasswordOpts,
+  loginUserOpts
 }
