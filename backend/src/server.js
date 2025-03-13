@@ -31,6 +31,19 @@ const io = new Server(server, {
 		Game.keysPressed = data;
 		console.log("asd");
 	});
+
+	socket.on("joinRoom", (room) => {
+		if (!socket.rooms.has(room))
+		{
+			socket.join(room);
+			console.log(`User ${socket.id} joined room: ${room}`);
+			io.to(room).emit("message", `User ${socket.id} has joined ${room}`);
+		}
+		else
+		{
+			console.log(`User ${socket.id} is already in a room!`);
+		}
+	  });
 	
 	socket.on("disconnect", () => {
 	  console.log("User disconnected:", socket.id);

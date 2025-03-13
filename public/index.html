@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>transendence</title>
-    <link rel="stylesheet" href="output.css"> <!-- Link to Tailwind CSS -->
+	<script src="https://cdn.tailwindcss.com"></script>
+    <!--<link rel="stylesheet" href="output.css"> Link to Tailwind CSS-->
 </head>
 
 <style>
@@ -137,8 +138,15 @@
         });
     </script>
 
+	<div class="flex space-x-6">
+		<button id="test-btn" class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+	  	Test
+		</button>
+	</div>
+	
 	<script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.7.2/dist/socket.io.min.js"></script>
 	<script type="text/JavaScript" src="/dist/keyBindings.js" defer></script>
+
 
 	<!-- google login test-->
 
