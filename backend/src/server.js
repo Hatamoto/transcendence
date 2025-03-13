@@ -24,25 +24,41 @@ const io = new Server(server, {
 	},
   });
 
-  io.on("connection", (socket) => {
+  const activeSockets = new Set();
+
+  io.on("connection", (socket) => {  
+	if (activeSockets.has(socket.id)) { // prevents same id connecting multiple times maybe not needed
+		console.log(`User ${socket.id} is already connected. Disconnecting the new connection.`);
+		socket.disconnect();
+		return;
+	}
+	activeSockets.add(socket.id);
 	console.log("A user connected:", socket.id);
-  
-	socket.on('keysPressed', (data) => {
-		Game.keysPressed = data;
-		console.log("asd");
-	});
+	//socket.on('keysPressed', (data) => {
+	//	Game.keysPressed = data;
+	//	console.log("asd");
+	//});
 
 	socket.on("joinRoom", (room) => {
-		if (!socket.rooms.has(room))
+		const roomSize = io.sockets.adapter.rooms.get(room)?.size || 0;
+		console.log(roomSize);
+		if (!socket.rooms.has(room) || roomSize != 1)
 		{
 			socket.join(room);
 			console.log(`User ${socket.id} joined room: ${room}`);
 			io.to(room).emit("message", `User ${socket.id} has joined ${room}`);
+			if (roomSize == 1)
+				console.log("Starting game!");
+		}
+		else if(roomSize == 2)
+		{
+			console.log(`Room ${room} is already full!`);
 		}
 		else
 		{
 			console.log(`User ${socket.id} is already in a room!`);
 		}
+
 	  });
 	
 	socket.on("disconnect", () => {
