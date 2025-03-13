@@ -5,20 +5,11 @@ import {
   deleteUser,
   updateUser,
   updatePassword,
-  loginUser
+  loginUser,
+  getDashboard,
+  userLogout
 } from '../controllers/UserController.js'
-
-const User = {
-  type: 'object',
-  properties: {
-    id: { type: 'string' },
-    name: { type: 'string' },
-    email: { type: 'string' },
-    status: { type: 'integer' },
-    wins: { type: 'integer' },
-    losses: { type: 'integer' }
-  },
-}
+import User from '../models/userModel.js'
 
 const getUsersOpts = {
   schema: {
@@ -137,6 +128,24 @@ const loginUserOpts = {
   handler: loginUser,
 }
 
+const dashboardOpts = {
+  schema: {
+    response: {
+      200: User,
+    },
+  },
+  handler: getDashboard,
+}
+
+const userLogoutOpts = {
+  schema: {
+    response: {
+      200: {},
+    },
+  },
+  handler: userLogout,
+}
+
 export {
   getUserOpts,
   getUsersOpts,
@@ -144,5 +153,7 @@ export {
   deleteUserOpts,
   updateUserOpts,
   updatePasswordOpts,
-  loginUserOpts
+  loginUserOpts,
+  dashboardOpts,
+  userLogoutOpts
 }

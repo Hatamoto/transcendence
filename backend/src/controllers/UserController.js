@@ -139,12 +139,34 @@ const loginUser = async function (req, reply) {
     }
 
     req.session.user = username
+    const updateStatement = req.server.db.prepare('UPDATE users SET status = 1 WHERE name = ?')
+    updateStatement.run(username)
+
     console.log(`Session set for user: ${req.session.user}`)  // Log here to check the session
     console.log('Session:', req.session)
     return reply.redirect('/api/dashboard')
   } catch (error) {
     return reply.code(500).send({ error: error.message })
   }
+}
+
+const getDashboard = async function(req, reply) {
+  console.log('Session data:', req.session)
+  console.log(`session user ${req.session.user}`)
+  if (req.session.user) {
+    const username = req.session.user
+    return reply.view('../public/dashboard.ejs', { username })
+  } else {
+    return reply.redirect('/')
+  }
+}
+
+const userLogout = async function(req, reply) {
+  const username = req.session.user
+  const updateStatement = req.server.db.prepare('UPDATE users SET status = 0 WHERE name = ?')
+    updateStatement.run(username)
+  req.session.destroy()
+  return reply.redirect('/')
 }
 
 export { 
@@ -154,5 +176,7 @@ export {
   deleteUser,
   updateUser,
   updatePassword,
-  loginUser
+  loginUser,
+  getDashboard,
+  userLogout
 }

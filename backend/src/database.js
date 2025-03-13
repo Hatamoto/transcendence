@@ -12,7 +12,7 @@ async function dbInit(fastify, options) {
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY,
       name TEXT UNIQUE NOT NULL,
-      email TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
       status INTEGER NOT NULL DEFAULT 0 CHECK(status IN (0 ,1)),
       wins INTEGER NOT NULL DEFAULT 0,
