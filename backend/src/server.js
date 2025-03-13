@@ -4,9 +4,8 @@ import { root, userRoutes } from './routes/routes.js'
 import dbInit from './database.js'
 import dotenv from "dotenv";
 import path from 'path'
-import { createServer } from "http";
 import { Server } from "socket.io";
-
+import { Game } from '../dist/game.js'
 
 dotenv.config();
 
@@ -14,6 +13,7 @@ const fastify = Fastify({
   //logger: true
 })
 const server = fastify.server;
+const game = new Game();
 
 const io = new Server(server, {
 	cors: {
@@ -27,15 +27,28 @@ const io = new Server(server, {
   io.on("connection", (socket) => {
 	console.log("A user connected:", socket.id);
   
+	socket.on('keysPressed', (data) => {
+		Game.keysPressed = data;
+		console.log("asd");
+	});
+	
 	socket.on("disconnect", () => {
 	  console.log("User disconnected:", socket.id);
 	});
   });
 
-fastify.register(fastifyStatic, {
-  root: path.join(process.cwd(), '../public'),
-  prefix: '/', // Serve files from the root URL
-})
+	// First static directory
+	fastify.register(fastifyStatic, {
+		root: path.join(process.cwd(), '../public'),
+		prefix: '/',
+		decorateReply: true
+	})
+
+	fastify.register(fastifyStatic, {
+		root: path.join(process.cwd(), './dist/'),
+		prefix: '/dist/',
+		decorateReply: false 
+	})
 
 await fastify.register(dbInit)
 await fastify.register(root)

@@ -3,44 +3,45 @@ enum KeyBindings{
     DOWN = 'KeyS'
 }
 
-class Game {
-	private static keysPressed: boolean[] = [];
-	private gameCanvas: HTMLCanvasElement;
-	private ctx: CanvasRenderingContext2D;
+export class Game {
+	private static keysPressed: { [key: string]: boolean } = {};
+	private width: number = 800;
+	private height: number = 600;
 	private ball: ball;
 	private player: player;
 	private computer: computer;
 
 	constructor() {
-		this.gameCanvas = document.createElement("canvas");
-		document.body.appendChild(this.gameCanvas);
-		this.ctx = this.gameCanvas.getContext("2d")!;
-		this.gameCanvas.width = 800;
-		this.gameCanvas.height = 600;
 		
 		this.player = new player(50, 20, 200, 0);
-		this.ball = new ball(20, 20, this.gameCanvas.height / 2, this.gameCanvas.width / 2 - 10);
+		this.ball = new ball(20, 20, this.height / 2, this.width / 2 - 10);
 		this.computer = new computer(50, 20, 200, 780);
 
   
-		document.addEventListener('keydown', (e) => 
-		{
-			Game.keysPressed[e.code] = true;
-		});
+		//document.addEventListener('keydown', (e) => 
+		//{
+		//	Game.keysPressed[e.code] = true;
+		//});
 
-		document.addEventListener('keyup', (e) => 
-		{
-			Game.keysPressed[e.code] = false;
-		});
+		//document.addEventListener('keyup', (e) => 
+		//{
+		//	Game.keysPressed[e.code] = false;
+		//});
+
+	}
+
+	startGame()
+	{
+		// start calling gameloop here
 	}
 
 	static gameLoop(gameInstance: Game) 
 	{
 		gameInstance.update(gameInstance);
 		gameInstance.updateGraphics();
-		gameInstance.ball.draw(gameInstance.ctx);
-		gameInstance.player.draw(gameInstance.ctx);
-		gameInstance.computer.draw(gameInstance.ctx);
+		//gameInstance.ball.draw(gameInstance.ctx);
+		//gameInstance.player.draw(gameInstance.ctx);
+		//gameInstance.computer.draw(gameInstance.ctx);
 
 		requestAnimationFrame(() => Game.gameLoop(gameInstance));
 	}
@@ -61,18 +62,18 @@ class Game {
 		}
 		gameInstance.ball.update(this.player, this.computer);
 		gameInstance.player.move();
-		gameInstance.computer.move(this.ball, this.gameCanvas);
+		//gameInstance.computer.move(this.ball, this.gameCanvas);
 	}
 
 	updateGraphics()
 	{  
-		this.ctx.fillStyle = "#000";
-        this.ctx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
+		//this.ctx.fillStyle = "#000";
+        //this.ctx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
 		
-		for (var i = 0; i <= this.gameCanvas.height; i += 30) {
-			this.ctx.fillStyle = "red";
-			this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 5, 15, 20);
-		}
+		//for (var i = 0; i <= this.gameCanvas.height; i += 30) {
+		//	this.ctx.fillStyle = "red";
+		//	this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 5, 15, 20);
+		//}
 
 		//this.ctx.fillStyle = "red";
 		//this.ctx.fillRect(20, Game.testnum, 10, 50);
@@ -227,5 +228,5 @@ class computer extends entity
 }
 
 
-const game = new Game();
-requestAnimationFrame(() => Game.gameLoop(game));
+//const game = new Game();
+//requestAnimationFrame(() => Game.gameLoop(game));
