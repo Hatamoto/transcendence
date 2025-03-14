@@ -1,8 +1,8 @@
 import fp from 'fastify-plugin'
 import Database from 'better-sqlite3'
-import dotenv from "dotenv";
+// import dotenv from "dotenv";
 
-dotenv.config();
+// dotenv.config();
 
 async function dbInit(fastify, options) {
   const dbFile = process.env.dbFile || "./database.db"

@@ -138,13 +138,14 @@ const loginUser = async function (req, reply) {
       return reply.code(401).send({ error: 'Incorrect username or password' })
     }
 
-    req.session.user = username
+    const userInfo = { id: user.id, name: user.name }
+    const accessToken = req.server.jwt.sign(userInfo, { expiresIn: '1h' })
+    
     const updateStatement = req.server.db.prepare('UPDATE users SET status = 1 WHERE name = ?')
     updateStatement.run(username)
 
-    console.log(`Session set for user: ${req.session.user}`)  // Log here to check the session
-    console.log('Session:', req.session)
-    return reply.redirect('/api/dashboard')
+    return reply.send({ accessToken: accessToken })
+    //return reply.redirect('/api/dashboard')
   } catch (error) {
     return reply.code(500).send({ error: error.message })
   }

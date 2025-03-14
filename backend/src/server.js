@@ -1,15 +1,16 @@
+import dotenv from "dotenv"
+dotenv.config();
 import Fastify from 'fastify'
 import fastifyStatic from '@fastify/static'
 import { root, userRoutes } from './routes/routes.js'
 import dbInit from './database.js'
-import dotenv from "dotenv"
 import path from 'path'
-import session from '@fastify/session'
+// import session from '@fastify/session'
 import cookie from '@fastify/cookie'
 import formbody from '@fastify/formbody'
 import ejs from 'ejs'
 import view from '@fastify/view'
-dotenv.config();
+import jwt from '@fastify/jwt'
 
 const fastify = Fastify({
   logger: true
@@ -24,20 +25,22 @@ fastify.register(fastifyStatic, {
 })
 // fastify.register(session, {
 //   secret: "a secret with minimum length of 32 characters",
-//   cookies: {
-//     secure: false,
+//   cookie: {
+//     secure: false,  // Make sure to leave this as false for non-HTTPS connections
+//     httpOnly: true,  // For security, prevent JS access
+//     sameSite: 'Lax', // Add SameSite for better cross-site cookie handling
 //   },
 //   saveUninitialized: false,
 // })
-fastify.register(session, {
-  secret: "a secret with minimum length of 32 characters",
-  cookie: {
-    secure: false,  // Make sure to leave this as false for non-HTTPS connections
-    httpOnly: true,  // For security, prevent JS access
-    sameSite: 'Lax', // Add SameSite for better cross-site cookie handling
-  },
-  saveUninitialized: false,
+fastify.register(jwt, {
+  secret: process.env.ACCESS_TOKEN_SECRET,
 })
+
+console.log("DATABASE URL:", process.env.DATABASE_URL)
+console.log("PORT:", process.env.PORT)
+console.log("jwt secret:", process.env.ACCESS_TOKEN_SECRET)
+console.log("REFRESH TOKEN:", process.env.REFRESH_TOKEN_SECRET)
+
 fastify.register(view, {
   engine: {
     ejs: ejs,

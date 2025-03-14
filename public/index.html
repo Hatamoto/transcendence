@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>transendence</title>
+    <link rel="stylesheet" href="output.css"> <!-- Link to Tailwind CSS -->
+</head>
+
+<style>
+	body {
+		padding-top: 80px; /* Navbar height offset */
+	}
+
+
+	.center{
+    position:absolute;
+    width:400px;
+    height:650px;
+    left:50%;
+    top:50%;
+    margin-left:-200px;
+    margin-top:-100px;
+	}
+</style>
+
+<body class="bg-gray-100">
+	
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-md fixed top-0 w-full z-10">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand -->
+                <a href="#" class="text-2xl font-bold text-gray-800">transendence</a>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex space-x-6">
+					<button id="credits-btn" class="text-gray-600 hover:text-gray-900">Credits</button>
+                    <button id="login-btn" class="text-gray-600 hover:text-gray-900">Login</button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button id="menu-btn" class="md:hidden text-gray-600 focus:outline-none">
+                    ☰
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white shadow-md">
+            <div class="px-4 pt-2 pb-4 space-y-2">
+				<a href="#" class="text-gray-600 hover:text-gray-900">Credits</a>
+				<a href="#" class="text-gray-600 hover:text-gray-900">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- JavaScript to Toggle Mobile Menu -->
+    <script>
+        const menuBtn = document.getElementById("menu-btn");
+        const mobileMenu = document.getElementById("mobile-menu");
+
+        menuBtn.addEventListener("click", () => {
+            mobileMenu.classList.toggle("hidden");
+        });
+    </script>
+
+
+    <!-- CREDITS MODAL -->
+	<div id="credits-modal" class="center hidden">
+		<div class="bg-white p-8 rounded-lg shadow-lg w-[600px] h-[400px] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+			<button class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl" id="close-credits">✖</button>
+			<h2 class="text-2xl font-bold text-center">Credits</h2>
+			<p class="mt-4 text-gray-700 text-lg text-center">Lorem</p>
+			<p class="mt-4 text-gray-700 text-lg text-center">ipsum</p>
+			<p class="mt-4 text-gray-700 text-lg text-center">asddsf</p>
+			<p class="mt-4 text-gray-700 text-lg text-center">dsckds</p>
+			<input type="text" placeholder="Enter your text" class="border border-gray-300 p-2 rounded-md">
+		</div>
+	</div>
+
+
+	<!-- LOGIN MODAL -->
+	<div id="login-modal" class="center hidden">
+		<div class="bg-white p-8 rounded-lg shadow-lg w-[600px] h-[400px] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+			<button class="absolute top-4 right-4 text-gray-600 hover:text-gray-900 text-2xl" id="close-login">✖</button>
+			<div class="flex flex-col space-y-2">
+				<label for="name" class="text-gray-700 font-semibold">Userame:</label>
+				<input id="name" type="text"
+					class="border border-gray-300 p-2 rounded-md focus:ring-2 focus:ring-blue-400 outline-none">
+                <label for="password" class="text-gray-700 font-semibold">password:</label>
+                <input id="password" type="text"
+                    class="border border-gray-300 p-2 rounded-md focus:ring-2 focus:ring-blue-400 outline-none">
+				<button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Submit</button>
+			</div>			
+		</div>
+	</div>
+
+	<h1>ASDASDASDASDASDASAAASD</h1>
+
+	<script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Mobile Menu Toggle
+            const menuBtn = document.getElementById("menu-btn");
+            const mobileMenu = document.getElementById("mobile-menu");
+
+            menuBtn.addEventListener("click", () => {
+                mobileMenu.classList.toggle("hidden");
+            });
+
+            // Function to show/hide modals
+            function setupModal(openButtonId, modalId, closeButtonId) {
+                const openButton = document.getElementById(openButtonId);
+                const modal = document.getElementById(modalId);
+                const closeButton = document.getElementById(closeButtonId);
+
+                if (!openButton || !modal || !closeButton) return;
+
+                openButton.addEventListener("click", () => {
+                    modal.classList.remove("hidden");
+                });
+
+                closeButton.addEventListener("click", () => {
+                    modal.classList.add("hidden");
+                });
+
+                // Close modal when clicking outside
+                modal.addEventListener("click", (event) => {
+                    if (event.target === modal) {
+                        modal.classList.add("hidden");
+                    }
+                });
+            }
+
+            // Setup modals for desktop and mobile
+            setupModal("credits-btn", "credits-modal", "close-credits");
+            setupModal("login-btn", "login-modal", "close-login");
+            setupModal("mobile-credits-btn", "credits-modal", "close-credits");
+            setupModal("mobile-login-btn", "login-modal", "close-login");
+        });
+    </script>
+
+	<script type="text/javascript" src="../src/Game/game.js" defer></script>
+
+	<!-- google login test-->
+
+	<a href="http://localhost:8000/oauth2/google">
+		Google Login
+	</a>
+
+	<script>
+		// This function checks the current url and takes the query parameters
+		function getUrlVars() {
+			var url = window.location.href;
+			var vars = {};
+			var hashes = url.split("?")[1];
+			var hash = hashes.split('&');
+	
+			for (var i = 0; i < hash.length; i++) {
+				params=hash[i].split("=");
+				vars[params[0]] = params[1];
+			}
+			return vars;
+		}
+	
+		// This function create a new cookie
+		function setCookie(cname, cvalue, exdays) {
+			const d = new Date();
+			d.setTime(d.getTime() + (exdays*24*60*60*1000));
+			let expires = "expires="+ d.toUTCString();
+			document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+		}
+	
+		// This statement will check if access_token query parameter is set or not
+		// If it was set, it creates a new cookie with the new access token value
+		if(getUrlVars()["access_token"]) {
+			setCookie("google_access_token", getUrlVars()["access_token"], 1);
+			console.log("Logged in successfully!")
+		}
+	</script>
+
+</body>
+</html>
