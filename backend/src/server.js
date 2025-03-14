@@ -13,7 +13,7 @@ const fastify = Fastify({
   //logger: true
 })
 const server = fastify.server;
-const game = new Game();
+let game;
 
 const io = new Server(server, {
 	cors: {
@@ -39,6 +39,8 @@ const io = new Server(server, {
 			{
 				console.log("Starting game!");
 				io.to(room).emit("startGame");
+				const playerIds = Array.from(io.sockets.adapter.rooms.get(room) || []);
+				game = new Game(playerIds[0], playerIds[1]);
 			}
 		}
 		else if(roomSize == 2)
@@ -56,8 +58,11 @@ const io = new Server(server, {
 	  console.log("User disconnected:", socket.id);
 	});
 
-	socket.on("keyDown", (e) => {
-		game.keyDown(e);
+	socket.on("keysPressed", (e) => {
+		game.keyDown(e, socket.id);
+		game.update(game);
+		io.to(1).emit("updateGame", game.getPlayerPos());
+		console.log(game.getPlayerPos());
 	});
 
   });

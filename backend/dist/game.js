@@ -4,10 +4,15 @@ var KeyBindings;
     KeyBindings["DOWN"] = "KeyS";
 })(KeyBindings || (KeyBindings = {}));
 export class Game {
-    constructor() {
+    constructor(playerOne, playerTwo) {
         this.width = 800;
         this.height = 600;
-        this.player = new player(50, 20, 200, 0);
+        this.players = [];
+        this.playerIdMap = new Map();
+        this.players[0] = new player(50, 20, 200, 0);
+        this.playerIdMap.set(playerOne, 0);
+        this.players[1] = new player(50, 20, 200, 780);
+        this.playerIdMap.set(playerTwo, 1);
         this.ball = new ball(20, 20, this.height / 2, this.width / 2 - 10);
         this.computer = new computer(50, 20, 200, 780);
         //document.addEventListener('keydown', (e) => 
@@ -18,6 +23,13 @@ export class Game {
         //{
         //	Game.keysPressed[e.code] = false;
         //});
+    }
+    keyDown(e, playerID) {
+        console.log(this.playerIdMap.get(playerID) + " : " + playerID);
+        this.players[this.playerIdMap.get(playerID)].setKeysPressed(e);
+    }
+    getPlayerPos() {
+        return [this.players[0].getpos()[0], this.players[1].getpos()[0]];
     }
     startGame() {
         // start calling gameloop here
@@ -31,17 +43,19 @@ export class Game {
         requestAnimationFrame(() => Game.gameLoop(gameInstance));
     }
     update(gameInstance) {
-        if (Game.keysPressed[KeyBindings.UP]) {
-            gameInstance.player.setvel(-1);
+        for (var i = 0; i < gameInstance.players.length; i++) {
+            if (gameInstance.players[i].getKeysPressed()[KeyBindings.UP]) {
+                gameInstance.players[i].setvel(-1);
+            }
+            else if (gameInstance.players[i].getKeysPressed()[KeyBindings.DOWN]) {
+                gameInstance.players[i].setvel(1);
+            }
+            else {
+                gameInstance.players[i].setvel(0);
+            }
+            //gameInstance.ball.update(this.player, this.computer);
+            gameInstance.players[i].move();
         }
-        else if (Game.keysPressed[KeyBindings.DOWN]) {
-            gameInstance.player.setvel(1);
-        }
-        else {
-            gameInstance.player.setvel(0);
-        }
-        gameInstance.ball.update(this.player, this.computer);
-        gameInstance.player.move();
         //gameInstance.computer.move(this.ball, this.gameCanvas);
     }
     updateGraphics() {
@@ -56,7 +70,6 @@ export class Game {
         //Game.testnum
     }
 }
-Game.keysPressed = {};
 class entity {
     constructor(h, w, y, x) {
         this.yVel = 0;
@@ -118,6 +131,7 @@ class player extends entity {
     constructor(h, w, y, x) {
         super(h, w, y, x);
         this.speed = 4;
+        this.keysPressed = {};
     }
     setvel(velocityY) {
         this.yVel = velocityY;
@@ -127,6 +141,12 @@ class player extends entity {
     }
     getpos() {
         return [this.yPos, this.xPos];
+    }
+    getKeysPressed() {
+        return this.keysPressed;
+    }
+    setKeysPressed(keys) {
+        this.keysPressed = keys;
     }
 }
 class computer extends entity {

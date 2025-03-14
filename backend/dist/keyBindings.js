@@ -6,6 +6,8 @@ var KeyBindings;
 })(KeyBindings || (KeyBindings = {}));
 class keyBind {
     constructor() {
+        this.player1PosY = 30;
+        this.player2PosY = 30;
         this.gameCanvas = document.createElement("canvas");
         document.body.appendChild(this.gameCanvas);
         this.ctx = this.gameCanvas.getContext("2d");
@@ -25,7 +27,8 @@ class keyBind {
             this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 5, 15, 20);
         }
         this.ctx.fillStyle = "red";
-        this.ctx.fillRect(20, 30, 10, 50);
+        this.ctx.fillRect(20, this.player1PosY, 10, 50);
+        this.ctx.fillRect(580, this.player2PosY, 10, 50);
         //Game.testnum
     }
     keyDown() {
@@ -48,4 +51,11 @@ socket.on("startGame", () => {
     console.log("Game started");
     keybind.updateGraphics();
     keybind.keyDown();
+});
+socket.on("updateGame", (playerPos) => {
+    console.log("Game updated");
+    keybind.player1PosY = playerPos[0];
+    keybind.player2PosY = playerPos[1];
+    console.log(playerPos);
+    keybind.updateGraphics();
 });

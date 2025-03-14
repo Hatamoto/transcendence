@@ -10,7 +10,9 @@ class keyBind {
 	private testbtn : HTMLElement;
 	private gameCanvas : HTMLCanvasElement;
 	private ctx : CanvasRenderingContext2D;
-	private playerPosY : number = 30;
+	public player1PosY : number = 30;
+	public player2PosY : number = 30;
+
 
 	constructor()
 	{
@@ -36,7 +38,8 @@ class keyBind {
 			this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 5, 15, 20);
 		}
 		this.ctx.fillStyle = "red";
-		this.ctx.fillRect(20, this.playerPosY, 10, 50);
+		this.ctx.fillRect(20, this.player1PosY, 10, 50);
+		this.ctx.fillRect(580, this.player2PosY, 10, 50);
 		//Game.testnum
 	}
 
@@ -74,3 +77,10 @@ socket.on("startGame", () => {
 	keybind.keyDown();
 });
 
+socket.on("updateGame", (playerPos : number[]) => {
+	console.log("Game updated");
+	keybind.player1PosY = playerPos[0];
+	keybind.player2PosY = playerPos[1];
+	console.log(playerPos);
+	keybind.updateGraphics();
+});

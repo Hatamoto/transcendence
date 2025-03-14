@@ -4,16 +4,19 @@ enum KeyBindings{
 }
 
 export class Game {
-	private static keysPressed: { [key: string]: boolean } = {};
 	private width: number = 800;
 	private height: number = 600;
 	private ball: ball;
-	private player: player;
+	private players: player[] = [];
+	private playerIdMap: Map<string, number> = new Map();
 	private computer: computer;
 
-	constructor() {
+	constructor(playerOne : string, playerTwo : string) {
 		
-		this.player = new player(50, 20, 200, 0);
+		this.players[0] = new player(50, 20, 200, 0);
+		this.playerIdMap.set(playerOne, 0);
+		this.players[1] = new player(50, 20, 200, 780);
+		this.playerIdMap.set(playerTwo, 1);
 		this.ball = new ball(20, 20, this.height / 2, this.width / 2 - 10);
 		this.computer = new computer(50, 20, 200, 780);
 
@@ -30,9 +33,15 @@ export class Game {
 
 	}
 
-	keyDown(e : {[key: string]: boolean })
+	keyDown(e : {[key: string]: boolean }, playerID: string)
 	{
-		Game.keysPressed = e;
+		console.log(this.playerIdMap.get(playerID) + " : " + playerID);
+		this.players[this.playerIdMap.get(playerID)].setKeysPressed(e);
+	}
+
+	getPlayerPos()
+	{
+		return [this.players[0].getpos()[0], this.players[1].getpos()[0]];
 	}
 
 	startGame()
@@ -53,20 +62,23 @@ export class Game {
 	
 	update(gameInstance: Game)
 	{
-		if (Game.keysPressed[KeyBindings.UP])
+		for (var i = 0; i < gameInstance.players.length; i++)
 		{
-			gameInstance.player.setvel(-1);
+			if (gameInstance.players[i].getKeysPressed()[KeyBindings.UP])
+			{
+				gameInstance.players[i].setvel(-1);
+			}
+			else if (gameInstance.players[i].getKeysPressed()[KeyBindings.DOWN])
+			{
+				gameInstance.players[i].setvel(1);
+			}
+			else
+			{
+				gameInstance.players[i].setvel(0);
+			}
+			//gameInstance.ball.update(this.player, this.computer);
+			gameInstance.players[i].move();
 		}
-		else if (Game.keysPressed[KeyBindings.DOWN])
-		{
-			gameInstance.player.setvel(1);
-		}
-		else
-		{
-			gameInstance.player.setvel(0);
-		}
-		//gameInstance.ball.update(this.player, this.computer);
-		gameInstance.player.move();
 		//gameInstance.computer.move(this.ball, this.gameCanvas);
 	}
 
@@ -166,6 +178,7 @@ class ball extends entity
 class player extends entity
 {
 	private speed:number = 4;
+	private keysPressed: { [key: string]: boolean } = {};
 	
 	constructor(h:number, w:number, y:number, x:number)
 	{
@@ -186,6 +199,17 @@ class player extends entity
 	{
 		return [this.yPos, this.xPos];
 	}
+
+	getKeysPressed()
+	{
+		return this.keysPressed;
+	}
+
+	setKeysPressed(keys: { [key: string]: boolean })
+	{
+		this.keysPressed = keys;
+	}
+
 }
 
 
