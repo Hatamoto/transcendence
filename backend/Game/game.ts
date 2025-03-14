@@ -30,6 +30,11 @@ export class Game {
 
 	}
 
+	keyDown(e : {[key: string]: boolean })
+	{
+		Game.keysPressed = e;
+	}
+
 	startGame()
 	{
 		// start calling gameloop here
@@ -60,7 +65,7 @@ export class Game {
 		{
 			gameInstance.player.setvel(0);
 		}
-		gameInstance.ball.update(this.player, this.computer);
+		//gameInstance.ball.update(this.player, this.computer);
 		gameInstance.player.move();
 		//gameInstance.computer.move(this.ball, this.gameCanvas);
 	}

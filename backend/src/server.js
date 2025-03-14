@@ -24,20 +24,8 @@ const io = new Server(server, {
 	},
   });
 
-  const activeSockets = new Set();
-
   io.on("connection", (socket) => {  
-	if (activeSockets.has(socket.id)) { // prevents same id connecting multiple times maybe not needed
-		console.log(`User ${socket.id} is already connected. Disconnecting the new connection.`);
-		socket.disconnect();
-		return;
-	}
-	activeSockets.add(socket.id);
 	console.log("A user connected:", socket.id);
-	//socket.on('keysPressed', (data) => {
-	//	Game.keysPressed = data;
-	//	console.log("asd");
-	//});
 
 	socket.on("joinRoom", (room) => {
 		const roomSize = io.sockets.adapter.rooms.get(room)?.size || 0;
@@ -48,7 +36,10 @@ const io = new Server(server, {
 			console.log(`User ${socket.id} joined room: ${room}`);
 			io.to(room).emit("message", `User ${socket.id} has joined ${room}`);
 			if (roomSize == 1)
+			{
 				console.log("Starting game!");
+				io.to(room).emit("startGame");
+			}
 		}
 		else if(roomSize == 2)
 		{
@@ -64,6 +55,11 @@ const io = new Server(server, {
 	socket.on("disconnect", () => {
 	  console.log("User disconnected:", socket.id);
 	});
+
+	socket.on("keyDown", (e) => {
+		game.keyDown(e);
+	});
+
   });
 
 	// First static directory
