@@ -4,10 +4,15 @@ import { root, userRoutes } from './routes/routes.js'
 import dbInit from './database.js'
 import dotenv from "dotenv";
 import path from 'path'
+import { fileURLToPath } from 'url';
 import { Server } from "socket.io";
 import { Game } from '../dist/game.js'
 
 dotenv.config();
+
+// Compute __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const fastify = Fastify({
   //logger: true
@@ -66,27 +71,41 @@ const io = new Server(server, {
 	});
   });
 
-	// First static directory
+	// Serve static files from the public directory
+	// Adjust the relative paths based on the location of this file
 	fastify.register(fastifyStatic, {
-		root: path.join(process.cwd(), '../public'),
+		root: path.join(__dirname, '../../public'), // e.g., if this file is in backend/src, resolves to /app/public
 		prefix: '/',
 		decorateReply: true
-	})
-
+	});
+		
+	// Serve static files from the dist directory
 	fastify.register(fastifyStatic, {
-		root: path.join(process.cwd(), './dist/'),
+		root: path.join(__dirname, '../dist'), // e.g., resolves to /app/backend/dist
 		prefix: '/dist/',
 		decorateReply: false 
-	})
+	});
 
 await fastify.register(dbInit)
 await fastify.register(root)
 await fastify.register(userRoutes)
 
-fastify.listen({ port: process.env.PORT || 5000}, function (err, address) {
-  if (err) {
-    fastify.log.error(err)
-    process.exit(1)
-  }
-  console.log(`Server listening at ${address}`)
-})
+// fastify.listen({ port: process.env.PORT || 5000}, function (err, address) {
+//   if (err) {
+//     fastify.log.error(err)
+//     process.exit(1)
+//   }
+//   console.log(`Server listening at ${address}`)
+// })
+
+// For Docker to work:
+fastify.listen({ 
+	port: process.env.PORT || 5000, 
+	host: '0.0.0.0' 
+  }, function (err, address) {
+	if (err) {
+	  fastify.log.error(err)
+	  process.exit(1)
+	}
+	console.log(`Server listening at ${address}`)
+  })
