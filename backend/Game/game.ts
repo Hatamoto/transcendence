@@ -30,7 +30,7 @@ export class Game {
 		//{
 		//	Game.keysPressed[e.code] = false;
 		//});
-
+        setInterval(() => this.update(this), 1000/60);
 	}
 
 	keyDown(e : {[key: string]: boolean }, playerID: string)
@@ -39,9 +39,9 @@ export class Game {
 		this.players[this.playerIdMap.get(playerID)].setKeysPressed(e);
 	}
 
-	getPlayerPos()
+	getPos()
 	{
-		return [this.players[0].getpos()[0], this.players[1].getpos()[0]];
+		return [this.players[0].getpos(), this.players[1].getpos(), this.ball.getpos()];
 	}
 
 	startGame()
@@ -76,9 +76,9 @@ export class Game {
 			{
 				gameInstance.players[i].setvel(0);
 			}
-			//gameInstance.ball.update(this.player, this.computer);
 			gameInstance.players[i].move();
 		}
+		gameInstance.ball.update(gameInstance.players[0], gameInstance.players[1]);
 		//gameInstance.computer.move(this.ball, this.gameCanvas);
 	}
 
@@ -119,6 +119,11 @@ class entity
         ctx.fillStyle = "red";
         ctx.fillRect(this.xPos, this.yPos, this.width, this.height);
 	}
+
+	getpos()
+	{
+		return [this.yPos, this.xPos];
+	}
 }
 
 class ball extends entity
@@ -142,10 +147,8 @@ class ball extends entity
         }
 	}
 
-	update(player:player, computer:computer)
+	update(player:player, player2:player)
 	{
-		console.log(this.xPos + " :x:y: " + this.yPos);
-
 		if (this.yPos >= 580)
 			this.yVel = -1;
 		else if (this.yPos <= 0)
@@ -158,9 +161,9 @@ class ball extends entity
 			this.xVel = 1;
 		}
 
-		if (this.xPos + this.width >= computer.xPos &&
-			this.yPos + this.height >= computer.yPos && 
-			this.yPos <= computer.yPos + computer.height) 
+		if (this.xPos + this.width >= player2.xPos &&
+			this.yPos + this.height >= player2.yPos && 
+			this.yPos <= player2.yPos + player2.height) 
 		{
 			this.xVel = -1;
 		}
@@ -193,11 +196,6 @@ class player extends entity
 	move()
 	{
 		this.yPos += this.yVel * this.speed;
-	}
-
-	getpos()
-	{
-		return [this.yPos, this.xPos];
 	}
 
 	getKeysPressed()
@@ -248,11 +246,6 @@ class computer extends entity
        }
        
         this.yPos += this.yVel * this.speed;
-	}
-
-	getpos()
-	{
-		return [this.yPos, this.xPos];
 	}
 }
 
