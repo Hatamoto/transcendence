@@ -6,7 +6,8 @@ const User = {
     email: { type: 'string' },
     status: { type: 'integer' },
     wins: { type: 'integer' },
-    losses: { type: 'integer' }
+    losses: { type: 'integer' },
+    avatar: { type: 'string' }
   },
 }
 

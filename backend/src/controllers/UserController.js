@@ -1,5 +1,9 @@
 import bcrypt from 'bcrypt'
 import { v4 as uuidv4 } from 'uuid'
+import fs from 'fs'
+import util from 'util'
+import { pipeline } from 'stream'
+import path from 'path'
 
 const getUsers = async function (req, reply) {
   try {
@@ -16,6 +20,7 @@ const getUsers = async function (req, reply) {
 
 const addUser = async function (req, reply) {
   const { name, email, password } = req.body
+  const avatar = process.env.DEFAULT_AVATAR
   let hashedPassword = password
 
   if (password) {
@@ -25,12 +30,13 @@ const addUser = async function (req, reply) {
   const user = {
    id: uuidv4(),
    name,
-   email
+   email,
+   avatar
   }
 
   try {
-    const insertStatement = req.server.db.prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)")
-    insertStatement.run(name, email, hashedPassword)
+    const insertStatement = req.server.db.prepare("INSERT INTO users (name, email, password, avatar) VALUES (?, ?, ?, ?)")
+    insertStatement.run(name, email, hashedPassword, avatar)
     
     return reply.code(201).send(user)
   } catch (error) {
@@ -100,6 +106,11 @@ const updatePassword = async function (req, reply) {
   const {id} = req.params
   const { password } = req.body
   
+  const passwordPattern = /^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:'",.<>?])/
+  if (!passwordPattern.test(password)) {
+    return reply.code(400).send({ error: 'Password must contain at least one digit, one letter, and one special character.' })
+  }
+
   try {
     const getStatement = req.server.db.prepare('SELECT * FROM users WHERE id = ?')
     const user = getStatement.get(id)
@@ -119,7 +130,11 @@ const updatePassword = async function (req, reply) {
    
     return reply.send({ message: `Password was changed for user ${id}` })
   } catch (error) {
-      return reply.code(500).send({ error: error.message })
+      if (error.code === 'FST_ERR_VALIDATION') {
+        return reply.code(400).send({ error: 'Minimum length for password is 8 and it has to contain atleast 1 digit and 1 special character' })
+      } else {
+        return reply.code(500).send({ error: error.message })
+      }
   }
 }
 
@@ -145,29 +160,43 @@ const loginUser = async function (req, reply) {
     updateStatement.run(username)
 
     return reply.send({ accessToken: accessToken })
-    //return reply.redirect('/api/dashboard')
   } catch (error) {
     return reply.code(500).send({ error: error.message })
   }
 }
 
 const getDashboard = async function(req, reply) {
-  console.log('Session data:', req.session)
-  console.log(`session user ${req.session.user}`)
-  if (req.session.user) {
-    const username = req.session.user
+  try {
+    const username = req.user.name
     return reply.view('../public/dashboard.ejs', { username })
-  } else {
-    return reply.redirect('/')
+  } catch (error) {
+    console.log(error)
   }
 }
 
 const userLogout = async function(req, reply) {
-  const username = req.session.user
+  const username = req.user
   const updateStatement = req.server.db.prepare('UPDATE users SET status = 0 WHERE name = ?')
     updateStatement.run(username)
-  req.session.destroy()
   return reply.redirect('/')
+}
+
+const uploadAvatar = async function(req, reply) {
+  try {
+    const username = req.user.name
+    const avatar = await req.file()
+    const pump = util.promisify(pipeline)
+    const uploadDir = path.join(__dirname, '../avatars')
+    const filePath = path.join(uploadDir, avatar.filename)
+    
+    await pump(avatar.file, fs.createWriteStream(filePath))
+
+    const avatarPath = `/avatars/${avatar.filename}`
+    const updateStatement = req.server.db.prepare('UPDATE users SET avatar = ? WHERE name = ?')
+    updateStatement.run(avatarPath, username)
+  } catch (error) {
+    return reply.code(500).send({ error: error.message })
+  }
 }
 
 export { 
@@ -179,5 +208,6 @@ export {
   updatePassword,
   loginUser,
   getDashboard,
-  userLogout
+  userLogout,
+  uploadAvatar
 }

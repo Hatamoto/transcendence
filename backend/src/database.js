@@ -1,13 +1,13 @@
 import fp from 'fastify-plugin'
 import Database from 'better-sqlite3'
-// import dotenv from "dotenv";
-
-// dotenv.config();
 
 async function dbInit(fastify, options) {
-  const dbFile = process.env.dbFile || "./database.db"
+  const dbFile = process.env.DB_FILE || "./database.db"
   const db = new Database(dbFile, { verbose: console.log })
 
+  // db.exec(`
+  //   DROP TABLE IF EXISTS users;
+  // `)
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY,
@@ -17,6 +17,7 @@ async function dbInit(fastify, options) {
       status INTEGER NOT NULL DEFAULT 0 CHECK(status IN (0 ,1)),
       wins INTEGER NOT NULL DEFAULT 0,
       losses INTEGER NOT NULL DEFAULT 0,
+      avatar TEXT NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `)
