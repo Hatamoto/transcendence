@@ -141,7 +141,9 @@ const loginUserOpts = {
 }
 
 const dashboardOpts = {
-  schema: {},
+  schema: {
+	type: 'object',
+  },
   preHandler: authenticateToken,
   handler: getDashboard,
 }
@@ -149,7 +151,9 @@ const dashboardOpts = {
 const userLogoutOpts = {
   schema: {
     response: {
-      200: {},
+      200: {
+		type: 'object',
+	  },
     },
   },
   handler: userLogout,
@@ -158,7 +162,9 @@ const userLogoutOpts = {
 const uploadOpts = {
   schema: {
     response: {
-      204: {},
+      204: {
+		type: 'object',
+	  },
     },
   },
   preHandler: authenticateToken,

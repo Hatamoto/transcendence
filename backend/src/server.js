@@ -11,6 +11,16 @@ import ejs from 'ejs'
 import view from '@fastify/view'
 import jwt from '@fastify/jwt'
 import multipart from '@fastify/multipart'
+// temp
+import bcrypt from 'bcrypt';
+
+bcrypt.hash('Test123!', 10, (err, hash) => {
+  if (err) {
+    console.error(err);
+  } else {
+    console.log('Generated hash:', hash);
+  }
+});
 
 const fastify = Fastify({
   logger: true
@@ -25,12 +35,13 @@ fastify.register(fastifyStatic, {
   prefix: '/',
 })
 fastify.register(fastifyStatic, {
-  root: path.join(process.cwd(), "../avatars"),
+  root: path.join(process.cwd(), "./src/avatars"),
   prefix: "/avatars/",
   decorateReply: false,
 });
 fastify.register(jwt, {
-  secret: process.env.ACCESS_TOKEN_SECRET,
+	secret: 'my-temporary-secret', 
+    // secret: process.env.ACCESS_TOKEN_SECRET,
 })
 fastify.register(view, {
   engine: {
@@ -39,6 +50,9 @@ fastify.register(view, {
 })
 await fastify.register(root)
 await fastify.register(userRoutes)
+
+console.log('JWT Secret:', process.env.ACCESS_TOKEN_SECRET);
+console.log('Port:', process.env.PORT);
 
 fastify.listen({ port: process.env.PORT }, function (err, address) {
   if (err) {
