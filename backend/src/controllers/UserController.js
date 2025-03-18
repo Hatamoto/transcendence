@@ -139,43 +139,37 @@ const updatePassword = async function (req, reply) {
 }
 
 const loginUser = async function (req, reply) {
-  const { username, password } = req.body
-
-  try {
-    const getStatement = req.server.db.prepare('SELECT * FROM users WHERE name = ?')
-    const user = getStatement.get(username)
-
-    if (!user) {
-      return reply.code(401).send({ error: 'Incorrect username or password' })
-    }
-    const isMatch = await bcrypt.compare(password, user.password)
-    if (!isMatch) {
-      return reply.code(401).send({ error: 'Incorrect username or password' })
-    }
-
-    const userInfo = { id: user.id, name: user.name }
-    const accessToken = req.server.jwt.sign(userInfo, { expiresIn: '1h' })
-    
-    const updateStatement = req.server.db.prepare('UPDATE users SET status = 1 WHERE name = ?')
-    updateStatement.run(username)
-	
-    // Return JavaScript response to set cookie and redirect
-    const jsResponse = `
-      <script>
-        document.cookie = "accessToken=${accessToken}; path=/; SameSite=Lax";
-        window.location.href = '/api/gameroom';
-      </script>
-    `;
-
-    return reply
-      .code(200)
-      .header('Content-Type', 'text/html')
-      .send(jsResponse);
-
+	const { username, password } = req.body;
+  
+	try {
+	  const getStatement = req.server.db.prepare('SELECT * FROM users WHERE name = ?');
+	  const user = getStatement.get(username);
+  
+	  if (!user) {
+		return reply.code(401).send({ error: 'Incorrect username or password' });
+	  }
+  
+	  const isMatch = await bcrypt.compare(password, user.password);
+	  if (!isMatch) {
+		return reply.code(401).send({ error: 'Incorrect username or password' });
+	  }
+  
+	  const userInfo = { id: user.id, name: user.name };
+	  const accessToken = req.server.jwt.sign(userInfo, { expiresIn: '1h' });
+  
+	  const updateStatement = req.server.db.prepare('UPDATE users SET status = 1 WHERE name = ?');
+	  updateStatement.run(username);
+  
+	  // Send JSON Response Instead of HTML
+	  return reply
+		.code(200)
+		.header('Content-Type', 'application/json')
+		.send({ success: true, username: user.name, accessToken });
+  
 	} catch (error) {
-		return reply.code(500).send({ error: error.message });
+	  return reply.code(500).send({ error: error.message });
 	}
-};
+  };
 
 const getDashboard = async function(req, reply) {
   try {
@@ -189,13 +183,23 @@ const getDashboard = async function(req, reply) {
 
 const getGameroom = async function(req, reply) {
 	try {
-	  console.log("Trying gameroom")
-	  const username = req.user.name
-	  return reply.view('../public/gameroom.ejs', { username })
+		console.log("Trying gameroom")
+		const username = req.user.name
+		return reply.view('../public/gameroom.ejs', { username })
 	} catch (error) {
-	  console.log(error)
+		console.log(error)
 	}
-  }
+}
+
+const getGame = async function(req, reply) {
+	try {
+		console.log("Trying a new game")
+		const username = req.user.name
+		return reply.view('../public/game.ejs', { username })
+	} catch (error) {
+		console.log(error)
+	}
+}
 
 const userLogout = async function(req, reply) {
   const username = req.user
@@ -232,6 +236,7 @@ export {
   loginUser,
   getDashboard,
   getGameroom,
+  getGame,
   userLogout,
   uploadAvatar
 }

@@ -5,22 +5,23 @@ import fastifyStatic from '@fastify/static'
 import { root, userRoutes } from './routes/routes.js'
 import dbInit from './database.js'
 import path from 'path'
+import { fileURLToPath } from 'url';
 import cookie from '@fastify/cookie'
 import formbody from '@fastify/formbody'
-import ejs from 'ejs'
-import view from '@fastify/view'
 import jwt from '@fastify/jwt'
 import multipart from '@fastify/multipart'
-// temp
-// import bcrypt from 'bcrypt';
 
-// bcrypt.hash('Test123!', 10, (err, hash) => {
-//   if (err) {
-//     console.error(err);
-//   } else {
-//     console.log('Generated hash:', hash);
-//   }
-// });
+// Correctly resolve __dirname for ES Module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+console.log("Frontend Directory:", path.resolve(__dirname, '../../frontend/dist'));
+console.log("Backend Directory:", __dirname);
+
+// Path to frontend output
+const FRONTEND_DIST = path.resolve(__dirname, '../../frontend/dist');
+
+console.log("Frontend Directory:", FRONTEND_DIST);
 
 const fastify = Fastify({
   logger: true
@@ -30,23 +31,27 @@ await fastify.register(dbInit)
 fastify.register(formbody)
 fastify.register(cookie)
 fastify.register(multipart)
+
+// Serve frontend files
 fastify.register(fastifyStatic, {
-  root: path.join(process.cwd(), '../public'),
-  prefix: '/',
-})
-fastify.register(fastifyStatic, {
-  root: path.join(process.cwd(), "./src/avatars"),
-  prefix: "/avatars/",
-  decorateReply: false,
+    root: FRONTEND_DIST,
+    prefix: '/',
 });
+
+// Serve avatars
+fastify.register(fastifyStatic, {
+    root: path.join(__dirname, './avatars'),
+    prefix: '/avatars/',
+    decorateReply: false,
+});
+
 fastify.register(jwt, {
     secret: process.env.ACCESS_TOKEN_SECRET,
-})
-fastify.register(view, {
-  engine: {
-    ejs: ejs,
-  },
-})
+});
+
+fastify.setNotFoundHandler((req, reply) => {
+    reply.sendFile('index.html', { root: FRONTEND_DIST });
+});
 
 await fastify.register(root)
 await fastify.register(userRoutes)
@@ -57,4 +62,4 @@ fastify.listen({ port: process.env.PORT }, function (err, address) {
     process.exit(1)
   }
   console.log(`Server listening at ${address}`)
-})
+});

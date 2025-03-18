@@ -9,13 +9,14 @@ import {
   dashboardOpts,
   userLogoutOpts,
   uploadOpts,
-  gameroomOpts
+  gameroomOpts,
+  gameOpts
 } from '../schemas/userSchemas.js'
 
 async function root (fastify, options) {
   fastify.get('/', async (req, reply) => {
     try {
-      return reply.view('../public/index.ejs')
+		return reply.sendFile('index.html');
     } catch (error) {
       console.log(error)
     }
@@ -34,6 +35,7 @@ async function userRoutes (fastify, options) {
   fastify.delete('/api/users/:id', deleteUserOpts)
   fastify.get('/api/dashboard', dashboardOpts)
   fastify.get('/api/gameroom', gameroomOpts)
+  fastify.get('/api/game', gameOpts)
 }
 
 export { root, userRoutes };
