@@ -40,19 +40,16 @@ fastify.register(fastifyStatic, {
   decorateReply: false,
 });
 fastify.register(jwt, {
-	secret: 'my-temporary-secret', 
-    // secret: process.env.ACCESS_TOKEN_SECRET,
+    secret: process.env.ACCESS_TOKEN_SECRET,
 })
 fastify.register(view, {
   engine: {
     ejs: ejs,
   },
 })
+
 await fastify.register(root)
 await fastify.register(userRoutes)
-
-console.log('JWT Secret:', process.env.ACCESS_TOKEN_SECRET);
-console.log('Port:', process.env.PORT);
 
 fastify.listen({ port: process.env.PORT }, function (err, address) {
   if (err) {
