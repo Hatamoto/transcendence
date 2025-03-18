@@ -12,15 +12,15 @@ import view from '@fastify/view'
 import jwt from '@fastify/jwt'
 import multipart from '@fastify/multipart'
 // temp
-import bcrypt from 'bcrypt';
+// import bcrypt from 'bcrypt';
 
-bcrypt.hash('Test123!', 10, (err, hash) => {
-  if (err) {
-    console.error(err);
-  } else {
-    console.log('Generated hash:', hash);
-  }
-});
+// bcrypt.hash('Test123!', 10, (err, hash) => {
+//   if (err) {
+//     console.error(err);
+//   } else {
+//     console.log('Generated hash:', hash);
+//   }
+// });
 
 const fastify = Fastify({
   logger: true

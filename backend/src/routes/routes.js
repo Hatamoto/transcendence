@@ -8,7 +8,8 @@ import {
   loginUserOpts,
   dashboardOpts,
   userLogoutOpts,
-  uploadOpts
+  uploadOpts,
+  gameroomOpts
 } from '../schemas/userSchemas.js'
 
 async function root (fastify, options) {
@@ -31,7 +32,8 @@ async function userRoutes (fastify, options) {
   fastify.put('/api/users/:id', updateUserOpts)
   fastify.put('/api/users/pwd/:id', updatePasswordOpts)
   fastify.delete('/api/users/:id', deleteUserOpts)
-  fastify.get('/api/dashboard', dashboardOpts)  
+  fastify.get('/api/dashboard', dashboardOpts)
+  fastify.get('/api/gameroom', gameroomOpts)
 }
 
 export { root, userRoutes };

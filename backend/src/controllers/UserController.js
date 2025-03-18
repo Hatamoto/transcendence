@@ -163,7 +163,7 @@ const loginUser = async function (req, reply) {
     const jsResponse = `
       <script>
         document.cookie = "accessToken=${accessToken}; path=/; SameSite=Lax";
-        window.location.href = '/api/dashboard';
+        window.location.href = '/api/gameroom';
       </script>
     `;
 
@@ -186,6 +186,16 @@ const getDashboard = async function(req, reply) {
     console.log(error)
   }
 }
+
+const getGameroom = async function(req, reply) {
+	try {
+	  console.log("Trying gameroom")
+	  const username = req.user.name
+	  return reply.view('../public/gameroom.ejs', { username })
+	} catch (error) {
+	  console.log(error)
+	}
+  }
 
 const userLogout = async function(req, reply) {
   const username = req.user
@@ -221,6 +231,7 @@ export {
   updatePassword,
   loginUser,
   getDashboard,
+  getGameroom,
   userLogout,
   uploadAvatar
 }

@@ -8,7 +8,8 @@ import {
   loginUser,
   getDashboard,
   userLogout,
-  uploadAvatar
+  uploadAvatar,
+  getGameroom
 } from '../controllers/UserController.js'
 import authenticateToken from '../middleware/authentication.js'
 import authenticate from '../middleware/authentication.js';
@@ -149,6 +150,14 @@ const dashboardOpts = {
   handler: getDashboard,
 }
 
+const gameroomOpts = {
+	schema: {
+	  type: 'object',
+	},
+	preHandler: authenticateToken,
+	handler: getGameroom,
+  }
+
 const userLogoutOpts = {
   schema: {
     response: {
@@ -181,6 +190,7 @@ export {
   updatePasswordOpts,
   loginUserOpts,
   dashboardOpts,
+  gameroomOpts,
   userLogoutOpts,
   uploadOpts
 }
