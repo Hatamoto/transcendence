@@ -11,6 +11,7 @@ import {
   uploadAvatar
 } from '../controllers/UserController.js'
 import authenticateToken from '../middleware/authentication.js'
+import authenticate from '../middleware/authentication.js';
 import User from '../models/userModel.js'
 
 const getUsersOpts = {
@@ -167,7 +168,7 @@ const uploadOpts = {
 	  },
     },
   },
-  preHandler: authenticateToken,
+  preHandler: authenticate,
   handler: uploadAvatar,
 }
 
