@@ -3,94 +3,76 @@ enum KeyBindings{
     DOWN = 'KeyS'
 }
 
-export class Game {
-	private width: number = 800;
-	private height: number = 600;
+class Game {
+	private static keysPressed: boolean[] = [];
+	private gameCanvas: HTMLCanvasElement;
+	private ctx: CanvasRenderingContext2D;
 	private ball: ball;
-	private players: player[] = [];
-	private playerIdMap: Map<string, number> = new Map();
+	private player: player;
 	private computer: computer;
 
-	constructor(playerOne : string, playerTwo : string) {
+	constructor() {
+		this.gameCanvas = document.createElement("canvas");
+		document.body.appendChild(this.gameCanvas);
+		this.ctx = this.gameCanvas.getContext("2d")!;
+		this.gameCanvas.width = 800;
+		this.gameCanvas.height = 600;
 		
-		this.players[0] = new player(50, 20, 200, 0);
-		this.playerIdMap.set(playerOne, 0);
-		this.players[1] = new player(50, 20, 200, 780);
-		this.playerIdMap.set(playerTwo, 1);
-		this.ball = new ball(20, 20, this.height / 2, this.width / 2 - 10);
+		this.player = new player(50, 20, 200, 0);
+		this.ball = new ball(20, 20, this.gameCanvas.height / 2, this.gameCanvas.width / 2 - 10);
 		this.computer = new computer(50, 20, 200, 780);
 
   
-		//document.addEventListener('keydown', (e) => 
-		//{
-		//	Game.keysPressed[e.code] = true;
-		//});
+		document.addEventListener('keydown', (e) => 
+		{
+			Game.keysPressed[e.code] = true;
+		});
 
-		//document.addEventListener('keyup', (e) => 
-		//{
-		//	Game.keysPressed[e.code] = false;
-		//});
-        setInterval(() => this.update(this), 1000/60);
-	}
-
-	keyDown(e : {[key: string]: boolean }, playerID: string)
-	{
-		console.log(this.playerIdMap.get(playerID) + " : " + playerID);
-		this.players[this.playerIdMap.get(playerID)].setKeysPressed(e);
-	}
-
-	getPos()
-	{
-		return [this.players[0].getpos(), this.players[1].getpos(), this.ball.getpos()];
-	}
-
-	startGame()
-	{
-		// start calling gameloop here
+		document.addEventListener('keyup', (e) => 
+		{
+			Game.keysPressed[e.code] = false;
+		});
 	}
 
 	static gameLoop(gameInstance: Game) 
 	{
 		gameInstance.update(gameInstance);
 		gameInstance.updateGraphics();
-		//gameInstance.ball.draw(gameInstance.ctx);
-		//gameInstance.player.draw(gameInstance.ctx);
-		//gameInstance.computer.draw(gameInstance.ctx);
+		gameInstance.ball.draw(gameInstance.ctx);
+		gameInstance.player.draw(gameInstance.ctx);
+		gameInstance.computer.draw(gameInstance.ctx);
 
 		requestAnimationFrame(() => Game.gameLoop(gameInstance));
 	}
 	
 	update(gameInstance: Game)
 	{
-		for (var i = 0; i < gameInstance.players.length; i++)
+		if (Game.keysPressed[KeyBindings.UP])
 		{
-			if (gameInstance.players[i].getKeysPressed()[KeyBindings.UP])
-			{
-				gameInstance.players[i].setvel(-1);
-			}
-			else if (gameInstance.players[i].getKeysPressed()[KeyBindings.DOWN])
-			{
-				gameInstance.players[i].setvel(1);
-			}
-			else
-			{
-				gameInstance.players[i].setvel(0);
-			}
-			gameInstance.players[i].move();
+			gameInstance.player.setvel(-1);
 		}
-		gameInstance.ball.update(gameInstance.players[0], gameInstance.players[1]);
-		//gameInstance.computer.move(this.ball, this.gameCanvas);
+		else if (Game.keysPressed[KeyBindings.DOWN])
+		{
+			gameInstance.player.setvel(1);
+		}
+		else
+		{
+			gameInstance.player.setvel(0);
+		}
+		gameInstance.ball.update(this.player, this.computer);
+		gameInstance.player.move();
+		gameInstance.computer.move(this.ball, this.gameCanvas);
 	}
 
 	updateGraphics()
 	{  
-		//this.ctx.fillStyle = "#000";
-        //this.ctx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
+		this.ctx.fillStyle = "#000";
+        this.ctx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
 		
-		//for (var i = 0; i <= this.gameCanvas.height; i += 30) {
-		//	this.ctx.fillStyle = "red";
-		//	this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 5, 15, 20);
-		//}
+		for (var i = 0; i <= this.gameCanvas.height; i += 30) {
+			this.ctx.fillStyle = "red";
+			this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 5, 15, 20);
+		}
 
 		//this.ctx.fillStyle = "red";
 		//this.ctx.fillRect(20, Game.testnum, 10, 50);
@@ -119,11 +101,6 @@ class entity
         ctx.fillStyle = "red";
         ctx.fillRect(this.xPos, this.yPos, this.width, this.height);
 	}
-
-	getpos()
-	{
-		return [this.yPos, this.xPos];
-	}
 }
 
 class ball extends entity
@@ -147,8 +124,10 @@ class ball extends entity
         }
 	}
 
-	update(player:player, player2:player)
+	update(player:player, computer:computer)
 	{
+		console.log(this.xPos + " :x:y: " + this.yPos);
+
 		if (this.yPos >= 580)
 			this.yVel = -1;
 		else if (this.yPos <= 0)
@@ -161,9 +140,9 @@ class ball extends entity
 			this.xVel = 1;
 		}
 
-		if (this.xPos + this.width >= player2.xPos &&
-			this.yPos + this.height >= player2.yPos && 
-			this.yPos <= player2.yPos + player2.height) 
+		if (this.xPos + this.width >= computer.xPos &&
+			this.yPos + this.height >= computer.yPos && 
+			this.yPos <= computer.yPos + computer.height) 
 		{
 			this.xVel = -1;
 		}
@@ -181,7 +160,6 @@ class ball extends entity
 class player extends entity
 {
 	private speed:number = 4;
-	private keysPressed: { [key: string]: boolean } = {};
 	
 	constructor(h:number, w:number, y:number, x:number)
 	{
@@ -198,16 +176,10 @@ class player extends entity
 		this.yPos += this.yVel * this.speed;
 	}
 
-	getKeysPressed()
+	getpos()
 	{
-		return this.keysPressed;
+		return [this.yPos, this.xPos];
 	}
-
-	setKeysPressed(keys: { [key: string]: boolean })
-	{
-		this.keysPressed = keys;
-	}
-
 }
 
 
@@ -247,8 +219,13 @@ class computer extends entity
        
         this.yPos += this.yVel * this.speed;
 	}
+
+	getpos()
+	{
+		return [this.yPos, this.xPos];
+	}
 }
 
 
-//const game = new Game();
-//requestAnimationFrame(() => Game.gameLoop(game));
+const game = new Game();
+requestAnimationFrame(() => Game.gameLoop(game));
