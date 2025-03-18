@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { Server } from "socket.io";
 import { Game } from '../dist/game.js'
 
+
 dotenv.config();
 
 // Compute __dirname for ES modules
@@ -15,10 +16,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const fastify = Fastify({
-  //logger: true
+	//logger: true
 })
 const server = fastify.server;
-const game = new Game();
+let game = [];
+
+function gameLoop(room) {
+	io.to(room).emit("updateGame", game[room].getPos());
+	
+	setTimeout(() => gameLoop(room), 1000 / 60);
+}
 
 const io = new Server(server, {
 	cors: {
@@ -29,20 +36,8 @@ const io = new Server(server, {
 	},
   });
 
-  const activeSockets = new Set();
-
   io.on("connection", (socket) => {  
-	if (activeSockets.has(socket.id)) { // prevents same id connecting multiple times maybe not needed
-		console.log(`User ${socket.id} is already connected. Disconnecting the new connection.`);
-		socket.disconnect();
-		return;
-	}
-	activeSockets.add(socket.id);
 	console.log("A user connected:", socket.id);
-	//socket.on('keysPressed', (data) => {
-	//	Game.keysPressed = data;
-	//	console.log("asd");
-	//});
 
 	socket.on("joinRoom", (room) => {
 		const roomSize = io.sockets.adapter.rooms.get(room)?.size || 0;
@@ -53,7 +48,13 @@ const io = new Server(server, {
 			console.log(`User ${socket.id} joined room: ${room}`);
 			io.to(room).emit("message", `User ${socket.id} has joined ${room}`);
 			if (roomSize == 1)
+			{
 				console.log("Starting game!");
+				io.to(room).emit("startGame");
+				const playerIds = Array.from(io.sockets.adapter.rooms.get(room) || []);
+				game[room] = new Game(playerIds[0], playerIds[1]);
+				gameLoop(room);
+			}
 		}
 		else if(roomSize == 2)
 		{
@@ -69,6 +70,41 @@ const io = new Server(server, {
 	socket.on("disconnect", () => {
 	  console.log("User disconnected:", socket.id);
 	});
+
+	socket.on("keysPressed", (e) => {
+		const room = Array.from(socket.rooms)[1];
+		if (game[room] == undefined)
+		{
+			console.log("Game not started yet!");
+			return;
+		}
+			
+		game[room].keyDown(e, socket.id);
+		//game.update(game);
+		io.to(room).emit("updateGame", game[room].getPos());
+		console.log(game[room].getPos());
+	});
+
+
+	// temporary code
+    socket.on('offer', (offer) => {
+        console.log('Offer received:', offer);
+        socket.to(Array.from(socket.rooms)[1]).emit('offer', offer);
+    });
+
+    // Listen for the answer from the remote peer
+    socket.on('answer', (answer) => {
+        console.log('Answer received:', answer);
+        socket.to(Array.from(socket.rooms)[1]).emit('answer', answer);
+    });
+
+    // Listen for ICE candidates
+    socket.on('iceCandidate', (candidate) => {
+        console.log('ICE Candidate received:', candidate);
+        // Broadcast ICE candidate to all peers
+        socket.to(Array.from(socket.rooms)[1]).emit('iceCandidate', candidate);
+    });
+
   });
 
 	// Serve static files from the public directory
