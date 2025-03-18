@@ -1,15 +1,20 @@
+import dotenv from "dotenv"
+dotenv.config();
 import Fastify from 'fastify'
 import fastifyStatic from '@fastify/static'
 import { root, userRoutes } from './routes/routes.js'
 import dbInit from './database.js'
-import dotenv from "dotenv";
 import path from 'path'
+import cookie from '@fastify/cookie'
+import formbody from '@fastify/formbody'
+import ejs from 'ejs'
+import view from '@fastify/view'
+import jwt from '@fastify/jwt'
+import multipart from '@fastify/multipart'
 import { fileURLToPath } from 'url';
 import { Server } from "socket.io";
 import { Game } from '../dist/game.js'
 
-
-dotenv.config();
 
 // Compute __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -20,6 +25,28 @@ const fastify = Fastify({
 })
 const server = fastify.server;
 let game = [];
+
+await fastify.register(dbInit)
+fastify.register(formbody)
+fastify.register(cookie)
+fastify.register(multipart)
+fastify.register(fastifyStatic, {
+  root: path.join(process.cwd(), '../public'),
+  prefix: '/',
+})
+fastify.register(fastifyStatic, {
+  root: path.join(process.cwd(), "../avatars"),
+  prefix: "/avatars/",
+  decorateReply: false,
+});
+fastify.register(jwt, {
+  secret: process.env.ACCESS_TOKEN_SECRET,
+})
+fastify.register(view, {
+  engine: {
+    ejs: ejs,
+  },
+})
 
 function gameLoop(room) {
 	io.to(room).emit("updateGame", game[room].getPos());
@@ -122,7 +149,7 @@ const io = new Server(server, {
 		decorateReply: false 
 	});
 
-await fastify.register(dbInit)
+//await fastify.register(dbInit)
 await fastify.register(root)
 await fastify.register(userRoutes)
 
