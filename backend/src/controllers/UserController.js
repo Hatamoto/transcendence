@@ -158,15 +158,28 @@ const loginUser = async function (req, reply) {
     
     const updateStatement = req.server.db.prepare('UPDATE users SET status = 1 WHERE name = ?')
     updateStatement.run(username)
+	
+    // Return JavaScript response to set cookie and redirect
+    const jsResponse = `
+      <script>
+        document.cookie = "accessToken=${accessToken}; path=/; SameSite=Lax";
+        window.location.href = '/api/dashboard';
+      </script>
+    `;
 
-    return reply.send({ accessToken: accessToken })
-  } catch (error) {
-    return reply.code(500).send({ error: error.message })
-  }
-}
+    return reply
+      .code(200)
+      .header('Content-Type', 'text/html')
+      .send(jsResponse);
+
+	} catch (error) {
+		return reply.code(500).send({ error: error.message });
+	}
+};
 
 const getDashboard = async function(req, reply) {
   try {
+	console.log("Trying dasboard")
     const username = req.user.name
     return reply.view('../public/dashboard.ejs', { username })
   } catch (error) {
