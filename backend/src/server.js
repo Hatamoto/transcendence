@@ -10,12 +10,12 @@ import cookie from '@fastify/cookie'
 import formbody from '@fastify/formbody'
 import jwt from '@fastify/jwt'
 import multipart from '@fastify/multipart'
-import cors from '@fastify/cors';
-// Some CORS stuff
-await fastify.register(cors, {
-	origin: true,           // Or explicitly set your frontend URL
-	credentials: true,      // Allow cookies to be sent with requests
-});
+// import cors from '@fastify/cors';
+// // Some CORS stuff
+// await fastify.register(cors, {
+// 	origin: true,           // Or explicitly set your frontend URL
+// 	credentials: true,      // Allow cookies to be sent with requests
+// });
 
 // Correctly resolve __dirname for ES Module
 const __filename = fileURLToPath(import.meta.url);
