@@ -1,4 +1,4 @@
 <p>Build:</p>
-```docker build -t transcendence .```
+<pre><code>docker build -t transcendence .</code></pre>
 <p>Run:</p>
-```docker run -it -p 5000:5000 transcendence```
+<pre><code>docker run -it -p 5000:5000 transcendence</code></pre>
