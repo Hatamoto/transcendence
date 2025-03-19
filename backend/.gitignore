@@ -1,3 +1,5 @@
+.env
+.vscode
 node_modules/
 .node_modules/
 built/*
@@ -64,7 +66,7 @@ package-lock.json
 .eslintcache
 *v8.log
 /lib/
-client_secret.json
-/frontend/dist/
+/dist/
+dist/
 **/.env
 .env
