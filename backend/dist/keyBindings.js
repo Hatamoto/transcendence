@@ -18,6 +18,7 @@ class keyBind {
         this.player1PosY = 30;
         this.player2PosY = 30; // change public to private later
         this.peerConnection = null;
+        this.dataChannel = null;
         this.configuration = {
             iceServers: [
                 {
@@ -41,47 +42,82 @@ class keyBind {
             const room = 1;
             socket.emit("joinRoom", room);
         });
-        //this.peerConnection.onicecandidate = ({ candidate }) => {
-        //	if (candidate) {
-        //		socket.emit('ice-candidate', candidate);
-        //	}
-        //};
-        socket.on('ice-candidate', (candidate) => __awaiter(this, void 0, void 0, function* () {
-            console.log("Received ice candidate");
-            this.peerConnection.addIceCandidate(candidate);
-        }));
         socket.on('offer', (offer) => __awaiter(this, void 0, void 0, function* () {
-            this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-            this.peerConnection.createAnswer()
-                .then(answer => {
-                this.peerConnection.setLocalDescription(answer);
+            if (!this.peerConnection) {
+                this.peerConnection = new RTCPeerConnection(this.configuration);
+                this.setupPeerConnectionEvents();
+            }
+            try {
+                yield this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+                const answer = yield this.peerConnection.createAnswer();
+                yield this.peerConnection.setLocalDescription(answer);
                 socket.emit('answer', answer);
-            });
+            }
+            catch (e) {
+                console.error("Error handling offer:", e);
+            }
         }));
         socket.on('answer', (answer) => __awaiter(this, void 0, void 0, function* () {
+            console.log("Received answer:", answer);
             yield this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+        }));
+        socket.on('ice-candidate', (candidate) => __awaiter(this, void 0, void 0, function* () {
+            console.log("Received ICE candidate:", candidate);
+            if (this.peerConnection) {
+                try {
+                    yield this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                }
+                catch (e) {
+                    console.error("Error adding received ICE candidate", e);
+                }
+            }
         }));
     }
     createOffer() {
         this.peerConnection = new RTCPeerConnection(this.configuration);
+        this.setupPeerConnectionEvents();
         this.peerConnection.createOffer()
             .then(offer => {
             this.peerConnection.setLocalDescription(offer);
             socket.emit('offer', offer);
+        })
+            .catch(e => console.error("Error creating offer:", e));
+    }
+    setupPeerConnectionEvents() {
+        this.dataChannel = this.peerConnection.createDataChannel('gameData');
+        this.dataChannel.onopen = () => {
+            console.log("Data channel opened");
+            this.setupKeyListeners(this.dataChannel);
+        };
+        this.dataChannel.onclose = () => console.log("Data channel closed");
+        this.dataChannel.onerror = (e) => console.error("Data channel error:", e);
+        this.peerConnection.onicecandidate = ({ candidate }) => {
+            if (candidate) {
+                console.log("Generated ICE candidate:", candidate);
+                socket.emit('ice-candidate', candidate);
+            }
+        };
+        this.peerConnection.onconnectionstatechange = () => {
+            console.log("Connection state:", this.peerConnection.connectionState);
+        };
+        this.peerConnection.oniceconnectionstatechange = () => {
+            console.log("ICE connection state:", this.peerConnection.iceConnectionState);
+        };
+    }
+    setupKeyListeners(dataChannel) {
+        document.addEventListener('keydown', (e) => {
+            if (e.code === KeyBindings.UP || e.code === KeyBindings.DOWN) {
+                const data = { key: e.code, isPressed: true };
+                dataChannel.send(JSON.stringify(data));
+            }
+        });
+        document.addEventListener('keyup', (e) => {
+            if (e.code === KeyBindings.UP || e.code === KeyBindings.DOWN) {
+                const data = { key: e.code, isPressed: false };
+                dataChannel.send(JSON.stringify(data));
+            }
         });
     }
-    //public sendGameData(): void {
-    //    if (this.dataChannel && this.dataChannel.readyState === 'open') {
-    //        // Send player positions or any game-related data
-    //        const gameData = {
-    //            player1PosY: this.player1PosY,
-    //            player2PosY: this.player2PosY,
-    //            ballX: this.ballX,
-    //            ballY: this.ballY
-    //        };
-    //        this.dataChannel.send(JSON.stringify(gameData));
-    //    }
-    //}
     updateGraphics() {
         this.ctx.fillStyle = "#000";
         this.ctx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
@@ -104,15 +140,7 @@ const keybind = new keyBind();
 socket.on("startGame", (roomId, host) => {
     console.log("Game started");
     keybind.updateGraphics();
-    if (socket.id === host)
+    if (socket.id === host) {
         keybind.createOffer();
+    }
 });
-//socket.on("updateGame", (posList : number[]) => {
-//	console.log("Game updated");
-//	keybind.player1PosY = posList[0][0];
-//	keybind.player2PosY = posList[1][0];
-//	keybind.ballY = posList[2][0];
-//	keybind.ballX = posList[2][1];
-//	console.log(posList);
-//	keybind.updateGraphics();
-//});
