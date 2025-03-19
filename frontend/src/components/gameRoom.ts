@@ -1,3 +1,5 @@
+import { startNewGame } from '../game/game.js';
+
 export function loadGameRoom(): void {
 	const app = document.getElementById('app')!;
 	app.innerHTML = `
@@ -5,13 +7,11 @@ export function loadGameRoom(): void {
             <h1 class="text-2xl font-bold text-center mb-4">Welcome to the Gameroom!</h1>
             <p class="text-center text-gray-600 mb-4">You are now logged in.</p>
 
-            <!-- Start New Game Button -->
-            <a
-                href="/api/game"
-                class="block w-full bg-green-500 text-white text-center py-2 rounded-md hover:bg-green-600"
-            >
-                Start New Game
-            </a>
+			<!-- Start New Game Button -->
+			<button id="test-btn" 
+					class="block w-full bg-green-500 text-white text-center py-2 rounded-md hover:bg-green-600">
+				Start New Game
+			</button>
 
             <!-- Logout Button -->
             <button 
@@ -22,6 +22,15 @@ export function loadGameRoom(): void {
             </button>
         </div>
     `;
+
+	// Start New Game Button Logic
+	const startGameBtn = document.getElementById('test-btn');
+	startGameBtn?.addEventListener('click', () => {
+		// Call your function to start a new game.
+		// Replace this with your actual game startup logic.
+		console.log("Starting new game...");
+		startNewGame();
+	});
 
     // Logout Button Logic
     const logoutBtn = document.getElementById('logout-btn');
