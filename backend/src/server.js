@@ -5,6 +5,7 @@ import dbInit from './database.js'
 import dotenv from "dotenv";
 import path from 'path'
 import { Server } from "socket.io";
+import wrtc from "wrtc";
 import { Game } from '../dist/game.js'
 
 
@@ -14,13 +15,14 @@ const fastify = Fastify({
 	//logger: true
 })
 const server = fastify.server;
-let game = [];
+const games = {};
+const rooms = {};
 
-function gameLoop(room) {
-	io.to(room).emit("updateGame", game[room].getPos());
+//function gameLoop(room) {
+//	io.to(room).emit("updateGame", games[room].getPos());
 	
-	setTimeout(() => gameLoop(room), 1000 / 60);
-}
+//	setTimeout(() => gameLoop(room), 1000 / 60);
+//}
 
 const io = new Server(server, {
 	cors: {
@@ -34,72 +36,57 @@ const io = new Server(server, {
   io.on("connection", (socket) => {  
 	console.log("A user connected:", socket.id);
 
-	socket.on("joinRoom", (room) => {
-		const roomSize = io.sockets.adapter.rooms.get(room)?.size || 0;
-		console.log(roomSize);
-		if (!socket.rooms.has(room) || roomSize != 1)
-		{
-			socket.join(room);
-			console.log(`User ${socket.id} joined room: ${room}`);
-			io.to(room).emit("message", `User ${socket.id} has joined ${room}`);
-			if (roomSize == 1)
-			{
-				console.log("Starting game!");
-				io.to(room).emit("startGame");
-				const playerIds = Array.from(io.sockets.adapter.rooms.get(room) || []);
-				game[room] = new Game(playerIds[0], playerIds[1]);
-				gameLoop(room);
-			}
-		}
-		else if(roomSize == 2)
-		{
-			console.log(`Room ${room} is already full!`);
-		}
-		else
-		{
-			console.log(`User ${socket.id} is already in a room!`);
-		}
-
-	  });
-	
 	socket.on("disconnect", () => {
 	  console.log("User disconnected:", socket.id);
 	});
 
-	socket.on("keysPressed", (e) => {
-		const room = Array.from(socket.rooms)[1];
-		if (game[room] == undefined)
-		{
-			console.log("Game not started yet!");
-			return;
+	socket.on("joinRoom", (roomId) => {
+		if (!rooms[roomId]) {
+            rooms[roomId] = {
+                players: {},
+                peerConnections: {}
+            };
+        }
+
+        // Add the player to the room
+		if (Object.keys(rooms[roomId].players).length <= 1) {
+			rooms[roomId].players[socket.id] = {
+				playerPosition: { x: 0, y: 0 },
+				dataChannel: null
+			};
+
+			socket.join(roomId);
+			console.log(`${socket.id} joined room ${roomId}`);
 		}
-			
-		game[room].keyDown(e, socket.id);
-		//game.update(game);
-		io.to(room).emit("updateGame", game[room].getPos());
-		console.log(game[room].getPos());
+
+		console.log("Players in room:", Object.keys(rooms[roomId].players).length );
+
+		console.log("Host: ", Object.keys(rooms[roomId].players)[0]);
+
+		if (Object.keys(rooms[roomId].players).length  == 2)
+			io.to(roomId).emit("startGame", roomId, Object.keys(rooms[roomId].players)[0]);
 	});
 
+	socket.on('offer', (offer) => {
 
-	// temporary code
-    socket.on('offer', (offer) => {
-        console.log('Offer received:', offer);
-        socket.to(Array.from(socket.rooms)[1]).emit('offer', offer);
+        socket.broadcast.emit('offer', offer);
+
     });
 
-    // Listen for the answer from the remote peer
+
     socket.on('answer', (answer) => {
-        console.log('Answer received:', answer);
-        socket.to(Array.from(socket.rooms)[1]).emit('answer', answer);
+
+        socket.broadcast.emit('answer', answer);
+
     });
 
-    // Listen for ICE candidates
-    socket.on('iceCandidate', (candidate) => {
-        console.log('ICE Candidate received:', candidate);
-        // Broadcast ICE candidate to all peers
-        socket.to(Array.from(socket.rooms)[1]).emit('iceCandidate', candidate);
-    });
 
+    socket.on('ice-candidate', (candidate) => {
+		console.log("ice-candidate", candidate);
+        socket.broadcast.emit('ice-candidate', candidate);
+
+    });
+	
   });
 
 	// First static directory

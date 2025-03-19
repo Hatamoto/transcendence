@@ -27,7 +27,8 @@
 		"socket.io-client": "^4.8.1",
 		"sqlite": "^5.1.1",
 		"sqlite3": "^5.1.7",
-		"uuid": "^11.1.0"
+		"uuid": "^11.1.0",
+		"wrtc": "^0.4.7"
 	},
 	"devDependencies": {
 		"@types/node": "^22.13.10",
