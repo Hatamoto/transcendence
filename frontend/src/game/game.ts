@@ -11,8 +11,18 @@ export class Game {
 	private playerIdMap: Map<string, number> = new Map();
 	private computer: computer;
 
+	private gameCanvas: HTMLCanvasElement;
+	private ctx: CanvasRenderingContext2D;
+
 	constructor(playerOne : string, playerTwo : string) {
 		
+		// Create a canvas element, set its dimensions, and attach it to the DOM.
+		this.gameCanvas = document.createElement('canvas');
+		this.gameCanvas.width = this.width;
+		this.gameCanvas.height = this.height;
+		document.body.appendChild(this.gameCanvas);
+		this.ctx = this.gameCanvas.getContext('2d')!
+
 		this.players[0] = new player(50, 20, 200, 0);
 		this.playerIdMap.set(playerOne, 0);
 		this.players[1] = new player(50, 20, 200, 780);
@@ -29,7 +39,10 @@ export class Game {
 		//{
 		//	Game.keysPressed[e.code] = false;
 		//});
-        setInterval(() => this.update(this), 1000/60);
+		setInterval(() => {
+			this.update(this);
+			this.updateGraphics();
+		  }, 1000 / 60);
 	}
 
 	keyDown(e : {[key: string]: boolean }, playerID: string)
@@ -48,9 +61,8 @@ export class Game {
 		return [this.players[0].getpos(), this.players[1].getpos(), this.ball.getpos()];
 	}
 
-	startGame()
-	{
-		// start calling gameloop here
+	startGame() {
+		// You might call Game.gameLoop(this) if you decide to use requestAnimationFrame.
 	}
 
 	static gameLoop(gameInstance: Game) 
@@ -86,21 +98,34 @@ export class Game {
 		//gameInstance.computer.move(this.ball, this.gameCanvas);
 	}
 
-	updateGraphics()
-	{  
-		//this.ctx.fillStyle = "#000";
-        //this.ctx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
+	updateGraphics() {
+		// Clear the canvas.
+		this.ctx.fillStyle = "#000";
+		this.ctx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
 		
-		//for (var i = 0; i <= this.gameCanvas.height; i += 30) {
-		//	this.ctx.fillStyle = "red";
-		//	this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 5, 15, 20);
-		//}
-
-		//this.ctx.fillStyle = "red";
-		//this.ctx.fillRect(20, Game.testnum, 10, 50);
-		//Game.testnum
+		// Draw game elements.
+		// For instance, draw the ball and players using their draw methods.
+		this.ball.draw(this.ctx);
+		this.players[0].draw(this.ctx);
+		this.players[1].draw(this.ctx);
+	  }
 	}
-}
+	
+// 	updateGraphics()
+// 	{  
+// 		//this.ctx.fillStyle = "#000";
+//         //this.ctx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
+		
+// 		//for (var i = 0; i <= this.gameCanvas.height; i += 30) {
+// 		//	this.ctx.fillStyle = "red";
+// 		//	this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 5, 15, 20);
+// 		//}
+
+// 		//this.ctx.fillStyle = "red";
+// 		//this.ctx.fillRect(20, Game.testnum, 10, 50);
+// 		//Game.testnum
+// 	}
+// }
 
 class entity
 {
