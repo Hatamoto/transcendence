@@ -21,31 +21,28 @@ export function loadGameRoom(): void {
                 Logout
             </button>
         </div>
+		<div id="game-container" class="bg-green-100 p-2 rounded-lg shadow-md mt-4 w-[820px] h-[620px]"></div>
     `;
 
-	// Start New Game Button Logic
 	const startGameBtn = document.getElementById('test-btn');
 	startGameBtn?.addEventListener('click', () => {
-		// Call your function to start a new game.
-		// Replace this with your actual game startup logic.
 		console.log("Starting new game...");
 		startNewGame();
+		startGameBtn.style.display = 'none';
 	});
 
-    // Logout Button Logic
     const logoutBtn = document.getElementById('logout-btn');
     logoutBtn?.addEventListener('click', async () => {
         try {
             const response = await fetch('/api/logout', {
                 method: 'GET',
-                credentials: 'include' // Ensures cookies are included
+                credentials: 'include'
             });
 
             if (response.ok) {
-                // Clear cookies and reload login form
                 document.cookie = `accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC`;
                 alert("You have been logged out.");
-                window.location.reload(); // Reload the page to show the login screen
+                window.location.reload();
             } else {
                 const data = await response.json();
                 alert(`Logout failed: ${data.error || 'Unknown error'}`);

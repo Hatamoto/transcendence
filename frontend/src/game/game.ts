@@ -20,8 +20,17 @@ export class Game {
 		this.gameCanvas = document.createElement('canvas');
 		this.gameCanvas.width = this.width;
 		this.gameCanvas.height = this.height;
-		document.body.appendChild(this.gameCanvas);
+		this.gameCanvas = document.createElement("canvas");
+		const container = document.getElementById("game-container");
+		if (container) {
+			container.appendChild(this.gameCanvas);
+			console.log("Canvas appended to container");
+		} else {
+			console.error("Game container not found");
+		}
 		this.ctx = this.gameCanvas.getContext('2d')!
+		this.gameCanvas.width = 800;
+		this.gameCanvas.height = 600;
 
 		this.players[0] = new player(50, 20, 200, 0);
 		this.playerIdMap.set(playerOne, 0);
@@ -110,7 +119,7 @@ export class Game {
 		this.players[1].draw(this.ctx);
 	  }
 	}
-	
+
 // 	updateGraphics()
 // 	{  
 // 		//this.ctx.fillStyle = "#000";
@@ -278,10 +287,8 @@ class computer extends entity
 	}
 }
 
-// Option 1: Export a helper function
 export function startNewGame() {
-	alert("Starting a new game!");
+	alert("Get ready to play!");
 	const game = new Game("1", "2");
 	game.startGame();
-	// Optionally, return the game instance if you need to control it later.
-  }
+}

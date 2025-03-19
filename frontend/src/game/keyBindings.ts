@@ -38,9 +38,16 @@ class keyBind {
 				},
 			],
 		};
-
 		this.gameCanvas = document.createElement("canvas");
-		document.body.appendChild(this.gameCanvas);
+		document.addEventListener("DOMContentLoaded", () => {
+			const container = document.getElementById("game-container");
+			if (container) {
+			  container.appendChild(this.gameCanvas);
+			  console.log("Canvas appended to container");
+			} else {
+			  console.error("Game container not found");
+			}
+		});
 		this.ctx = this.gameCanvas.getContext("2d")!;
 		this.gameCanvas.width = 800;
 		this.gameCanvas.height = 600;
@@ -183,7 +190,7 @@ socket.on("connect", () => {
 const keybind = new keyBind();
 
 socket.on("startGame", (roomId : string, host : string) => {
-	console.log("Game started");
+	console.log("Get ready to play!");
 	keybind.updateGraphics();
 	if (socket.id === host)
 	{
