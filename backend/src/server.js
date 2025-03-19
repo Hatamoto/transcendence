@@ -62,7 +62,7 @@ fastify.setNotFoundHandler((req, reply) => {
 await fastify.register(root)
 await fastify.register(userRoutes)
 
-fastify.listen({ port: process.env.PORT }, function (err, address) {
+fastify.listen({ port: process.env.PORT, host: process.env.HOST }, function (err, address) {
   if (err) {
     fastify.log.error(err)
     process.exit(1)
