@@ -68,5 +68,6 @@ package-lock.json
 /lib/
 /dist/
 dist/
+client_secret.json
 **/.env
 .env
