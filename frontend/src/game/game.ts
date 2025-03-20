@@ -18,7 +18,6 @@ export class Game {
 
 	constructor(playerOne : string, playerTwo : string) {
 		
-		// Create a canvas element, set its dimensions, and attach it to the DOM.
 		this.gameCanvas = document.createElement('canvas');
 		this.gameCanvas.width = this.width;
 		this.gameCanvas.height = this.height;

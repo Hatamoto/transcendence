@@ -9,14 +9,14 @@ export function loadGameRoom(): void {
 
 			<!-- Start New Game Button -->
 			<button id="test-btn" 
-					class="block w-full bg-green-500 text-white text-center py-2 rounded-md hover:bg-green-600">
+					class="block w-full bg-green-500 text-white text-center py-2 w-96 rounded-md hover:bg-green-600">
 				Start New Game
 			</button>
 
             <!-- Logout Button -->
             <button 
                 id="logout-btn"
-                class="mt-4 block w-full bg-red-500 text-white text-center py-2 rounded-md hover:bg-red-600"
+                class="mt-4 block w-full bg-red-500 text-white text-center py-2 w-96 rounded-md hover:bg-red-600"
             >
                 Logout
             </button>

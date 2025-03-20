@@ -48,6 +48,7 @@ io.on("connection", (socket) => {
 
 	socket.on("disconnect", () => {
 		console.log("User disconnected:", socket.id);
+		// Optionally remove the socket from any rooms/tracking objects here.
 	});
 
 	socket.on("joinRoom", (roomId) => {
@@ -70,32 +71,54 @@ io.on("connection", (socket) => {
 		}
 
 		console.log("Players in room:", Object.keys(rooms[roomId].players).length );
-
 		console.log("Host: ", Object.keys(rooms[roomId].players)[0]);
 
 		if (Object.keys(rooms[roomId].players).length  == 2)
 			io.to(roomId).emit("startGame", roomId, Object.keys(rooms[roomId].players)[0]);
 	});
 
-	socket.on('offer', (offer) => {
-
-		socket.broadcast.emit('offer', offer);
-
+	// Relay the offer only to clients in the same room.
+	socket.on("offer", (offerData) => {
+		if (offerData.room) {
+			socket.to(offerData.room).emit("offer", offerData);
+		} else {
+			socket.broadcast.emit("offer", offerData);
+		}
 	});
 
-
-	socket.on('answer', (answer) => {
-
-		socket.broadcast.emit('answer', answer);
-
+	// Relay the answer only to clients in the same room.
+	socket.on("answer", (answerData) => {
+		if (answerData.room) {
+			socket.to(answerData.room).emit("answer", answerData);
+		} else {
+			socket.broadcast.emit("answer", answerData);
+		}
 	});
 
+	// Relay to all clients in the room
+	// socket.on('offer', (offer) => {
+	// 	socket.broadcast.emit('offer', offer);
+	// });
 
-	socket.on('ice-candidate', (candidate) => {
-		console.log("ice-candidate", candidate);
-		socket.broadcast.emit('ice-candidate', candidate);
+	// socket.on('answer', (answer) => {
+	// 	socket.broadcast.emit('answer', answer);
+	// });
 
+	// Relay to ICE candidates to all clients
+	// socket.on('ice-candidate', (candidate) => {
+	// 	console.log("ice-candidate", candidate);
+	// 	socket.broadcast.emit('ice-candidate', candidate);
+	// });
+	// Relay ICE candidates only within the room.
+	socket.on("ice-candidate", (candidateData) => {
+		console.log("Received ICE candidate from", socket.id, candidateData);
+		if (candidateData.room) {
+			socket.to(candidateData.room).emit("ice-candidate", candidateData);
+		} else {
+			socket.broadcast.emit("ice-candidate", candidateData);
+		}
 	});
+
 });
 
 // Serve frontend files
