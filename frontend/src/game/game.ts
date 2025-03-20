@@ -1,6 +1,8 @@
 enum KeyBindings{
     UP = 'KeyW',
-    DOWN = 'KeyS'
+    DOWN = 'KeyS',
+	P2UP = 'ArrowUp',
+	P2DOWN = 'ArrowDown'
 }
 
 export class Game {
@@ -20,7 +22,6 @@ export class Game {
 		this.gameCanvas = document.createElement('canvas');
 		this.gameCanvas.width = this.width;
 		this.gameCanvas.height = this.height;
-		this.gameCanvas = document.createElement("canvas");
 		const container = document.getElementById("game-container");
 		if (container) {
 			container.appendChild(this.gameCanvas);
@@ -39,15 +40,24 @@ export class Game {
 		this.ball = new ball(20, 20, this.height / 2, this.width / 2 - 10);
 		this.computer = new computer(50, 20, 200, 780);
   
-		//document.addEventListener('keydown', (e) => 
-		//{
-		//	Game.keysPressed[e.code] = true;
-		//});
+		document.addEventListener('keydown', (e) => {
+			if (e.code === KeyBindings.UP || e.code === KeyBindings.DOWN) {
+				this.players[0].getKeysPressed()[e.code] = true;
+			}
+			if (e.code === KeyBindings.P2UP || e.code === KeyBindings.P2DOWN) {
+				this.players[1].getKeysPressed()[e.code] = true;
+			}
+		});
+		
+		document.addEventListener('keyup', (e) => {
+			if (e.code === KeyBindings.UP || e.code === KeyBindings.DOWN) {
+				this.players[0].getKeysPressed()[e.code] = false;
+			}
+			if (e.code === KeyBindings.P2UP || e.code === KeyBindings.P2DOWN) {
+				this.players[1].getKeysPressed()[e.code] = false;
+			}
+		});
 
-		//document.addEventListener('keyup', (e) => 
-		//{
-		//	Game.keysPressed[e.code] = false;
-		//});
 		setInterval(() => {
 			this.update(this);
 			this.updateGraphics();
@@ -87,22 +97,24 @@ export class Game {
 	
 	update(gameInstance: Game)
 	{
-		for (var i = 0; i < gameInstance.players.length; i++)
-		{
-			if (gameInstance.players[i].getKeysPressed()[KeyBindings.UP])
-			{
-				gameInstance.players[i].setvel(-1);
-			}
-			else if (gameInstance.players[i].getKeysPressed()[KeyBindings.DOWN])
-			{
-				gameInstance.players[i].setvel(1);
-			}
-			else
-			{
-				gameInstance.players[i].setvel(0);
-			}
-			gameInstance.players[i].move();
+		if (gameInstance.players[0].getKeysPressed()[KeyBindings.UP]) {
+			gameInstance.players[0].setvel(-1);
+		} else if (gameInstance.players[0].getKeysPressed()[KeyBindings.DOWN]) {
+			gameInstance.players[0].setvel(1);
+		} else {
+			gameInstance.players[0].setvel(0);
 		}
+		gameInstance.players[0].move();
+
+		if (gameInstance.players[1].getKeysPressed()[KeyBindings.P2UP]) {
+			gameInstance.players[1].setvel(-1);
+		} else if (gameInstance.players[1].getKeysPressed()[KeyBindings.P2DOWN]) {
+			gameInstance.players[1].setvel(1);
+		} else {
+			gameInstance.players[1].setvel(0);
+		}
+		gameInstance.players[1].move();
+
 		gameInstance.ball.update(gameInstance.players[0], gameInstance.players[1]);
 		//gameInstance.computer.move(this.ball, this.gameCanvas);
 	}
