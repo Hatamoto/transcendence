@@ -181,6 +181,12 @@ socket.on("connect", () => {
 	console.log("Connected to server");
 });
 
+
+export function createNewGame() {
+	alert("Get ready to play!");
+	const game = new frontEndGame();
+}
+
 const game = new frontEndGame();
 
 socket.on("startGame", (roomId : string) => {
