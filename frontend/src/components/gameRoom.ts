@@ -1,5 +1,3 @@
-import { startNewGame } from '../game/game.js';
-
 export function loadGameRoom(): void {
 	const app = document.getElementById('app')!;
 	app.innerHTML = `
@@ -23,13 +21,6 @@ export function loadGameRoom(): void {
         </div>
 		<div id="game-container" class="bg-green-100 p-2 rounded-lg shadow-md mt-4 w-[820px] h-[620px]"></div>
     `;
-
-	const startGameBtn = document.getElementById('test-btn');
-	startGameBtn?.addEventListener('click', () => {
-		console.log("Starting new game...");
-		startNewGame();
-		startGameBtn.style.display = 'none';
-	});
 
     const logoutBtn = document.getElementById('logout-btn');
     logoutBtn?.addEventListener('click', async () => {
