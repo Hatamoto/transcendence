@@ -3,6 +3,8 @@
 	"target": "ES6",
 	"module": "ESNext",
 	"moduleResolution": "Bundler",
+	"esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
 	"outDir": "./dist",
 	"rootDir": "./src",
 	"baseUrl": "./",
@@ -11,8 +13,7 @@
 		"undici-types": ["node_modules/undici-types"]
 	},
 	"lib": ["dom", "es6"],
-	"strict": false,
-	"esModuleInterop": true
+	"strict": false
 },
 "include": ["src/**/*"],
 "exclude": ["node_modules"]
