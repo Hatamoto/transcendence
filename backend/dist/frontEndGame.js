@@ -13,25 +13,14 @@ var KeyBindings;
     KeyBindings["UP"] = "KeyW";
     KeyBindings["DOWN"] = "KeyS";
 })(KeyBindings || (KeyBindings = {}));
-class keyBind {
+class frontEndGame {
     constructor() {
         this.player1PosY = 30;
         this.player2PosY = 30; // change public to private later
         this.peerConnection = null;
         this.dataChannel = null;
-        this.configuration = {
-            iceServers: [
-                {
-                    urls: 'stun:stun.l.google.com:19302',
-                } //,
-                //// Optional TURN server (can be added later if needed)
-                //{
-                //    urls: 'turn:your-turn-server.example.com', // TURN server URL
-                //    username: 'username', // Optional TURN credentials
-                //    credential: 'password', // Optional TURN credentials
-                //},
-            ],
-        };
+        // Add a property to store candidates that arrive before remote description
+        this.bufferedCandidates = [];
         this.gameCanvas = document.createElement("canvas");
         document.body.appendChild(this.gameCanvas);
         this.ctx = this.gameCanvas.getContext("2d");
@@ -52,50 +41,66 @@ class keyBind {
                 const answer = yield this.peerConnection.createAnswer();
                 yield this.peerConnection.setLocalDescription(answer);
                 socket.emit('answer', answer);
+                if (this.bufferedCandidates && this.bufferedCandidates.length > 0) {
+                    console.log("Processing buffered ICE candidates");
+                    for (const candidate of this.bufferedCandidates) {
+                        yield this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                    }
+                    this.bufferedCandidates = [];
+                }
             }
             catch (e) {
                 console.error("Error handling offer:", e);
             }
         }));
         socket.on('answer', (answer) => __awaiter(this, void 0, void 0, function* () {
-            console.log("Received answer:", answer);
             yield this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
         }));
         socket.on('ice-candidate', (candidate) => __awaiter(this, void 0, void 0, function* () {
-            console.log("Received ICE candidate:", candidate);
-            if (this.peerConnection) {
-                try {
+            if (!this.peerConnection) {
+                console.warn("Received ICE candidate but peer connection not created yet");
+                return;
+            }
+            try {
+                // Buffer ICE candidates until remote description is set
+                if (!this.peerConnection.remoteDescription) {
+                    console.log("Buffering ICE candidate until remote description is set");
+                    this.bufferedCandidates = this.bufferedCandidates || [];
+                    this.bufferedCandidates.push(candidate);
+                }
+                else {
+                    // Add ICE candidate if remote description is already set
                     yield this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                    console.log("Added ICE candidate successfully");
                 }
-                catch (e) {
-                    console.error("Error adding received ICE candidate", e);
-                }
+            }
+            catch (e) {
+                console.error("Error adding received ICE candidate", e);
             }
         }));
     }
-    createOffer() {
-        this.peerConnection = new RTCPeerConnection(this.configuration);
-        this.setupPeerConnectionEvents();
-        this.peerConnection.createOffer()
-            .then(offer => {
-            this.peerConnection.setLocalDescription(offer);
-            socket.emit('offer', offer);
-        })
-            .catch(e => console.error("Error creating offer:", e));
-    }
     setupPeerConnectionEvents() {
-        this.dataChannel = this.peerConnection.createDataChannel('gameData');
-        this.dataChannel.onopen = () => {
-            console.log("Data channel opened");
-            this.setupKeyListeners(this.dataChannel);
-        };
-        this.dataChannel.onclose = () => console.log("Data channel closed");
-        this.dataChannel.onerror = (e) => console.error("Data channel error:", e);
-        this.peerConnection.onicecandidate = ({ candidate }) => {
-            if (candidate) {
-                console.log("Generated ICE candidate:", candidate);
-                socket.emit('ice-candidate', candidate);
-            }
+        // Handle incoming data channel from server
+        this.peerConnection.ondatachannel = (event) => {
+            console.log("Received data channel from server");
+            this.dataChannel = event.channel;
+            this.dataChannel.onopen = () => {
+                console.log("Data channel opened");
+                this.setupKeyListeners(this.dataChannel);
+            };
+            this.dataChannel.onclose = () => console.log("Data channel closed");
+            this.dataChannel.onerror = (e) => console.error("Data channel error:", e);
+            this.dataChannel.onmessage = (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.type === 'gameState') {
+                        this.updateGameState(data.positions);
+                    }
+                }
+                catch (err) {
+                    console.error("Error handling data channel message:", err);
+                }
+            };
         };
         this.peerConnection.onconnectionstatechange = () => {
             console.log("Connection state:", this.peerConnection.connectionState);
@@ -118,6 +123,19 @@ class keyBind {
             }
         });
     }
+    updateGameState(positions) {
+        if (positions && positions.length >= 3) {
+            // Update player 1 position
+            this.player1PosY = positions[0][0];
+            // Update player 2 position
+            this.player2PosY = positions[1][0];
+            // Update ball position
+            this.ballY = positions[2][0];
+            this.ballX = positions[2][1];
+            // Redraw the game
+            this.updateGraphics();
+        }
+    }
     updateGraphics() {
         this.ctx.fillStyle = "#000";
         this.ctx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
@@ -132,15 +150,12 @@ class keyBind {
         //Game.testnum
     }
 }
-keyBind.keysPressed = {};
+frontEndGame.keysPressed = {};
 socket.on("connect", () => {
     console.log("Connected to server");
 });
-const keybind = new keyBind();
-socket.on("startGame", (roomId, host) => {
-    console.log("Game started");
-    keybind.updateGraphics();
-    if (socket.id === host) {
-        keybind.createOffer();
-    }
+const game = new frontEndGame();
+socket.on("startGame", (roomId) => {
+    console.log("Game started in room:", roomId);
+    game.updateGraphics();
 });
