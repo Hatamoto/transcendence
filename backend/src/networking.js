@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
 import wrtc from "wrtc";
-import { Game } from '../game/game.js';
+import { Game } from './game/game.js';
 
 const games = {};
 const rooms = {};
