@@ -4,21 +4,29 @@ import { loadGameRoom } from './gameRoom.js'; // Correct path to gameRoom.ts
 export function loadLoginForm(): void {
 	const app = document.getElementById('app')!;
 	fetch('/templates/login.html')
-		.then(Response => Response.text())
+		.then(response => {
+			if (!response.ok) {
+				throw new Error(`Fetch failed: ${response.status}`);
+			}
+			return response.text();
+		})
 		.then(html => {
 			app.innerHTML = html;
-		}) //maybe check if fetch fails idk
+			document.getElementById('login-form')!.addEventListener('submit', async (e) => {
+				e.preventDefault();
 
-	document.getElementById('login-form')!.addEventListener('submit', async (e) => {
-		e.preventDefault();
+				const username = (document.getElementById('username') as HTMLInputElement).value;
+				const password = (document.getElementById('password') as HTMLInputElement).value;
 
-		const username = (document.getElementById('username') as HTMLInputElement).value;
-		const password = (document.getElementById('password') as HTMLInputElement).value;
+				const success = await loginUser(username, password);
 
-		const success = await loginUser(username, password);
-
-		if (success) {
-			loadGameRoom();
-		}
-	});
+				if (success) {
+					loadGameRoom();
+				}
+			});
+		})
+		.catch(error => {
+			console.error('Error loading login page:', error);
+			alert('Something went wrong. Please try again later.');
+		});
 }

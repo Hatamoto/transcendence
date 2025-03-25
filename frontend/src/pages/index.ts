@@ -1,11 +1,11 @@
-import { loadLoginForm } from '../components/loginForm.js';
 import { loadGameRoom } from '../components/gameRoom.js';
+import { loadFrontPage } from '../components/frontpage.js';
 
 window.addEventListener('DOMContentLoaded', () => {
 	// Show login form by default
 	
 	console.log("✅ index.ts loaded successfully!");
-	loadLoginForm();
+	loadFrontPage();
 
 	// Check if accessToken exists in cookies
 	const cookies = document.cookie.split(';').reduce((acc, cookie) => {
