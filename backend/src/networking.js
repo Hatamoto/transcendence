@@ -1,12 +1,51 @@
 import { Server } from "socket.io";
 import wrtc from "wrtc";
-import { Game } from './game/game.js';
+import { Game } from './game/game.js'
 
+class IDAllocator {
+    constructor(maxID) {
+        this.maxID = maxID;
+        this.openRooms = new Set();
+		this.freeIDs = new Set();
+		for (let i = 0; i < maxID; i++) {
+			this.freeIDs.add(i);
+		}
+    }
+
+    allocate() {
+		if (this.openRooms.size > 0) {
+			return (this.openRooms.values().next().value);
+    	}
+		else if (this.freeIDs.size > 0) {
+			this.freeIDs.delete(this.freeIDs.values().next().value);
+			return (this.freeIDs.values().next().value);
+		}
+		else 
+			return (-1);
+	}
+
+    freeRoom(id) {
+		this.freeIDs.add(id);
+		if (this.openRooms.has(id))
+			this.openRooms.delete(id);
+    }
+
+	openRoom(id) {
+		this.openRooms.add(id);
+	}
+
+	closeRoom(id) {
+		this.openRooms.delete(id);
+	}
+}
+
+let io;
 const games = {};
 const rooms = {};
+const roomIds = new IDAllocator(1000);
 
 export function setupNetworking(server){
-	const io = new Server(server, {
+	io = new Server(server, {
 		cors: {
 		origin: "*", // Change to frontend URL whenever needed
 		methods: ["GET", "POST"],
@@ -24,6 +63,7 @@ export function setupNetworking(server){
 		// Clean up rooms and connections when a player disconnects
 		for (const roomId in rooms) {
 			if (rooms[roomId].players[socket.id]) {
+			roomIds.freeRoom(roomId);
 			delete rooms[roomId].players[socket.id];
 			console.log(`Player ${socket.id} removed from room ${roomId}`);
 			
@@ -40,44 +80,30 @@ export function setupNetworking(server){
 		});
 
 		socket.on("joinRoom", (roomId) => {
-		if (!rooms[roomId]) {
-			rooms[roomId] = {
-			players: {},
-			hostId: null
-			};
-		}
-
-		
-		if (Object.keys(rooms[roomId].players).length < 2) {
-			if (Object.keys(rooms[roomId].players).length === 0) {
-			rooms[roomId].hostId = socket.id;
+			if (!rooms[roomId]) {
+				rooms[roomId] = {
+				players: {},
+				hostId: null
+				};
 			}
-			
-			rooms[roomId].players[socket.id] = {
-			playerPosition: { x: 0, y: 0 },
-			peerConnection: null,
-			dataChannel: null,
-			keysPressed: {}
-			};
+			joinRoom(roomId, socket);
+		});
 
-			socket.join(roomId);
-			console.log(`${socket.id} joined room ${roomId}`);
-			} else {
-			socket.emit("roomFull", roomId);
-			return;
+
+		socket.on("joinRoomQue", () => {
+			const roomId = roomIds.allocate();
+			if (roomId == -1 || socket.rooms.size > 1)
+				return ;
+			if (!rooms[roomId]) {
+				roomIds.openRoom(roomId);
+				rooms[roomId] = {
+				players: {},
+				hostId: null
+				};
 			}
-
-		console.log("Players in room:", Object.keys(rooms[roomId].players).length);
-
-		// when room is full start game and initialize WebRTC
-		if (Object.keys(rooms[roomId].players).length === 2) {
-			const playerIds = Object.keys(rooms[roomId].players);
-			games[roomId] = new Game(playerIds[0], playerIds[1]);
-
-			initializeWebRTC(roomId);
-
-			io.to(roomId).emit("startGame", roomId, rooms[roomId].hostId);
-		}
+			else
+				roomIds.closeRoom(roomId);
+			joinRoom(roomId, socket);
 		});
 
 		socket.on('answer', (answer) => {
@@ -110,110 +136,145 @@ export function setupNetworking(server){
 		}
 		});
 	});
+}
 
-	function initializeWebRTC(roomId) {
-		const room = rooms[roomId];
-		if (!room || Object.keys(room.players).length < 2) return;
+function initializeWebRTC(roomId) {
+	const room = rooms[roomId];
+	if (!room || Object.keys(room.players).length < 2) return;
+	
+	const playerIds = Object.keys(room.players);
+	console.log(`Initializing WebRTC connections for room ${roomId} with players:`, playerIds);
+	
+	// Create separate connections for each player
+	for (const playerId of playerIds) {
+	const peerConnection = new wrtc.RTCPeerConnection({
+		iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+	});
+	
+	const dataChannel = peerConnection.createDataChannel("gameData");
+	
+	dataChannel.onopen = () => {
+		console.log(`Data channel open for player ${playerId}`);
 		
-		const playerIds = Object.keys(room.players);
-		console.log(`Initializing WebRTC connections for room ${roomId} with players:`, playerIds);
-		
-		// Create separate connections for each player
-		for (const playerId of playerIds) {
-		const peerConnection = new wrtc.RTCPeerConnection({
-			iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-		});
-		
-		const dataChannel = peerConnection.createDataChannel("gameData");
-		
-		dataChannel.onopen = () => {
-			console.log(`Data channel open for player ${playerId}`);
+		// When all connections are open game loop starts
+		if (Object.values(room.players).every(player => 
+		player.dataChannel && player.dataChannel.readyState === 'open')) {
+		console.log("All connections established, starting game loop");
+		startGameLoop(roomId);
+		}
+	};
+	
+	dataChannel.onclose = () => console.log(`Data channel closed for player ${playerId}`);
+	
+	dataChannel.onmessage = (event) => {
+		try {
+		console.log(`Received message from player ${playerId}:`, event.data);
+		const data = JSON.parse(event.data);
+		if (data.key) {
+			const player = room.players[playerId];
+			player.keysPressed = player.keysPressed || {};
+			player.keysPressed[data.key] = data.isPressed;
 			
-			// When all connections are open game loop starts
-			if (Object.values(room.players).every(player => 
-			player.dataChannel && player.dataChannel.readyState === 'open')) {
-			console.log("All connections established, starting game loop");
-			startGameLoop(roomId);
+			if (games[roomId]) {
+			console.log(`Processing key event from ${playerId}: ${data.key}=${data.isPressed}`);
+			games[roomId].keyDown(player.keysPressed, playerId);
 			}
-		};
+		}
+		} catch (e) {
+		console.error("Error parsing data channel message:", e);
+		}
+	};
+	
+	// Set up ICE candidate handling
+	peerConnection.onicecandidate = (event) => {
+		if (event.candidate) {
+		console.log(`ICE candidate generated for ${playerId}`);
+		io.to(playerId).emit('ice-candidate', event.candidate);
+		}
+	};
+	
+	room.players[playerId].peerConnection = peerConnection;
+	room.players[playerId].dataChannel = dataChannel;
+	
+	peerConnection.createOffer()
+		.then(offer => {
+		return peerConnection.setLocalDescription(offer);
+		})
+		.then(() => {
+		console.log(`Sending offer to player ${playerId}`);
+		io.to(playerId).emit('offer', peerConnection.localDescription);
+		})
+		.catch(err => console.error(`Error creating offer for ${playerId}:`, err));
+	}
+}
+
+function startGameLoop(roomId) {
+	const room = rooms[roomId];
+	const game = games[roomId];
+	
+	if (!game || !room) return;
+	
+	const gameLoop = () => {
+	game.update(game);
+	
+	const positions = game.getPos();
+	
+	// Send game state to all players via their data channels
+	for (const playerId in room.players) {
+		const player = room.players[playerId];
+		const dataChannel = player.dataChannel;
 		
-		dataChannel.onclose = () => console.log(`Data channel closed for player ${playerId}`);
-		
-		dataChannel.onmessage = (event) => {
-			try {
-			console.log(`Received message from player ${playerId}:`, event.data);
-			const data = JSON.parse(event.data);
-			if (data.key) {
-				const player = room.players[playerId];
-				player.keysPressed = player.keysPressed || {};
-				player.keysPressed[data.key] = data.isPressed;
-				
-				if (games[roomId]) {
-				console.log(`Processing key event from ${playerId}: ${data.key}=${data.isPressed}`);
-				games[roomId].keyDown(player.keysPressed, playerId);
-				}
-			}
-			} catch (e) {
-			console.error("Error parsing data channel message:", e);
-			}
-		};
-		
-		// Set up ICE candidate handling
-		peerConnection.onicecandidate = (event) => {
-			if (event.candidate) {
-			console.log(`ICE candidate generated for ${playerId}`);
-			io.to(playerId).emit('ice-candidate', event.candidate);
-			}
-		};
-		
-		room.players[playerId].peerConnection = peerConnection;
-		room.players[playerId].dataChannel = dataChannel;
-		
-		peerConnection.createOffer()
-			.then(offer => {
-			return peerConnection.setLocalDescription(offer);
-			})
-			.then(() => {
-			console.log(`Sending offer to player ${playerId}`);
-			io.to(playerId).emit('offer', peerConnection.localDescription);
-			})
-			.catch(err => console.error(`Error creating offer for ${playerId}:`, err));
+		if (dataChannel && dataChannel.readyState === 'open') {
+		try {
+			dataChannel.send(JSON.stringify({
+			type: 'gameState',
+			positions: positions
+			}));
+		} catch (err) {
+			console.error(`Error sending game state to player ${playerId}:`, err);
+		}
 		}
 	}
+	
+	if (rooms[roomId]) {
+		setTimeout(gameLoop, 1000 / 60); // 60 FPS
+	}
+	};
+	
+	gameLoop();
+}
 
-	function startGameLoop(roomId) {
-		const room = rooms[roomId];
-		const game = games[roomId];
-		
-		if (!game || !room) return;
-		
-		const gameLoop = () => {
-		game.update(game);
-		
-		const positions = game.getPos();
-		
-		// Send game state to all players via their data channels
-		for (const playerId in room.players) {
-			const player = room.players[playerId];
-			const dataChannel = player.dataChannel;
-			
-			if (dataChannel && dataChannel.readyState === 'open') {
-			try {
-				dataChannel.send(JSON.stringify({
-				type: 'gameState',
-				positions: positions
-				}));
-			} catch (err) {
-				console.error(`Error sending game state to player ${playerId}:`, err);
-			}
-			}
+
+function joinRoom(roomId, socket)
+{
+	if (Object.keys(rooms[roomId].players).length < 2) {
+		if (Object.keys(rooms[roomId].players).length === 0) {
+		rooms[roomId].hostId = socket.id;
 		}
 		
-		if (rooms[roomId]) {
-			setTimeout(gameLoop, 1000 / 60); // 60 FPS
-		}
+		rooms[roomId].players[socket.id] = {
+		playerPosition: { x: 0, y: 0 },
+		peerConnection: null,
+		dataChannel: null,
+		keysPressed: {}
 		};
-		
-		gameLoop();
+
+		socket.join(roomId);
+		console.log(`${socket.id} joined room ${roomId}`);
+		} else {
+		socket.emit("roomFull", roomId);
+		return;
+		}
+
+	console.log("Players in room:", Object.keys(rooms[roomId].players).length);
+
+	// when room is full start game and initialize WebRTC
+	if (Object.keys(rooms[roomId].players).length === 2) {
+		const playerIds = Object.keys(rooms[roomId].players);
+		games[roomId] = new Game(playerIds[0], playerIds[1]);
+
+		initializeWebRTC(roomId);
+
+		io.to(roomId).emit("startGame", roomId, rooms[roomId].hostId);
 	}
 }

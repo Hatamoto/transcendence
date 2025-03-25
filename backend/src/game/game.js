@@ -137,10 +137,6 @@ class Game {
 		return [this.players[0].getpos(), this.players[1].getpos(), this.ball.getpos()];
 	}
 
-	startGame() {
-		// start calling game loop here
-	}
-
 	static gameLoop(gameInstance) {
 		gameInstance.update(gameInstance);
 		gameInstance.updateGraphics();
@@ -162,9 +158,6 @@ class Game {
 		gameInstance.ball.update(gameInstance.players[0], gameInstance.players[1]);
 	}
 
-	updateGraphics() {
-		// Drawing logic here if needed
-	}
 }
 
 export { Game };

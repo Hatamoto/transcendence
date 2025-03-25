@@ -55,9 +55,9 @@ fastify.setNotFoundHandler((req, reply) => {
 });
 
 await fastify.register(dbInit)
-fastify.register(formbody)
-fastify.register(cookie)
-fastify.register(multipart)
+await fastify.register(formbody)
+await fastify.register(cookie)
+await fastify.register(multipart)
 await fastify.register(root)
 await fastify.register(userRoutes)
 

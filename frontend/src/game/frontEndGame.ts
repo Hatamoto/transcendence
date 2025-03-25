@@ -1,4 +1,3 @@
-import { io } from "socket.io-client";
 const socket = io();
 
 enum KeyBindings{
@@ -6,7 +5,7 @@ enum KeyBindings{
     DOWN = 'KeyS'
 }
 
-class frontEndGame {
+export class frontEndGame {
 	private static keysPressed: { [key: string]: boolean } = {};
 	private testbtn : HTMLElement;
 	private gameCanvas : HTMLCanvasElement;
@@ -26,9 +25,22 @@ class frontEndGame {
     // Add a property to store candidates that arrive before remote description
     private bufferedCandidates: RTCIceCandidateInit[] = [];
 
-
 	constructor()
 	{
+		this.configuration = {
+			iceServers: [
+				{
+					urls: 'stun:stun.l.google.com:19302',
+				}//,
+				//// Optional TURN server (can be added later if needed)
+				//{
+				//    urls: 'turn:your-turn-server.example.com', // TURN server URL
+				//    username: 'username', // Optional TURN credentials
+				//    credential: 'password', // Optional TURN credentials
+				//},
+			],
+		};
+
 		this.gameCanvas = document.createElement("canvas");
 		document.body.appendChild(this.gameCanvas);
 		this.ctx = this.gameCanvas.getContext("2d")!;
@@ -37,9 +49,13 @@ class frontEndGame {
 
 		this.testbtn = document.getElementById("test-btn");
 		this.testbtn.addEventListener("click", () => {
-			const room : number = 1;
-			socket.emit("joinRoom", room);
+			console.log("asddasd");
+			socket.emit("joinRoomQue");
 		});
+		//this.testbtn.addEventListener("click", () => {
+		//	const room : number = 1;
+		//	socket.emit("joinRoom", room);
+		//});
         
 		socket.on('offer', async (offer) => {
 			if (!this.peerConnection) { 
@@ -181,7 +197,12 @@ socket.on("connect", () => {
 	console.log("Connected to server");
 });
 
-const game = new frontEndGame();
+let game;
+
+export function createNewGame()
+{
+	game = new frontEndGame();
+}
 
 socket.on("startGame", (roomId : string) => {
 	console.log("Game started in room:", roomId);
