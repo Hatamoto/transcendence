@@ -194,14 +194,18 @@ function initializeWebRTC(roomId) {
 	const playerIds = Object.keys(room.players);
 	log.info(`Initializing WebRTC connections for room ${roomId} with players:`, playerIds);
 	
+	log.debug("TURN server:", process.env.TURN_URL);
+	log.debug("TURN server credentials:", process.env.TURN_USER, process.env.TURN_PASS);
+	log.debug("STUN server:", process.env.STUN_URL);
+
 	const iceServers = [
 		{
-			urls: 'turn:turn:3478',  // Use the service name "turn" from docker-compose
-			username: 'user',
-			credential: 'pass'
+			urls: process.env.TURN_URL,  // Use the service name "turn" from docker-compose
+			username: process.env.TURN_USER,
+			credential: process.env.TURN_PASS
 		},
 		{
-			urls: 'stun:stun.l.google.com:19302'
+			urls: process.env.STUN_URL
 		}
 		];
 

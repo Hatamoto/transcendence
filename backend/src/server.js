@@ -11,6 +11,7 @@ import jwt from '@fastify/jwt'
 import multipart from '@fastify/multipart'
 import { setupNetworking } from './networking.js';
 import { Logger, LogLevel } from './utils/logger.js';
+import webrtcConfigRoute from './routes/env.js';
 
 const log = new Logger(LogLevel.INFO);
 
@@ -40,6 +41,9 @@ export const server = fastify.server;
 log.info('Server created');
 setupNetworking(server);
 log.info('Networking setup');
+
+// Register WebCRT config routes
+fastify.register(webrtcConfigRoute);
 
 // Serve frontend files
 fastify.register(fastifyStatic, {

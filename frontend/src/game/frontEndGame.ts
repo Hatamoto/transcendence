@@ -20,30 +20,16 @@ export class frontEndGame {
 	public ballY : number;
 	public ballX : number;
 
-    private peerConnection: RTCPeerConnection | null = null;
-
 	private dataChannel: RTCDataChannel | null = null;
 
 	private configuration: RTCConfiguration;
 
+    private peerConnection: RTCPeerConnection | null = null;
+
     // Add a property to store candidates that arrive before remote description
     private bufferedCandidates: RTCIceCandidateInit[] = [];
 
-	constructor()
-	{
-		this.configuration = {
-			iceServers: [
-				{
-					urls: 'stun:stun.l.google.com:19302',
-				}//,
-				//// Optional TURN server (can be added later if needed)
-				//{
-				//    urls: 'turn:your-turn-server.example.com', // TURN server URL
-				//    username: 'username', // Optional TURN credentials
-				//    credential: 'password', // Optional TURN credentials
-				//},
-			],
-		};
+	constructor() {
 
 		this.gameCanvas = document.createElement("canvas");
 		document.body.appendChild(this.gameCanvas);
@@ -56,13 +42,23 @@ export class frontEndGame {
 			socket.emit("joinRoomQue");
 		});
         
-		socket.on('offer', async (offer) => {
-			if (!this.peerConnection) { 
-				this.peerConnection = new RTCPeerConnection(this.configuration);
-				this.setupPeerConnectionEvents();
-			}
+		this.loadIceConfig().then(config => {
+			this.configuration = config;
+			this.peerConnection = new RTCPeerConnection(this.configuration);
+			log.info("Peer connection created");
+			this.setupPeerConnectionEvents();
+		});
 
+		socket.on('offer', async (offer) => {
 			try {
+				if (!this.peerConnection) {
+					const config = await this.loadIceConfig();
+					this.configuration = config;
+					this.peerConnection = new RTCPeerConnection(this.configuration);
+					log.info("Peer connection created");
+					this.setupPeerConnectionEvents();
+				}
+				
 				log.info("Frontend received offer");
 				log.debug(offer);
 				await this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
@@ -109,6 +105,12 @@ export class frontEndGame {
 				log.error("Error adding received ICE candidate", e);
 			}
 		});
+	}
+
+	private async loadIceConfig(): Promise<RTCConfiguration> {
+		const response = await fetch('/webrtc-config');
+		const data = await response.json();
+		return { iceServers: data.iceServers };
 	}
 
 	setupPeerConnectionEvents() {
