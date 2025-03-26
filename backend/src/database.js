@@ -25,7 +25,7 @@ async function dbInit(fastify, options) {
   `)
 
   db.exec(`
-    CREATE TABLE otp_codes (
+    CREATE TABLE IF NOT EXISTS otp_codes (
     id INTEGER PRIMARY KEY,
     user_id INTEGER NOT NULL,
     otp_code TEXT NOT NULL,
