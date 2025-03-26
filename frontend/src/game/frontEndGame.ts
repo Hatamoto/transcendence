@@ -1,3 +1,4 @@
+// import { io } from 'socket.io-client';
 const socket = io();
 
 enum KeyBindings{
@@ -14,7 +15,6 @@ export class frontEndGame {
 	public player2PosY : number = 30; // change public to private later
 	public ballY : number;
 	public ballX : number;
-
 
     private peerConnection: RTCPeerConnection | null = null;
 
@@ -64,11 +64,13 @@ export class frontEndGame {
 			}
 
 			try {
+				console.log("Frontend received offer:", offer);
 				await this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
 				
 				const answer = await this.peerConnection.createAnswer();
 				await this.peerConnection.setLocalDescription(answer);
 				socket.emit('answer', answer);
+				console.log("Frontend sent answer:", this.peerConnection.localDescription);
 				
 				if (this.bufferedCandidates && this.bufferedCandidates.length > 0) {
 					console.log("Processing buffered ICE candidates");
@@ -109,45 +111,58 @@ export class frontEndGame {
 		});
 	}
 
-	setupPeerConnectionEvents() {		
+	setupPeerConnectionEvents() {
+		// Send ICE candidates to backend explicitly
+		this.peerConnection.onicecandidate = event => {
+			if (event.candidate) {
+				console.log("[FRONTEND] ICE candidate generated:", event.candidate);
+				socket.emit('ice-candidate', event.candidate);
+			} else {
+				console.log("[FRONTEND] ICE candidate gathering complete");
+			}
+		};
+			
 		// Handle incoming data channel from server
 		this.peerConnection.ondatachannel = (event) => {
-		  console.log("Received data channel from server");
-		  this.dataChannel = event.channel;
-		  
-		  this.dataChannel.onopen = () => {
-			console.log("Data channel opened");
-			this.setupKeyListeners(this.dataChannel);
-		  };
-		  
-		  this.dataChannel.onclose = () => console.log("Data channel closed");
-		  this.dataChannel.onerror = (e) => console.error("Data channel error:", e);
-		  
-		  this.dataChannel.onmessage = (e) => {
-			try {
-			  const data = JSON.parse(e.data);
-			  if (data.type === 'gameState') {
-				this.updateGameState(data.positions);
-			  }
-			} catch (err) {
-			  console.error("Error handling data channel message:", err);
-			}
-		  };
+			console.log("Received data channel from server");
+			this.dataChannel = event.channel;
+			  
+			this.dataChannel.onopen = () => {
+				console.log("[FRONTEND] Data channel explicitly OPENED");
+				this.setupKeyListeners(this.dataChannel);
+			};
+			  
+			this.dataChannel.onclose = () => console.log("[FRONTEND] Data channel closed");
+			this.dataChannel.onerror = (e) => console.error("[FRONTEND] Data channel error:", e);
+			  
+			this.dataChannel.onmessage = (e) => {
+				console.log("[FRONTEND] Message received from backend:", e.data);
+				try {
+					const data = JSON.parse(e.data);
+					if (data.type === 'gameState') {
+						this.updateGameState(data.positions);
+						console.log("[FRONTEND] Game state updated");
+					}
+				} catch (err) {
+					console.error("[FRONTEND] Error handling data channel message:", err);
+				}
+			};
 		};
-		
+			
 		this.peerConnection.onconnectionstatechange = () => {
-		  console.log("Connection state:", this.peerConnection.connectionState);
+			console.log("[FRONTEND] Connection state:", this.peerConnection.connectionState);
 		};
-		
+	
 		this.peerConnection.oniceconnectionstatechange = () => {
-		  console.log("ICE connection state:", this.peerConnection.iceConnectionState);
+			console.log("[FRONTEND] ICE connection state:", this.peerConnection.iceConnectionState);
 		};
-	  }
+	}	
 
 	setupKeyListeners(dataChannel) {
 		document.addEventListener('keydown', (e) => {
 			if (e.code === KeyBindings.UP || e.code === KeyBindings.DOWN) {
 				const data = { key: e.code, isPressed: true };
+				console.log("[FRONTEND] Sending key down event:", data);
 				dataChannel.send(JSON.stringify(data));
 			}
 		});
@@ -155,6 +170,7 @@ export class frontEndGame {
 		document.addEventListener('keyup', (e) => {
 			if (e.code === KeyBindings.UP || e.code === KeyBindings.DOWN) {
 				const data = { key: e.code, isPressed: false };
+				console.log("[FRONTEND] Sending key up event:", data);
 				dataChannel.send(JSON.stringify(data));
 			}
 		});

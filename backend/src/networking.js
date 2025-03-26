@@ -1,6 +1,11 @@
 import { Server } from "socket.io";
 import wrtc from "wrtc";
-import { Game } from './game/game.js'
+import { Game } from './game/game.js';
+
+// Add WebRTC globals here:
+global.RTCPeerConnection = wrtc.RTCPeerConnection;
+global.RTCSessionDescription = wrtc.RTCSessionDescription;
+global.RTCIceCandidate = wrtc.RTCIceCandidate;
 
 class IDAllocator {
     constructor(maxID) {
@@ -45,6 +50,12 @@ const rooms = {};
 const roomIds = new IDAllocator(1000);
 
 export function setupNetworking(server){
+	console.log('Checking WebRTC globals:');
+	console.log('RTCPeerConnection:', typeof global.RTCPeerConnection !== 'undefined');
+	console.log('RTCSessionDescription:', typeof global.RTCSessionDescription !== 'undefined');
+	console.log('RTCIceCandidate:', typeof global.RTCIceCandidate !== 'undefined');
+
+
 	io = new Server(server, {
 		cors: {
 		origin: "*", // Change to frontend URL whenever needed
@@ -79,6 +90,26 @@ export function setupNetworking(server){
 		}
 		});
 
+		socket.on('ice-candidate', (candidate) => {
+			console.log(`[BACKEND] Received ICE candidate from frontend socket ${socket.id}:`, candidate);
+		
+			const playerRoom = [...socket.rooms][1];
+			if (playerRoom) {
+				const peerConnection = rooms[playerRoom].players[socket.id].peerConnection;
+				if (peerConnection) {
+					peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
+						.then(() => console.log(`[BACKEND] ICE candidate added for ${socket.id}`))
+						.catch(err => console.error(`[BACKEND] Error adding ICE candidate for ${socket.id}:`, err));
+				} else {
+					console.warn(`[BACKEND] No peerConnection found for socket ${socket.id}`);
+				}
+			} else {
+				console.warn(`[BACKEND] No player room found for socket ${socket.id}`);
+			}
+		});
+
+		socket.on("connect", () => console.log("[BACKEND] socket.io connected:", socket.id));
+
 		socket.on("joinRoom", (roomId) => {
 			if (!rooms[roomId]) {
 				rooms[roomId] = {
@@ -107,33 +138,68 @@ export function setupNetworking(server){
 		});
 
 		socket.on('answer', (answer) => {
+		console.log(`Backend received answer from ${socket.id}:`, answer);
 		const playerRoom = [...socket.rooms][1];
 
+		// if (playerRoom) {
+		// 	const peerConnection = rooms[playerRoom].players[socket.id].peerConnection;
+		// 	if (peerConnection) {
+		// 		console.log(`Setting remote description for ${socket.id}`);
+		// 		peerConnection.setRemoteDescription(new RTCSessionDescription(answer))
+		// 		.then(() => {
+		// 		console.log(`Remote description set successfully for ${socket.id}`);
+				
+		// 		// Process any buffered candidates
+		// 		const bufferedCandidates = rooms[playerRoom].players[socket.id].bufferedCandidates || [];
+		// 		if (bufferedCandidates.length > 0) {
+		// 			console.log(`Processing ${bufferedCandidates.length} buffered ICE candidates for ${socket.id}`);
+					
+		// 			for (const candidate of bufferedCandidates) {
+		// 			peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
+		// 				.catch(err => console.error(`Error adding buffered ICE candidate for ${socket.id}:`, err));
+		// 			}
+					
+		// 			// Clear the buffer
+		// 			rooms[playerRoom].players[socket.id].bufferedCandidates = [];
+		// 		}
+		// 		})
+		// 		.catch(err => console.error(`Error setting remote description for ${socket.id}:`, err));
+		// 	}
+		// }
 		if (playerRoom) {
 			const peerConnection = rooms[playerRoom].players[socket.id].peerConnection;
 			if (peerConnection) {
-			console.log(`Setting remote description for ${socket.id}`);
-			peerConnection.setRemoteDescription(new wrtc.RTCSessionDescription(answer))
-				.then(() => {
-				console.log(`Remote description set successfully for ${socket.id}`);
-				
-				// Process any buffered candidates
-				const bufferedCandidates = rooms[playerRoom].players[socket.id].bufferedCandidates || [];
-				if (bufferedCandidates.length > 0) {
-					console.log(`Processing ${bufferedCandidates.length} buffered ICE candidates for ${socket.id}`);
-					
-					for (const candidate of bufferedCandidates) {
-					peerConnection.addIceCandidate(new wrtc.RTCIceCandidate(candidate))
-						.catch(err => console.error(`Error adding buffered ICE candidate for ${socket.id}:`, err));
-					}
-					
-					// Clear the buffer
-					rooms[playerRoom].players[socket.id].bufferedCandidates = [];
-				}
-				})
-				.catch(err => console.error(`Error setting remote description for ${socket.id}:`, err));
+				console.log(`[DEBUG] Setting remote description for socket ${socket.id} in room ${playerRoom}`);
+				peerConnection.setRemoteDescription(new RTCSessionDescription(answer))
+					.then(() => {
+						console.log(`[DEBUG] Remote description successfully set for socket ${socket.id}`);
+		
+						// Process buffered ICE candidates if they exist
+						const bufferedCandidates = rooms[playerRoom].players[socket.id].bufferedCandidates || [];
+						if (bufferedCandidates.length > 0) {
+							console.log(`[DEBUG] Found ${bufferedCandidates.length} buffered ICE candidates for socket ${socket.id}`);
+		
+							bufferedCandidates.forEach((candidate, index) => {
+								console.log(`[DEBUG] Adding buffered ICE candidate #${index + 1} for socket ${socket.id}:`, candidate);
+								peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
+									.then(() => console.log(`[DEBUG] Successfully added buffered candidate #${index + 1} for socket ${socket.id}`))
+									.catch(err => console.error(`[ERROR] Failed adding buffered candidate #${index + 1} for socket ${socket.id}:`, err));
+							});
+		
+							// Clear buffer
+							rooms[playerRoom].players[socket.id].bufferedCandidates = [];
+						} else {
+							console.log(`[DEBUG] No buffered ICE candidates found for socket ${socket.id}`);
+						}
+					})
+					.catch(err => console.error(`[ERROR] Failed setting remote description for socket ${socket.id}:`, err));
+			} else {
+				console.warn(`[WARN] Peer connection not found for socket ${socket.id} in room ${playerRoom}`);
 			}
+		} else {
+			console.warn(`[WARN] Player room not found for socket ${socket.id}`);
 		}
+		
 		});
 	});
 }
@@ -145,43 +211,54 @@ function initializeWebRTC(roomId) {
 	const playerIds = Object.keys(room.players);
 	console.log(`Initializing WebRTC connections for room ${roomId} with players:`, playerIds);
 	
+	const iceServers = [
+		{
+			urls: 'turn:turn:3478',  // Use the service name "turn" from docker-compose
+			username: 'user',
+			credential: 'pass'
+		},
+		{
+			urls: 'stun:stun.l.google.com:19302'
+		}
+		];
+
 	// Create separate connections for each player
 	for (const playerId of playerIds) {
-	const peerConnection = new wrtc.RTCPeerConnection({
-		iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-	});
+		const peerConnection = new RTCPeerConnection({ iceServers });
 	
-	const dataChannel = peerConnection.createDataChannel("gameData");
+		const dataChannel = peerConnection.createDataChannel("gameData");
 	
-	dataChannel.onopen = () => {
-		console.log(`Data channel open for player ${playerId}`);
-		
-		// When all connections are open game loop starts
-		if (Object.values(room.players).every(player => 
-		player.dataChannel && player.dataChannel.readyState === 'open')) {
-		console.log("All connections established, starting game loop");
-		startGameLoop(roomId);
-		}
-	};
+		// ADD THIS LINE CLEARLY:
+		room.players[playerId].dataChannel = dataChannel;
+	
+		dataChannel.onopen = () => {
+			console.log(`[BACKEND] Data channel open for player ${playerId}`);
+	
+			if (Object.values(room.players).every(player => 
+				player.dataChannel && player.dataChannel.readyState === 'open')) {
+				console.log("[BACKEND] All connections established, starting game loop");
+				startGameLoop(roomId);
+			}
+		};
 	
 	dataChannel.onclose = () => console.log(`Data channel closed for player ${playerId}`);
 	
 	dataChannel.onmessage = (event) => {
+		console.log("[BACKEND] Received data channel message:", event.data);
 		try {
-		console.log(`Received message from player ${playerId}:`, event.data);
-		const data = JSON.parse(event.data);
-		if (data.key) {
-			const player = room.players[playerId];
-			player.keysPressed = player.keysPressed || {};
-			player.keysPressed[data.key] = data.isPressed;
-			
-			if (games[roomId]) {
-			console.log(`Processing key event from ${playerId}: ${data.key}=${data.isPressed}`);
-			games[roomId].keyDown(player.keysPressed, playerId);
+			const data = JSON.parse(event.data);
+			if (data.key) {
+				const player = room.players[playerId];
+				player.keysPressed = player.keysPressed || {};
+				player.keysPressed[data.key] = data.isPressed;
+	
+				if (games[roomId]) {
+					console.log(`[BACKEND] Key event from ${playerId}: ${data.key}=${data.isPressed}`);
+					games[roomId].keyDown(player.keysPressed, playerId);
+				}
 			}
-		}
 		} catch (e) {
-		console.error("Error parsing data channel message:", e);
+			console.error("[BACKEND] Error parsing data channel message:", e);
 		}
 	};
 	

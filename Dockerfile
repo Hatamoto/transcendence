@@ -20,7 +20,7 @@ COPY . .
 RUN cd frontend && npm run build
 
 # Expose the port your Fastify app runs on
-EXPOSE 5000
+EXPOSE 5001
 
 # Command to run both frontend and backend together
 CMD ["npm", "run", "dev", "--prefix", "backend"]
