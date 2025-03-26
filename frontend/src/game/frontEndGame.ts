@@ -1,5 +1,10 @@
 // import { io } from 'socket.io-client';
 const socket = io();
+import { Logger, LogLevel } from '../utils/logger.js';
+
+const log = new Logger(LogLevel.INFO);
+
+log.info("[FRONTEND] UI ready")
 
 enum KeyBindings{
 	UP = 'KeyW',

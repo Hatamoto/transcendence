@@ -10,6 +10,12 @@ import formbody from '@fastify/formbody'
 import jwt from '@fastify/jwt'
 import multipart from '@fastify/multipart'
 import { setupNetworking } from './networking.js';
+import { Logger, LogLevel } from './utils/logger.js';
+
+const log = new Logger(LogLevel.INFO);
+
+log.info("[BACKEND] Server ready")
+
 
 dotenv.config();
 
