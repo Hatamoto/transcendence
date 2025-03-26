@@ -1,3 +1,4 @@
+// @ts-ignore
 const socket = io();
 
 export enum LogLevel {

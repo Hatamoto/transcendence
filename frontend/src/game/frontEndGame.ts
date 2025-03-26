@@ -1,3 +1,4 @@
+// @ts-ignore
 const socket = io();
 import { Logger, LogLevel } from '../utils/logger.js';
 
@@ -58,7 +59,7 @@ export class frontEndGame {
 					log.info("Peer connection created");
 					this.setupPeerConnectionEvents();
 				}
-				
+
 				log.info("Frontend received offer");
 				log.debug(offer);
 				await this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
