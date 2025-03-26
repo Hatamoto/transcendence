@@ -22,6 +22,11 @@ const addUser = async function (req, reply) {
   const { name, email, password } = req.body
   const avatar = process.env.DEFAULT_AVATAR
   let hashedPassword = password
+  const passwordPattern = /^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:'",.<>?])/
+  
+  if (!passwordPattern.test(password)) {
+    return reply.code(400).send({ error: 'Password must contain at least one digit, one letter, and one special character.' })
+  }
 
   if (password) {
     const salt = await bcrypt.genSalt(10)
@@ -138,33 +143,6 @@ const updatePassword = async function (req, reply) {
   }
 }
 
-const loginUser = async function (req, reply) {
-  const { username, password } = req.body
-
-  try {
-    const getStatement = req.server.db.prepare('SELECT * FROM users WHERE name = ?')
-    const user = getStatement.get(username)
-
-    if (!user) {
-      return reply.code(401).send({ error: 'Incorrect username or password' })
-    }
-    const isMatch = await bcrypt.compare(password, user.password)
-    if (!isMatch) {
-      return reply.code(401).send({ error: 'Incorrect username or password' })
-    }
-
-    const userInfo = { id: user.id, name: user.name }
-    const accessToken = req.server.jwt.sign(userInfo, { expiresIn: '1h' })
-    
-    const updateStatement = req.server.db.prepare('UPDATE users SET status = 1 WHERE name = ?')
-    updateStatement.run(username)
-
-    return reply.send({ accessToken: accessToken })
-  } catch (error) {
-    return reply.code(500).send({ error: error.message })
-  }
-}
-
 const getDashboard = async function(req, reply) {
   try {
     const username = req.user.name
@@ -172,13 +150,6 @@ const getDashboard = async function(req, reply) {
   } catch (error) {
     console.log(error)
   }
-}
-
-const userLogout = async function(req, reply) {
-  const username = req.user
-  const updateStatement = req.server.db.prepare('UPDATE users SET status = 0 WHERE name = ?')
-    updateStatement.run(username)
-  return reply.redirect('/')
 }
 
 const uploadAvatar = async function(req, reply) {
@@ -206,8 +177,6 @@ export {
   deleteUser,
   updateUser,
   updatePassword,
-  loginUser,
   getDashboard,
-  userLogout,
   uploadAvatar
 }

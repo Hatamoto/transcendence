@@ -1,8 +1,7 @@
 import dotenv from "dotenv"
-dotenv.config();
 import Fastify from 'fastify'
 import fastifyStatic from '@fastify/static'
-import { root, userRoutes } from './routes/routes.js'
+import { root, userRoutes, friendRoutes } from './routes/routes.js'
 import dbInit from './database.js'
 import path from 'path'
 import cookie from '@fastify/cookie'
@@ -11,6 +10,8 @@ import ejs from 'ejs'
 import view from '@fastify/view'
 import jwt from '@fastify/jwt'
 import multipart from '@fastify/multipart'
+
+dotenv.config();
 
 const fastify = Fastify({
   logger: true
@@ -39,8 +40,9 @@ fastify.register(view, {
 })
 await fastify.register(root)
 await fastify.register(userRoutes)
+await fastify.register(friendRoutes)
 
-fastify.listen({ port: process.env.PORT }, function (err, address) {
+fastify.listen({ port: process.env.PORT || 3000 }, function (err, address) {
   if (err) {
     fastify.log.error(err)
     process.exit(1)

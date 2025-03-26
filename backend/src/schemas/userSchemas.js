@@ -5,12 +5,10 @@ import {
   deleteUser,
   updateUser,
   updatePassword,
-  loginUser,
   getDashboard,
-  userLogout,
   uploadAvatar
-} from '../controllers/UserController.js'
-import authenticateToken from '../middleware/authentication.js'
+} from '../controllers/userController.js'
+import { authenticateToken } from '../middleware/authentication.js'
 import User from '../models/userModel.js'
 
 const getUsersOpts = {
@@ -36,7 +34,6 @@ const addUserOpts = {
         password: { 
           type: 'string',
           minLength: 8,
-          pattern: '^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};\'":,.<>?])',
          },
       },
     },
@@ -106,6 +103,7 @@ const updatePasswordOpts = {
       },
     },
     body: {
+      type: 'object',
       required: ['password'],
       properties: {
         password: { 
@@ -126,33 +124,10 @@ const updatePasswordOpts = {
   handler: updatePassword,
 }
 
-const loginUserOpts = {
-  schema: {
-    body: {
-      type: 'object',
-      required: ['username', 'password'],
-      properties: {
-        username: { type: 'string' },
-        password: { type: 'string' },
-      },
-    },
-  },
-  handler: loginUser,
-}
-
 const dashboardOpts = {
   schema: {},
   preHandler: authenticateToken,
   handler: getDashboard,
-}
-
-const userLogoutOpts = {
-  schema: {
-    response: {
-      200: {},
-    },
-  },
-  handler: userLogout,
 }
 
 const uploadOpts = {
@@ -172,8 +147,6 @@ export {
   deleteUserOpts,
   updateUserOpts,
   updatePasswordOpts,
-  loginUserOpts,
   dashboardOpts,
-  userLogoutOpts,
   uploadOpts
 }
