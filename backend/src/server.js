@@ -14,7 +14,7 @@ import { Logger, LogLevel } from './utils/logger.js';
 
 const log = new Logger(LogLevel.INFO);
 
-log.info("[BACKEND] Server ready")
+log.info("Creating server")
 
 
 dotenv.config();
@@ -37,9 +37,9 @@ const fastify = Fastify({
 })
 
 export const server = fastify.server;
-console.log('Server created');
+log.info('Server created');
 setupNetworking(server);
-console.log('Networking setup');
+log.info('Networking setup');
 
 // Serve frontend files
 fastify.register(fastifyStatic, {
@@ -62,7 +62,7 @@ fastify.setNotFoundHandler((req, reply) => {
     reply.sendFile('index.html', { root: FRONTEND_DIST });
 });
 
-console.log('Static files served');
+log.info('Static files served');
 await fastify.register(dbInit)
 await fastify.register(formbody)
 await fastify.register(cookie)
@@ -70,13 +70,13 @@ await fastify.register(multipart)
 await fastify.register(root)
 await fastify.register(userRoutes)
 
-console.log('Routes registered');
+log.info('Routes registered');
 fastify.listen({ port: process.env.PORT, host: process.env.HOST }, function (err, address) {
-	console.log('Listening on port', process.env.PORT);
+	log.info('Listening on port', process.env.PORT);
 	if (err) {
-		console.log('Error: ', err)
+		log.info('Error: ', err)
 		fastify.log.error(err)
 		process.exit(1)
 	}
-	console.log(`Server listening at ${address}`)
+	log.info(`Server listening at ${address}`)
 })

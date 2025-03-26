@@ -1,9 +1,20 @@
+const socket = io();
+
 export enum LogLevel {
 	DEBUG = 0,
 	INFO = 1,
 	WARN = 2,
 	ERROR = 3
 }
+
+const Colors = {
+	Reset: "\x1b[0m",
+	Gray: "\x1b[90m",
+	Blue: "\x1b[34m",
+	Green: "\x1b[32m",
+	Yellow: "\x1b[33m",
+	Red: "\x1b[31m"
+};
 
 export class Logger {
 	constructor(private level: LogLevel = LogLevel.INFO) {}
@@ -16,9 +27,26 @@ export class Logger {
 		return LogLevel[level];
 	}
 
+	private levelColor(level: LogLevel): string {
+		switch (level) {
+			case LogLevel.DEBUG: return Colors.Gray;
+			case LogLevel.INFO:  return Colors.Green;
+			case LogLevel.WARN:  return Colors.Yellow;
+			case LogLevel.ERROR: return Colors.Red;
+			default: return Colors.Reset;
+		}
+	}
+
 	log(level: LogLevel, ...args: any[]) {
 		if (this.shouldLog(level)) {
-			console.log(`[${this.levelName(level)}]`, ...args);
+			const tag = `[${this.levelName(level)}]`;
+			console.log(tag, ...args);
+
+			// Send log to backend
+			socket.emit('frontend-log', {
+				level: this.levelName(level),
+				args: args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg)
+			});
 		}
 	}
 

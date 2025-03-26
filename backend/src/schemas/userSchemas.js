@@ -109,6 +109,7 @@ const updatePasswordOpts = {
       },
     },
     body: {
+	  type: 'object',
       required: ['password'],
       properties: {
         password: { 

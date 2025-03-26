@@ -1,4 +1,7 @@
 "use strict";
+import { Logger, LogLevel } from '../utils/logger.js';
+
+const log = new Logger(LogLevel.INFO);
 
 const KeyBindings = {
 	UP: "KeyW",
@@ -129,7 +132,7 @@ class Game {
 	}
 
 	keyDown(e, playerID) {
-		console.log(`${this.playerIdMap.get(playerID)} : ${playerID}`);
+		log.debug(`keyDown by player: ${this.playerIdMap.get(playerID)}, socket id: ${playerID}`);
 		this.players[this.playerIdMap.get(playerID)].setKeysPressed(e);
 	}
 

@@ -1,8 +1,10 @@
 import { Server } from "socket.io";
 import wrtc from "wrtc";
 import { Game } from './game/game.js';
+import { Logger, LogLevel } from './utils/logger.js';
 
-// Add WebRTC globals here:
+const log = new Logger(LogLevel.INFO);
+
 global.RTCPeerConnection = wrtc.RTCPeerConnection;
 global.RTCSessionDescription = wrtc.RTCSessionDescription;
 global.RTCIceCandidate = wrtc.RTCIceCandidate;
@@ -50,10 +52,10 @@ const rooms = {};
 const roomIds = new IDAllocator(1000);
 
 export function setupNetworking(server){
-	console.log('Checking WebRTC globals:');
-	console.log('RTCPeerConnection:', typeof global.RTCPeerConnection !== 'undefined');
-	console.log('RTCSessionDescription:', typeof global.RTCSessionDescription !== 'undefined');
-	console.log('RTCIceCandidate:', typeof global.RTCIceCandidate !== 'undefined');
+	log.debug('Checking WebRTC globals:');
+	log.debug('RTCPeerConnection:', typeof global.RTCPeerConnection !== 'undefined');
+	log.debug('RTCSessionDescription:', typeof global.RTCSessionDescription !== 'undefined');
+	log.debug('RTCIceCandidate:', typeof global.RTCIceCandidate !== 'undefined');
 
 
 	io = new Server(server, {
@@ -66,49 +68,55 @@ export function setupNetworking(server){
 	});
 
 	io.on("connection", (socket) => {  
-		console.log("A user connected:", socket.id);
+		log.info("A user connected:", socket.id);
+
+		socket.on('frontend-log', (logdata) => {
+			const logLevel = logdata.level?.toUpperCase?.() ?? "DEBUG";
+			const method = log[logLevel.toLowerCase()] || logger.debug;
+			method.call(log, ...logdata.args, { __frontend: true });
+		});
 
 		socket.on("disconnect", () => {
-		console.log("User disconnected:", socket.id);
+		log.info("User disconnected:", socket.id);
 		
 		// Clean up rooms and connections when a player disconnects
 		for (const roomId in rooms) {
 			if (rooms[roomId].players[socket.id]) {
-			roomIds.freeRoom(roomId);
-			delete rooms[roomId].players[socket.id];
-			console.log(`Player ${socket.id} removed from room ${roomId}`);
-			
-			socket.to(roomId).emit("playerDisconnected", socket.id);
-			
-			// deleting room when its empty
-			if (Object.keys(rooms[roomId].players).length === 0) {
-				delete rooms[roomId];
-				delete games[roomId];
-				console.log(`Room ${roomId} deleted`);
-			}
+				roomIds.freeRoom(roomId);
+				delete rooms[roomId].players[socket.id];
+				log.info(`Player ${socket.id} removed from room ${roomId}`);
+				
+				socket.to(roomId).emit("playerDisconnected", socket.id);
+				
+				// deleting room when its empty
+				if (Object.keys(rooms[roomId].players).length === 0) {
+					delete rooms[roomId];
+					delete games[roomId];
+					log.info(`Room ${roomId} deleted`);
+				}
 			}
 		}
 		});
 
 		socket.on('ice-candidate', (candidate) => {
-			console.log(`[BACKEND] Received ICE candidate from frontend socket ${socket.id}:`, candidate);
-		
+			log.info(`Received ICE candidate from frontend socket ${socket.id}`);
+			log.debug('Candidate:', candidate);
 			const playerRoom = [...socket.rooms][1];
 			if (playerRoom) {
 				const peerConnection = rooms[playerRoom].players[socket.id].peerConnection;
 				if (peerConnection) {
 					peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
-						.then(() => console.log(`[BACKEND] ICE candidate added for ${socket.id}`))
-						.catch(err => console.error(`[BACKEND] Error adding ICE candidate for ${socket.id}:`, err));
+						.then(() => log.info(`ICE candidate added for ${socket.id}`))
+						.catch(err => log.error(`Error adding ICE candidate for ${socket.id}:`, err));
 				} else {
-					console.warn(`[BACKEND] No peerConnection found for socket ${socket.id}`);
+					log.warn(`No peerConnection found for socket ${socket.id}`);
 				}
 			} else {
-				console.warn(`[BACKEND] No player room found for socket ${socket.id}`);
+				log.warn(`No player room found for socket ${socket.id}`);
 			}
 		});
 
-		socket.on("connect", () => console.log("[BACKEND] socket.io connected:", socket.id));
+		socket.on("connect", () => log.info("socket.io connected:", socket.id));
 
 		socket.on("joinRoom", (roomId) => {
 			if (!rooms[roomId]) {
@@ -138,68 +146,43 @@ export function setupNetworking(server){
 		});
 
 		socket.on('answer', (answer) => {
-		console.log(`Backend received answer from ${socket.id}:`, answer);
+		log.info(`Backend received answer from ${socket.id}:`);
+		log.debug('Answer:', answer);
 		const playerRoom = [...socket.rooms][1];
 
-		// if (playerRoom) {
-		// 	const peerConnection = rooms[playerRoom].players[socket.id].peerConnection;
-		// 	if (peerConnection) {
-		// 		console.log(`Setting remote description for ${socket.id}`);
-		// 		peerConnection.setRemoteDescription(new RTCSessionDescription(answer))
-		// 		.then(() => {
-		// 		console.log(`Remote description set successfully for ${socket.id}`);
-				
-		// 		// Process any buffered candidates
-		// 		const bufferedCandidates = rooms[playerRoom].players[socket.id].bufferedCandidates || [];
-		// 		if (bufferedCandidates.length > 0) {
-		// 			console.log(`Processing ${bufferedCandidates.length} buffered ICE candidates for ${socket.id}`);
-					
-		// 			for (const candidate of bufferedCandidates) {
-		// 			peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
-		// 				.catch(err => console.error(`Error adding buffered ICE candidate for ${socket.id}:`, err));
-		// 			}
-					
-		// 			// Clear the buffer
-		// 			rooms[playerRoom].players[socket.id].bufferedCandidates = [];
-		// 		}
-		// 		})
-		// 		.catch(err => console.error(`Error setting remote description for ${socket.id}:`, err));
-		// 	}
-		// }
 		if (playerRoom) {
 			const peerConnection = rooms[playerRoom].players[socket.id].peerConnection;
 			if (peerConnection) {
-				console.log(`[DEBUG] Setting remote description for socket ${socket.id} in room ${playerRoom}`);
+				log.info(`Setting remote description for socket ${socket.id} in room ${playerRoom}`);
 				peerConnection.setRemoteDescription(new RTCSessionDescription(answer))
 					.then(() => {
-						console.log(`[DEBUG] Remote description successfully set for socket ${socket.id}`);
+						log.info(`Remote description successfully set for socket ${socket.id}`);
 		
 						// Process buffered ICE candidates if they exist
 						const bufferedCandidates = rooms[playerRoom].players[socket.id].bufferedCandidates || [];
 						if (bufferedCandidates.length > 0) {
-							console.log(`[DEBUG] Found ${bufferedCandidates.length} buffered ICE candidates for socket ${socket.id}`);
+							log.info(`Found ${bufferedCandidates.length} buffered ICE candidates for socket ${socket.id}`);
 		
 							bufferedCandidates.forEach((candidate, index) => {
-								console.log(`[DEBUG] Adding buffered ICE candidate #${index + 1} for socket ${socket.id}:`, candidate);
+								log.info(`Adding buffered ICE candidate #${index + 1} for socket ${socket.id}:`, candidate);
 								peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
-									.then(() => console.log(`[DEBUG] Successfully added buffered candidate #${index + 1} for socket ${socket.id}`))
-									.catch(err => console.error(`[ERROR] Failed adding buffered candidate #${index + 1} for socket ${socket.id}:`, err));
+									.then(() => log.info(`Successfully added buffered candidate #${index + 1} for socket ${socket.id}`))
+									.catch(err => log.error(`Failed adding buffered candidate #${index + 1} for socket ${socket.id}:`, err));
 							});
 		
 							// Clear buffer
 							rooms[playerRoom].players[socket.id].bufferedCandidates = [];
 						} else {
-							console.log(`[DEBUG] No buffered ICE candidates found for socket ${socket.id}`);
+							log.info(`No buffered ICE candidates found for socket ${socket.id}`);
 						}
 					})
-					.catch(err => console.error(`[ERROR] Failed setting remote description for socket ${socket.id}:`, err));
+					.catch(err => log.error(`Failed setting remote description for socket ${socket.id}:`, err));
 			} else {
-				console.warn(`[WARN] Peer connection not found for socket ${socket.id} in room ${playerRoom}`);
+				log.warn(`Peer connection not found for socket ${socket.id} in room ${playerRoom}`);
 			}
 		} else {
-			console.warn(`[WARN] Player room not found for socket ${socket.id}`);
+			log.warn(`Player room not found for socket ${socket.id}`);
 		}
-		
 		});
 	});
 }
@@ -209,7 +192,7 @@ function initializeWebRTC(roomId) {
 	if (!room || Object.keys(room.players).length < 2) return;
 	
 	const playerIds = Object.keys(room.players);
-	console.log(`Initializing WebRTC connections for room ${roomId} with players:`, playerIds);
+	log.info(`Initializing WebRTC connections for room ${roomId} with players:`, playerIds);
 	
 	const iceServers = [
 		{
@@ -232,19 +215,19 @@ function initializeWebRTC(roomId) {
 		room.players[playerId].dataChannel = dataChannel;
 	
 		dataChannel.onopen = () => {
-			console.log(`[BACKEND] Data channel open for player ${playerId}`);
+			log.info(`Data channel open for player ${playerId}`);
 	
 			if (Object.values(room.players).every(player => 
 				player.dataChannel && player.dataChannel.readyState === 'open')) {
-				console.log("[BACKEND] All connections established, starting game loop");
+				log.info("All connections established, starting game loop");
 				startGameLoop(roomId);
 			}
 		};
 	
-	dataChannel.onclose = () => console.log(`Data channel closed for player ${playerId}`);
+	dataChannel.onclose = () => log.info(`Data channel closed for player ${playerId}`);
 	
 	dataChannel.onmessage = (event) => {
-		console.log("[BACKEND] Received data channel message:", event.data);
+		log.debug("Received data channel message:", event.data);
 		try {
 			const data = JSON.parse(event.data);
 			if (data.key) {
@@ -253,19 +236,19 @@ function initializeWebRTC(roomId) {
 				player.keysPressed[data.key] = data.isPressed;
 	
 				if (games[roomId]) {
-					console.log(`[BACKEND] Key event from ${playerId}: ${data.key}=${data.isPressed}`);
+					log.debug(`Key event from ${playerId}: ${data.key}=${data.isPressed}`);
 					games[roomId].keyDown(player.keysPressed, playerId);
 				}
 			}
 		} catch (e) {
-			console.error("[BACKEND] Error parsing data channel message:", e);
+			log.error("Error parsing data channel message:", e);
 		}
 	};
 	
 	// Set up ICE candidate handling
 	peerConnection.onicecandidate = (event) => {
 		if (event.candidate) {
-		console.log(`ICE candidate generated for ${playerId}`);
+		log.info(`ICE candidate generated for ${playerId}`);
 		io.to(playerId).emit('ice-candidate', event.candidate);
 		}
 	};
@@ -275,13 +258,13 @@ function initializeWebRTC(roomId) {
 	
 	peerConnection.createOffer()
 		.then(offer => {
-		return peerConnection.setLocalDescription(offer);
+			return peerConnection.setLocalDescription(offer);
 		})
 		.then(() => {
-		console.log(`Sending offer to player ${playerId}`);
-		io.to(playerId).emit('offer', peerConnection.localDescription);
+			log.info(`Sending offer to player ${playerId}`);
+			io.to(playerId).emit('offer', peerConnection.localDescription);
 		})
-		.catch(err => console.error(`Error creating offer for ${playerId}:`, err));
+		.catch(err => log.error(`Error creating offer for ${playerId}:`, err));
 	}
 }
 
@@ -308,7 +291,7 @@ function startGameLoop(roomId) {
 			positions: positions
 			}));
 		} catch (err) {
-			console.error(`Error sending game state to player ${playerId}:`, err);
+			log.error(`Error sending game state to player ${playerId}:`, err);
 		}
 		}
 	}
@@ -337,13 +320,14 @@ function joinRoom(roomId, socket)
 		};
 
 		socket.join(roomId);
-		console.log(`${socket.id} joined room ${roomId}`);
-		} else {
+		log.info(`${socket.id} joined room ${roomId}`);
+	} else {
 		socket.emit("roomFull", roomId);
 		return;
-		}
+	}
 
-	console.log("Players in room:", Object.keys(rooms[roomId].players).length);
+	const numPlayers = Object.keys(rooms[roomId].players).length;
+	log.info(`Players in room: ${numPlayers}`);
 
 	// when room is full start game and initialize WebRTC
 	if (Object.keys(rooms[roomId].players).length === 2) {

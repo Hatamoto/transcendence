@@ -1,3 +1,7 @@
+import { Logger, LogLevel } from '../utils/logger.js';
+
+const log = new Logger(LogLevel.INFO);
+
 export async function loginUser(username: string, password: string): Promise<boolean> {
 	try {
 		const response = await fetch('/api/login', {
@@ -18,7 +22,7 @@ export async function loginUser(username: string, password: string): Promise<boo
 		}
 	} catch (error) {
 		alert("Network error or server not responding.");
-		console.error("Login Error:", error);
+		log.error("Login Error:", error);
 		return false;
 	}
 }

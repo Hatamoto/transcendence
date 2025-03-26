@@ -9,7 +9,7 @@
 		"rootDir": "./src",
 		"baseUrl": "./",
 		"paths": {
-			"socket.io-client": ["node_modules/socket.io-client"],
+			// "socket.io-client": ["node_modules/socket.io-client"],
 			"undici-types": ["node_modules/undici-types"]
 		},
 		"lib": ["dom", "es6"],

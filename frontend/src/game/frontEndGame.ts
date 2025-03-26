@@ -1,10 +1,9 @@
-// import { io } from 'socket.io-client';
 const socket = io();
 import { Logger, LogLevel } from '../utils/logger.js';
 
 const log = new Logger(LogLevel.INFO);
 
-log.info("[FRONTEND] UI ready")
+log.info("UI ready")
 
 enum KeyBindings{
 	UP = 'KeyW',
@@ -54,13 +53,8 @@ export class frontEndGame {
 
 		this.testbtn = document.getElementById("test-btn");
 		this.testbtn.addEventListener("click", () => {
-			console.log("asddasd");
 			socket.emit("joinRoomQue");
 		});
-		//this.testbtn.addEventListener("click", () => {
-		//	const room : number = 1;
-		//	socket.emit("joinRoom", room);
-		//});
         
 		socket.on('offer', async (offer) => {
 			if (!this.peerConnection) { 
@@ -69,23 +63,24 @@ export class frontEndGame {
 			}
 
 			try {
-				console.log("Frontend received offer:", offer);
+				log.info("Frontend received offer");
+				log.debug(offer);
 				await this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
 				
 				const answer = await this.peerConnection.createAnswer();
 				await this.peerConnection.setLocalDescription(answer);
 				socket.emit('answer', answer);
-				console.log("Frontend sent answer:", this.peerConnection.localDescription);
-				
+				log.info("Frontend sent answer.");
+				log.debug(this.peerConnection.localDescription);
 				if (this.bufferedCandidates && this.bufferedCandidates.length > 0) {
-					console.log("Processing buffered ICE candidates");
+					log.info("Processing buffered ICE candidates");
 					for (const candidate of this.bufferedCandidates) {
 						await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
 					}
 					this.bufferedCandidates = [];
 				}
 			} catch (e) {
-				console.error("Error handling offer:", e);
+				log.error("Error handling offer:", e);
 			}
 		});
 		
@@ -95,23 +90,23 @@ export class frontEndGame {
 
 		socket.on('ice-candidate', async (candidate) => {
 			if (!this.peerConnection) {
-				console.warn("Received ICE candidate but peer connection not created yet");
+				log.warn("Received ICE candidate but peer connection not created yet");
 				return;
 			}
 			
 			try {
 				// Buffer ICE candidates until remote description is set
 				if (!this.peerConnection.remoteDescription) {
-					console.log("Buffering ICE candidate until remote description is set");
+					log.info("Buffering ICE candidate until remote description is set");
 					this.bufferedCandidates = this.bufferedCandidates || [];
 					this.bufferedCandidates.push(candidate);
 				} else {
 					// Add ICE candidate if remote description is already set
 					await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-					console.log("Added ICE candidate successfully");
+					log.info("Added ICE candidate successfully");
 				}
 			} catch (e) {
-				console.error("Error adding received ICE candidate", e);
+				log.error("Error adding received ICE candidate", e);
 			}
 		});
 	}
@@ -120,46 +115,47 @@ export class frontEndGame {
 		// Send ICE candidates to backend explicitly
 		this.peerConnection.onicecandidate = event => {
 			if (event.candidate) {
-				console.log("[FRONTEND] ICE candidate generated:", event.candidate);
+				log.info("ICE candidate generated");
+				log.debug(event.candidate);
 				socket.emit('ice-candidate', event.candidate);
 			} else {
-				console.log("[FRONTEND] ICE candidate gathering complete");
+				log.info("ICE candidate gathering complete");
 			}
 		};
 			
 		// Handle incoming data channel from server
 		this.peerConnection.ondatachannel = (event) => {
-			console.log("Received data channel from server");
+			log.info("Received data channel from server");
 			this.dataChannel = event.channel;
 			  
 			this.dataChannel.onopen = () => {
-				console.log("[FRONTEND] Data channel explicitly OPENED");
+				log.info("Data channel explicitly OPENED");
 				this.setupKeyListeners(this.dataChannel);
 			};
 			  
-			this.dataChannel.onclose = () => console.log("[FRONTEND] Data channel closed");
-			this.dataChannel.onerror = (e) => console.error("[FRONTEND] Data channel error:", e);
+			this.dataChannel.onclose = () => log.info("Data channel closed");
+			this.dataChannel.onerror = (e) => log.error("Data channel error:", e);
 			  
 			this.dataChannel.onmessage = (e) => {
-				console.log("[FRONTEND] Message received from backend:", e.data);
+				log.debug("Message received from backend:", e.data);
 				try {
 					const data = JSON.parse(e.data);
 					if (data.type === 'gameState') {
 						this.updateGameState(data.positions);
-						console.log("[FRONTEND] Game state updated");
+						log.debug(" Game state updated");
 					}
 				} catch (err) {
-					console.error("[FRONTEND] Error handling data channel message:", err);
+					log.error("Error handling data channel message:", err);
 				}
 			};
 		};
 			
 		this.peerConnection.onconnectionstatechange = () => {
-			console.log("[FRONTEND] Connection state:", this.peerConnection.connectionState);
+			log.debug("Connection state:", this.peerConnection.connectionState);
 		};
 	
 		this.peerConnection.oniceconnectionstatechange = () => {
-			console.log("[FRONTEND] ICE connection state:", this.peerConnection.iceConnectionState);
+			log.debug("ICE connection state:", this.peerConnection.iceConnectionState);
 		};
 	}	
 
@@ -167,7 +163,7 @@ export class frontEndGame {
 		document.addEventListener('keydown', (e) => {
 			if (e.code === KeyBindings.UP || e.code === KeyBindings.DOWN) {
 				const data = { key: e.code, isPressed: true };
-				console.log("[FRONTEND] Sending key down event:", data);
+				log.debug("Sending key down event:", data);
 				dataChannel.send(JSON.stringify(data));
 			}
 		});
@@ -175,7 +171,7 @@ export class frontEndGame {
 		document.addEventListener('keyup', (e) => {
 			if (e.code === KeyBindings.UP || e.code === KeyBindings.DOWN) {
 				const data = { key: e.code, isPressed: false };
-				console.log("[FRONTEND] Sending key up event:", data);
+				log.debug("Sending key up event:", data);
 				dataChannel.send(JSON.stringify(data));
 			}
 		});
@@ -215,7 +211,7 @@ export class frontEndGame {
 }
 
 socket.on("connect", () => {
-	console.log("Connected to server");
+	log.info("Connected to server");
 });
 
 let game;
@@ -226,6 +222,6 @@ export function createNewGame()
 }
 
 socket.on("startGame", (roomId : string) => {
-	console.log("Game started in room:", roomId);
+	log.info("Game started in room:", roomId);
 	game.updateGraphics();
 });
