@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+	  "target": "ES6",
+	  "module": "ESNext",
+	  "moduleResolution": "node",
+	  "esModuleInterop": true,
+	  "strict": true,
+	  "outDir": "./shared-dist",
+	  "rootDir": "./shared"
+	},
+	"include": ["shared/**/*"]
+  }
+  
