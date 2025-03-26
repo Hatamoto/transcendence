@@ -1,13 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Login Page</title>
-    <link rel="stylesheet" href="/output.css">
-    
-    <!-- Add `type="module"` to the script tag -->
-    <script type="module" src="/pages/index.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transe</title>
+  <link rel="stylesheet" href="/output.css">
 </head>
-<body class="bg-gray-100 flex justify-center min-h-screen">
-    <div id="app"></div>
+<body class="bg-gray-100">
+  <nav class="nav">
+	<a href="/" onclick="route('/')">Home</a><br>
+    <a href="/login" onclick="route('/login')">Login</a><br>
+    <a href="/register" onclick="route('/register')">Register</a><br>
+  </nav>
+
+  <main id="root"><script type="module" src="init.js"></script></main>
+
 </body>
 </html>

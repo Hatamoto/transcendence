@@ -1,8 +1,8 @@
-import { loginUser } from '../utils/api.js';
+import { loginUser } from '../services/api.js';
 import { loadGameRoom } from './gameRoom.js'; // Correct path to gameRoom.ts
 
 export function loadLoginForm(): void {
-	const app = document.getElementById('app')!;
+	const app = document.getElementById('root')!;
 	fetch('/templates/login.html')
 		.then(response => {
 			if (!response.ok) {
@@ -21,7 +21,7 @@ export function loadLoginForm(): void {
 				const success = await loginUser(username, password);
 
 				if (success) {
-					loadGameRoom();
+//					loadGameRoom();
 				}
 			});
 		})

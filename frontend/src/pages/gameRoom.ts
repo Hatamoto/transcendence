@@ -1,7 +1,7 @@
 import { startNewGame } from '../game/game.js';
 
 export function loadGameRoom(): void {
-	const app = document.getElementById('app')!;
+	const app = document.getElementById('root')!;
 	fetch('/templates/gameroom.html')
 		.then(Response => Response.text())
 		.then(html => {

@@ -1,7 +1,7 @@
-import { registerUser } from "../utils/api.js";
+import { registerUser } from "../services/api.js";
 
 export function loadRegistrationForm(): void {
-	const app = document.getElementById('app')!;
+	const app = document.getElementById('root')!;
 
 	fetch('/templates/register.html')
 		.then(response => {
