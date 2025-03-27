@@ -3,7 +3,7 @@ const socket = io();
 import { Logger, LogLevel } from '../utils/logger.js';
 import { TURN_URL, TURN_USER, TURN_PASS, EXT_IP, STUN_URL} from '../config/env-config.js';
 
-const log = new Logger(LogLevel.DEBUG);
+const log = new Logger(LogLevel.INFO);
 
 log.info("UI ready")
 
@@ -251,12 +251,12 @@ export class frontEndGame {
 		this.ctx.fillStyle = "#000";
 		this.ctx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
 		for (var i = 0; i <= this.gameCanvas.height; i += 30) {
-			this.ctx.fillStyle = "red";
+			this.ctx.fillStyle = "white";
 			this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 5, 15, 20);
 		}
-		this.ctx.fillStyle = "red";
+		this.ctx.fillStyle = "green";
 		this.ctx.fillRect(this.ballX, this.ballY, 20, 20);
-		this.ctx.fillRect(20, this.player1PosY, 10, 50);
+		this.ctx.fillRect(10, this.player1PosY, 10, 50);
 		this.ctx.fillRect(780, this.player2PosY, 10, 50);
 		//Game.testnum
 	}
@@ -272,6 +272,17 @@ export function createNewGame()
 {
 	game = new frontEndGame();
 }
+
+socket.on("roomFull", () => {
+	const strtBtn = document.getElementById("start-btn");
+
+	strtBtn.classList.remove("bg-red-500");
+    strtBtn.classList.add("bg-green-500");
+
+	strtBtn.addEventListener("click", () => {
+		socket.emit("hostStart");
+	});
+})
 
 socket.on("startGame", (roomId : string) => {
 	log.info("Game started in room:", roomId);

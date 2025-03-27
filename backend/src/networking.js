@@ -145,6 +145,20 @@ export function setupNetworking(server){
 			joinRoom(roomId, socket);
 		});
 
+		socket.on('hostStart', () => {
+			const playerRoom = [...socket.rooms][1];
+			if (!playerRoom || !rooms[playerRoom]) return;
+
+			if (Object.keys(rooms[playerRoom].players).length === 2) {
+				
+				const playerIds = Object.keys(rooms[playerRoom].players);
+
+				games[playerRoom] = new Game(playerIds[0], playerIds[1]);		
+				initializeWebRTC(playerRoom);
+				io.to(playerRoom).emit("startGame", playerRoom, socket.id);
+			}
+		});
+
 		socket.on('answer', (answer) => {
 		log.info(`Backend received answer from ${socket.id}:`);
 		log.debug('Answer:', answer);
@@ -337,10 +351,15 @@ function joinRoom(roomId, socket)
 	// when room is full start game and initialize WebRTC
 	if (Object.keys(rooms[roomId].players).length === 2) {
 		const playerIds = Object.keys(rooms[roomId].players);
-		games[roomId] = new Game(playerIds[0], playerIds[1]);
-
-		initializeWebRTC(roomId);
-
-		io.to(roomId).emit("startGame", roomId, rooms[roomId].hostId);
+		io.sockets.sockets.get(playerIds[0]).emit("roomFull");
 	}
+
+	//if (Object.keys(rooms[roomId].players).length === 2) {
+	//	const playerIds = Object.keys(rooms[roomId].players);
+	//	games[roomId] = new Game(playerIds[0], playerIds[1]);
+
+	//	initializeWebRTC(roomId);
+
+	//	io.to(roomId).emit("startGame", roomId, rooms[roomId].hostId);
+	//}
 }

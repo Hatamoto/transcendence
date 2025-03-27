@@ -15,7 +15,10 @@ export function loadGameRoom(): void {
 					class="block w-full bg-green-500 text-white text-center py-2 rounded-md hover:bg-green-600">
 				Start New Game
 			</button>
-
+			<button id="start-btn" 
+					class="block w-full bg-red-500 text-white text-center py-2 rounded-md hover:bg-green-600">
+				Start The Game
+			</button>
             <!-- Logout Button -->
             <button 
                 id="logout-btn"
