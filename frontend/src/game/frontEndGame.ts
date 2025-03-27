@@ -15,8 +15,8 @@ enum KeyBindings{
 export class frontEndGame {
 	private static keysPressed: { [key: string]: boolean } = {};
 	private testbtn : HTMLElement;
-	private gameCanvas : HTMLCanvasElement;
-	private ctx : CanvasRenderingContext2D;
+	public gameCanvas : HTMLCanvasElement;
+	public ctx : CanvasRenderingContext2D;
 	public player1PosY : number = 30;
 	public player2PosY : number = 30; // change public to private later
 	public ballY : number;
@@ -34,7 +34,6 @@ export class frontEndGame {
 	constructor() {
 
 		this.gameCanvas = document.createElement("canvas");
-		document.body.appendChild(this.gameCanvas);
 		this.ctx = this.gameCanvas.getContext("2d")!;
 		this.gameCanvas.width = 800;
 		this.gameCanvas.height = 600;
@@ -271,6 +270,13 @@ let game;
 export function createNewGame()
 {
 	game = new frontEndGame();
+	const container = document.getElementById("game-container");
+	if (container) {
+		log.info("Game container found, canvas added");
+		container.appendChild(game.gameCanvas);
+	} else {
+		log.warn("Could not find #game-container");
+	}
 }
 
 socket.on("startGame", (roomId : string) => {

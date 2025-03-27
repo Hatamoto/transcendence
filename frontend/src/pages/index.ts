@@ -4,7 +4,7 @@ import { Logger, LogLevel } from '../utils/logger.js';
 
 const log = new Logger(LogLevel.INFO);
 
-log.info("Game init"); // test
+log.info("Loading app"); // test
 
 window.addEventListener('DOMContentLoaded', () => {
 	// Show login form by default
