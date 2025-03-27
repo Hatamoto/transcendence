@@ -208,7 +208,8 @@ function initializeWebRTC(roomId) {
 			urls: process.env.STUN_URL
 		}
 		];
-
+	log.info("ICE config loaded:");
+	log.info(iceServers);
 	// Create separate connections for each player
 	for (const playerId of playerIds) {
 		const peerConnection = new RTCPeerConnection({ iceServers });

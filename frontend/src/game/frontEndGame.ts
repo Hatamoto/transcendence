@@ -51,10 +51,11 @@ export class frontEndGame {
 		// 	this.setupPeerConnectionEvents();
 		// });
 
+		// 10.11.1.9
 		this.configuration = {
 			iceServers: [
 				{
-					urls: 'turn:locahost:3478',
+					urls: 'turn:10.11.1.9:3478',
 					username: 'user',
 					credential: 'pass'
 				},
@@ -64,7 +65,8 @@ export class frontEndGame {
 			]
 		};
 		
-		log.info("ICE config loaded");
+		log.info("ICE config loaded:");
+		log.info(this.configuration);
 		this.peerConnection = new RTCPeerConnection(this.configuration);
 		log.info("Peer connection created");
 		this.setupPeerConnectionEvents();
