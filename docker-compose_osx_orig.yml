@@ -1,11 +1,6 @@
 services:
   app:
-    build:
-      context: .
-      args:
-        HOST_LAN_IP: ${HOST_LAN_IP}
-    env_file:
-      - ./backend/.env
+    build: .
     ports:
       - "5001:5001"
     depends_on:
@@ -21,4 +16,3 @@ services:
       --static-auth-secret=pass
       --realm=localhost
       --listening-port=3478
-      --log-file=./turn.log

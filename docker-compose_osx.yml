@@ -17,8 +17,7 @@ services:
     command: >
       --no-dtls --no-tls --verbose
       --lt-cred-mech
-      --use-auth-secret
-      --static-auth-secret=pass
+      --user=user:pass
       --realm=localhost
       --listening-port=3478
       --log-file=./turn.log

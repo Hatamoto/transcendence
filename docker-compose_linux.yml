@@ -1,3 +1,6 @@
+networks:
+  appnet:
+    driver: bridge
 services:
   app:
     build:
@@ -10,15 +13,21 @@ services:
       - "5001:5001"
     depends_on:
       - turn
+    networks:
+      - appnet
 
   turn:
     image: instrumentisto/coturn
-    network_mode: host
+    # network_mode: host !!!THIS FOR MAC ONLY!!!
     command: >
       --no-dtls --no-tls --verbose
       --lt-cred-mech
-      --use-auth-secret
-      --static-auth-secret=pass
-      --realm=localhost
+      --user=user:pass
+      --realm=turn
       --listening-port=3478
       --log-file=./turn.log
+    ports:
+      - "3478:3478/udp"
+      - "3478:3478/tcp"
+    networks:
+      - appnet
