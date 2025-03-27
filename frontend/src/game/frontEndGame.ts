@@ -2,7 +2,7 @@
 const socket = io();
 import { Logger, LogLevel } from '../utils/logger.js';
 
-const log = new Logger(LogLevel.INFO);
+const log = new Logger(LogLevel.DEBUG);
 
 log.info("UI ready")
 
@@ -43,12 +43,32 @@ export class frontEndGame {
 			socket.emit("joinRoomQue");
 		});
         
-		this.loadIceConfig().then(config => {
-			this.configuration = config;
-			this.peerConnection = new RTCPeerConnection(this.configuration);
-			log.info("Peer connection created");
-			this.setupPeerConnectionEvents();
-		});
+		// this.loadIceConfig().then(config => {
+		// 	log.info("ICE config loaded");
+		// 	this.configuration = config;
+		// 	this.peerConnection = new RTCPeerConnection(this.configuration);
+		// 	log.info("Peer connection created");
+		// 	this.setupPeerConnectionEvents();
+		// });
+
+		this.configuration = {
+			iceServers: [
+				{
+					urls: 'turn:locahost:3478',
+					username: 'user',
+					credential: 'pass'
+				},
+				{
+					urls: 'stun:stun.l.google.com:19302'
+				}
+			]
+		};
+		
+		log.info("ICE config loaded");
+		this.peerConnection = new RTCPeerConnection(this.configuration);
+		log.info("Peer connection created");
+		this.setupPeerConnectionEvents();
+		
 
 		socket.on('offer', async (offer) => {
 			try {
@@ -115,6 +135,7 @@ export class frontEndGame {
 	}
 
 	setupPeerConnectionEvents() {
+		log.info("Setting up peer connection events");
 		// Send ICE candidates to backend explicitly
 		this.peerConnection.onicecandidate = event => {
 			if (event.candidate) {
@@ -163,6 +184,7 @@ export class frontEndGame {
 	}	
 
 	setupKeyListeners(dataChannel) {
+		log.info("Setting up key listeners");
 		document.addEventListener('keydown', (e) => {
 			if (e.code === KeyBindings.UP || e.code === KeyBindings.DOWN) {
 				const data = { key: e.code, isPressed: true };

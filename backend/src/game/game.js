@@ -1,7 +1,7 @@
 "use strict";
 import { Logger, LogLevel } from '../utils/logger.js';
 
-const log = new Logger(LogLevel.INFO);
+const log = new Logger(LogLevel.DEBUG);
 
 const KeyBindings = {
 	UP: "KeyW",

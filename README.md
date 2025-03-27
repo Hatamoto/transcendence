@@ -1,4 +1,4 @@
-<p>Build:</p>
-<pre><code>docker build -t transcendence .</code></pre>
+<p>Clean build:</p>
+<pre><code>docker compose down --remove-orphans</code></pre>
 <p>Run:</p>
-<pre><code>docker run -it -p 5000:5000 transcendence</code></pre>
+<pre><code>docker compose up --build</code></pre>
