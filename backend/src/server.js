@@ -5,11 +5,17 @@ import { root, userRoutes } from './routes/routes.js'
 import dbInit from './database.js'
 import path from 'path'
 import { fileURLToPath } from 'url';
-import { Server } from "socket.io";
 import cookie from '@fastify/cookie'
 import formbody from '@fastify/formbody'
 import jwt from '@fastify/jwt'
 import multipart from '@fastify/multipart'
+import { setupNetworking } from './networking.js';
+import { Logger, LogLevel } from './utils/logger.js';
+import webrtcConfigRoute from './routes/env.js';
+
+const log = new Logger(LogLevel.INFO);
+
+log.info("Creating server")
 
 dotenv.config();
 
@@ -30,73 +36,15 @@ const fastify = Fastify({
   // logger: true
 })
 
-const server = fastify.server;
-const games = {};
-const rooms = {};
+// fastify.setTrustProxy(true); for web reverse proxy
 
-const io = new Server(server, {
-	cors: {
-	  origin: "*", // Change to frontend URL whenever needed
-	  methods: ["GET", "POST"],
-	  allowedHeaders: ["Content-Type"],
-	  credentials: true
-	},
-  });
+export const server = fastify.server;
+log.info('Server created');
+setupNetworking(server);
+log.info('Networking setup');
 
-io.on("connection", (socket) => {  
-	console.log("A user connected:", socket.id);
-
-	socket.on("disconnect", () => {
-		console.log("User disconnected:", socket.id);
-	});
-
-	socket.on("joinRoom", (roomId) => {
-		if (!rooms[roomId]) {
-			rooms[roomId] = {
-				players: {},
-				peerConnections: {}
-			};
-		}
-
-		// Add the player to the room
-		if (Object.keys(rooms[roomId].players).length <= 1) {
-			rooms[roomId].players[socket.id] = {
-				playerPosition: { x: 0, y: 0 },
-				dataChannel: null
-			};
-
-			socket.join(roomId);
-			console.log(`${socket.id} joined room ${roomId}`);
-		}
-
-		console.log("Players in room:", Object.keys(rooms[roomId].players).length );
-
-		console.log("Host: ", Object.keys(rooms[roomId].players)[0]);
-
-		if (Object.keys(rooms[roomId].players).length  == 2)
-			io.to(roomId).emit("startGame", roomId, Object.keys(rooms[roomId].players)[0]);
-	});
-
-	socket.on('offer', (offer) => {
-
-		socket.broadcast.emit('offer', offer);
-
-	});
-
-
-	socket.on('answer', (answer) => {
-
-		socket.broadcast.emit('answer', answer);
-
-	});
-
-
-	socket.on('ice-candidate', (candidate) => {
-		console.log("ice-candidate", candidate);
-		socket.broadcast.emit('ice-candidate', candidate);
-
-	});
-});
+// Register WebCRT config routes
+fastify.register(webrtcConfigRoute);
 
 // Serve frontend files
 fastify.register(fastifyStatic, {
@@ -119,17 +67,21 @@ fastify.setNotFoundHandler((req, reply) => {
     reply.sendFile('index.html', { root: FRONTEND_DIST });
 });
 
+log.info('Static files served');
 await fastify.register(dbInit)
-fastify.register(formbody)
-fastify.register(cookie)
-fastify.register(multipart)
+await fastify.register(formbody)
+await fastify.register(cookie)
+await fastify.register(multipart)
 await fastify.register(root)
 await fastify.register(userRoutes)
 
+log.info('Routes registered');
 fastify.listen({ port: process.env.PORT, host: process.env.HOST }, function (err, address) {
+	log.info('Listening on port', process.env.PORT);
 	if (err) {
+		log.info('Error: ', err)
 		fastify.log.error(err)
 		process.exit(1)
 	}
-	console.log(`Server listening at ${address}`)
-});
+	log.info(`Server listening at ${address}`)
+})

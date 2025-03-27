@@ -1,4 +1,7 @@
-import { startNewGame } from '../game/game.js';
+import { createNewGame } from '../game/frontEndGame.js';
+import { Logger, LogLevel } from '../utils/logger.js';
+
+const log = new Logger(LogLevel.INFO);
 
 export function loadGameRoom(): void {
 	const app = document.getElementById('app')!;
@@ -24,12 +27,7 @@ export function loadGameRoom(): void {
 		<div id="game-container" class="bg-green-100 p-2 rounded-lg shadow-md mt-4 w-[820px] h-[620px]"></div>
     `;
 
-	const startGameBtn = document.getElementById('test-btn');
-	startGameBtn?.addEventListener('click', () => {
-		console.log("Starting new game...");
-		startNewGame();
-		startGameBtn.style.display = 'none';
-	});
+	createNewGame();
 
     const logoutBtn = document.getElementById('logout-btn');
     logoutBtn?.addEventListener('click', async () => {
@@ -48,7 +46,7 @@ export function loadGameRoom(): void {
                 alert(`Logout failed: ${data.error || 'Unknown error'}`);
             }
         } catch (error) {
-            console.error("Logout Error:", error);
+            log.error("Logout Error:", error);
             alert("Network error during logout.");
         }
     });

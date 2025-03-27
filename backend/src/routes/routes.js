@@ -1,3 +1,5 @@
+import { getExternalIP } from '../utils/externalIp.js';
+
 import { 
   getUserOpts, 
   getUsersOpts, 
@@ -13,14 +15,28 @@ import {
   gameOpts
 } from '../schemas/userSchemas.js'
 
+let cachedIP = null;
+
 async function root (fastify, options) {
   fastify.get('/', async (req, reply) => {
     try {
 		return reply.sendFile('index.html');
     } catch (error) {
       console.log(error)
+	  reply.code(500).send('Internal Server Error');
     }
-  })
+	});
+
+	fastify.get('/external-ip', async (request, reply) => {
+		if (cachedIP) return reply.send({ ip: cachedIP });
+	
+		try {
+			cachedIP = await getExternalIP();
+			reply.send({ ip: cachedIP });
+		} catch (err) {
+			reply.code(500).send({ error: 'Failed to get IP' });
+		}
+	});
 }
 
 async function userRoutes (fastify, options) {
