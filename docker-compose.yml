@@ -4,6 +4,8 @@ networks:
 services:
   app:
     build: .
+    env_file:
+      - ./backend/.env
     ports:
       - "5001:5001"
     depends_on:

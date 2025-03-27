@@ -4,6 +4,11 @@ FROM node:20-bullseye-slim
 # Set working directory
 WORKDIR /app
 
+# Install curl for entrypoint
+RUN apt-get update && apt-get install -y curl
+
+RUN npm update
+
 # Copy only existing package.json and lock files
 # Use a wildcard to include package-lock.json if it exists
 COPY ./backend/package*.json ./backend/
@@ -16,11 +21,15 @@ RUN cd frontend && npm install
 # Copy full source code after dependencies
 COPY . .
 
-# Build the frontend (compiles TypeScript and processes Tailwind)
-RUN cd frontend && npm run build
+# Make entrypoint script executable and copy it
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-# Expose the port your Fastify app runs on
+# Set entrypoint
+ENTRYPOINT ["/entrypoint.sh"]
+
+# Expose port used by Fastify
 EXPOSE 5001
 
-# Command to run both frontend and backend together
+# Default CMD (can be overridden)
 CMD ["npm", "run", "dev", "--prefix", "backend"]

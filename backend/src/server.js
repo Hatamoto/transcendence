@@ -17,7 +17,6 @@ const log = new Logger(LogLevel.INFO);
 
 log.info("Creating server")
 
-
 dotenv.config();
 
 // import cors from '@fastify/cors';
@@ -36,6 +35,8 @@ const FRONTEND_DIST = path.resolve(__dirname, '../../frontend/dist');
 const fastify = Fastify({
   // logger: true
 })
+
+// fastify.setTrustProxy(true); for web reverse proxy
 
 export const server = fastify.server;
 log.info('Server created');

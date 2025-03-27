@@ -1,6 +1,7 @@
 // @ts-ignore
 const socket = io();
 import { Logger, LogLevel } from '../utils/logger.js';
+import { TURN_URL, TURN_USER, TURN_PASS, EXT_IP, STUN_URL} from '../config/env-config.js';
 
 const log = new Logger(LogLevel.DEBUG);
 
@@ -51,16 +52,28 @@ export class frontEndGame {
 		// 	this.setupPeerConnectionEvents();
 		// });
 
-		// 10.11.1.9
+		const ip = this.getExternalIP();
+		if (ip) {
+			log.info("Your external IP is:", ip);
+		} else {
+			log.warn("Could not get external IP.");
+		}
+
+		log.info("EXT_IP:", EXT_IP);
+		log.info("TURN_URL:", TURN_URL);
+		log.info("TURN_USER:", TURN_USER);
+		log.info("TURN_PASS:", TURN_PASS);
+		log.info("STUN_URL:", STUN_URL);
+
 		this.configuration = {
 			iceServers: [
 				{
-					urls: 'turn:10.11.1.9:3478',
-					username: 'user',
-					credential: 'pass'
+					urls: "turn:"+EXT_IP+":3478",
+					username: TURN_USER,
+					credential: TURN_PASS
 				},
 				{
-					urls: 'stun:stun.l.google.com:19302'
+					urls: STUN_URL
 				}
 			]
 		};
@@ -134,6 +147,18 @@ export class frontEndGame {
 		const response = await fetch('/webrtc-config');
 		const data = await response.json();
 		return { iceServers: data.iceServers };
+	}
+
+	private async getExternalIP(): Promise<string | null> {
+		try {
+			log.info("Fetching external IP");
+			const res = await fetch('/external-ip');
+			const data = await res.json();
+			return data.ip;
+		} catch (err) {
+			log.error("Failed to fetch external IP:", err);
+			return null;
+		}
 	}
 
 	setupPeerConnectionEvents() {
