@@ -43,21 +43,6 @@ export class frontEndGame {
 			socket.emit("joinRoomQue");
 		});
         
-		// this.loadIceConfig().then(config => {
-		// 	log.info("ICE config loaded");
-		// 	this.configuration = config;
-		// 	this.peerConnection = new RTCPeerConnection(this.configuration);
-		// 	log.info("Peer connection created");
-		// 	this.setupPeerConnectionEvents();
-		// });
-
-		const ip = this.getExternalIP();
-		if (ip) {
-			log.info("Your external IP is:", ip);
-		} else {
-			log.warn("Could not get external IP.");
-		}
-
 		log.info("EXT_IP:", EXT_IP);
 		log.info("TURN_URL:", TURN_URL);
 		log.info("TURN_USER:", TURN_USER);
@@ -87,8 +72,8 @@ export class frontEndGame {
 		socket.on('offer', async (offer) => {
 			try {
 				if (!this.peerConnection) {
-					const config = await this.loadIceConfig();
-					this.configuration = config;
+					// const config = await this.loadIceConfig();
+					// this.configuration = config;
 					this.peerConnection = new RTCPeerConnection(this.configuration);
 					log.info("Peer connection created");
 					this.setupPeerConnectionEvents();
@@ -140,24 +125,6 @@ export class frontEndGame {
 				log.error("Error adding received ICE candidate", e);
 			}
 		});
-	}
-
-	private async loadIceConfig(): Promise<RTCConfiguration> {
-		const response = await fetch('/webrtc-config');
-		const data = await response.json();
-		return { iceServers: data.iceServers };
-	}
-
-	private async getExternalIP(): Promise<string | null> {
-		try {
-			log.info("Fetching external IP");
-			const res = await fetch('/external-ip');
-			const data = await res.json();
-			return data.ip;
-		} catch (err) {
-			log.error("Failed to fetch external IP:", err);
-			return null;
-		}
 	}
 
 	setupPeerConnectionEvents() {
