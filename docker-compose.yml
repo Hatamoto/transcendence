@@ -3,7 +3,10 @@ networks:
     driver: bridge
 services:
   app:
-    build: .
+    build:
+      context: .
+      args:
+        HOST_LAN_IP: ${HOST_LAN_IP}
     env_file:
       - ./backend/.env
     ports:

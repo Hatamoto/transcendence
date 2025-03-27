@@ -1,6 +1,10 @@
 # Base image - lightweight Ubuntu
 FROM node:20-bullseye-slim
 
+# Needed for build-time replacement
+ARG HOST_LAN_IP
+ENV HOST_LAN_IP=$HOST_LAN_IP
+
 # Set working directory
 WORKDIR /app
 
