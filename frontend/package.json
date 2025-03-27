@@ -1,6 +1,6 @@
 {
     "scripts": {
-        "build": "npx tsc --project ./tsconfig.json && npx tailwindcss -i ./src/input.css -o ./dist/output.css && cp ./src/index.html ./dist/index.html && cp -R ./src/templates ./dist/templates",
+        "build": "npx tsc --project ./tsconfig.json && npx tailwindcss -i ./src/input.css -o ./dist/output.css && cp ./src/index.html ./dist/index.html && rm -rf ./dist/templates && cp -R ./src/templates ./dist/templates",
         "watch": "npx tsc --project ./tsconfig.json --watch & npx tailwindcss -i ./src/input.css -o ./dist/output.css --watch"
     },
 	"dependencies": {
