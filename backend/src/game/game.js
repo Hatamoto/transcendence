@@ -57,7 +57,7 @@ class Ball extends Entity {
 			this.xVel = -1;
 		}
 
-		if (this.xPos <= 0 || this.xPos >= 800) this.xPos = 400 - 10;
+		if (this.xPos <= 0 || this.xPos + this.width >= 800) this.xPos = 400 - 10;
 
 		this.xPos += this.xVel * this.speed;
 		this.yPos += this.yVel * this.speed;

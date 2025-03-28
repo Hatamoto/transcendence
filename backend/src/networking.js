@@ -122,6 +122,7 @@ export function setupNetworking(server){
 			if (!rooms[roomId]) {
 				rooms[roomId] = {
 				players: {},
+				gameStarted: false,
 				hostId: null
 				};
 			}
@@ -137,6 +138,7 @@ export function setupNetworking(server){
 				roomIds.openRoom(roomId);
 				rooms[roomId] = {
 				players: {},
+				gameStarted: false,
 				hostId: null
 				};
 			}
@@ -149,8 +151,9 @@ export function setupNetworking(server){
 			const playerRoom = [...socket.rooms][1];
 			if (!playerRoom || !rooms[playerRoom]) return;
 
-			if (Object.keys(rooms[playerRoom].players).length === 2) {
+			if (Object.keys(rooms[playerRoom].players).length === 2 && !rooms[playerRoom].gameStarted) {
 				const playerIds = Object.keys(rooms[playerRoom].players);
+				rooms[playerRoom].gameStarted = true;
 
 				games[playerRoom] = new Game(playerIds[0], playerIds[1]);
 				games[playerRoom].settings(settings);		
