@@ -9,7 +9,7 @@ export function loadGameRoom(): void {
         <div id="gameroom-page" class="bg-green-100 p-8 rounded-lg shadow-md w-[820px]">
             <h1 class="text-2xl font-bold text-center mb-4">Welcome to the Gameroom!</h1>
             <p class="text-center text-gray-600 mb-4">You are now logged in.</p>
-
+            <p id="size-txt" class="text-center text-gray-600 mb-4">Lobby size: 0/2</p>
 			<!-- Start New Game Button -->
 			<button id="test-btn" 
 					class="block w-full bg-green-500 text-white text-center py-2 rounded-md hover:bg-green-600">
@@ -19,6 +19,15 @@ export function loadGameRoom(): void {
 					class="block w-full bg-red-500 text-white text-center py-2 rounded-md hover:bg-green-600">
 				Start The Game
 			</button>
+			<details id="edit-game" class="hidden mt-4">
+				<summary class="cursor-pointer bg-blue-500 text-white p-2 rounded">
+					Open Input Fields
+				</summary>
+				<p class="text-center text-gray-600 mb-4">Ball size</p>
+				<input id="ball-size" type="text" placeholder="20" class="block w-full p-2 border border-gray-300 rounded mt-2">
+				<p class="text-center text-gray-600 mb-4">Ball speed</p>
+				<input id="ball-speed" type="text" placeholder="3" class="block w-full p-2 border border-gray-300 rounded mt-2">
+			</details>
             <!-- Logout Button -->
             <button 
                 id="logout-btn"

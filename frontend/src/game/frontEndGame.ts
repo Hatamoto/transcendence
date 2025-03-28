@@ -21,6 +21,7 @@ export class frontEndGame {
 	public player2PosY : number = 30; // change public to private later
 	public ballY : number;
 	public ballX : number;
+	public ballSize : number;
 
 	private dataChannel: RTCDataChannel | null = null;
 
@@ -32,9 +33,9 @@ export class frontEndGame {
     private bufferedCandidates: RTCIceCandidateInit[] = [];
 
 	constructor() {
-
+		const container = document.getElementById("game-container");
 		this.gameCanvas = document.createElement("canvas");
-		document.body.appendChild(this.gameCanvas);
+		container.appendChild(this.gameCanvas);
 		this.ctx = this.gameCanvas.getContext("2d")!;
 		this.gameCanvas.width = 800;
 		this.gameCanvas.height = 600;
@@ -255,10 +256,16 @@ export class frontEndGame {
 			this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 5, 15, 20);
 		}
 		this.ctx.fillStyle = "green";
-		this.ctx.fillRect(this.ballX, this.ballY, 20, 20);
+		this.ctx.fillRect(this.ballX, this.ballY, this.ballSize, this.ballSize);
 		this.ctx.fillRect(10, this.player1PosY, 10, 50);
 		this.ctx.fillRect(780, this.player2PosY, 10, 50);
 		//Game.testnum
+	}
+
+	settings(settings)
+	{
+		const {ballSettings, playerSettings} = settings;
+		this.ballSize = ballSettings.ballSize;
 	}
 }
 
@@ -273,18 +280,42 @@ export function createNewGame()
 	game = new frontEndGame();
 }
 
+socket.on("playerJoined", (playerAmount) => {
+	const sizeTxt = document.getElementById("size-txt");
+
+	sizeTxt.textContent = "Lobby size: " + playerAmount + "/2";
+});
+
 socket.on("roomFull", () => {
 	const strtBtn = document.getElementById("start-btn");
+	const gameEdit = document.getElementById("edit-game");
+
+	const ballSize  = (document.getElementById("ball-size") as HTMLInputElement)
+	const ballSpeed = (document.getElementById("ball-speed") as HTMLInputElement)
 
 	strtBtn.classList.remove("bg-red-500");
     strtBtn.classList.add("bg-green-500");
 
+	gameEdit.classList.remove("hidden", "mt-4");
+
 	strtBtn.addEventListener("click", () => {
-		socket.emit("hostStart");
+		const ballSizeValue = ballSize.value.trim() === "" ? ballSize.placeholder : ballSize.value;
+		const ballSpeedValue = ballSpeed.value.trim() === "" ? ballSpeed.placeholder : ballSpeed.value;
+
+		socket.emit("hostStart", {
+			ballSettings: {
+				ballSize: ballSizeValue,
+				ballSpeed: ballSpeedValue
+			},
+			playerSettings: {
+
+			}
+		});
 	});
 })
 
-socket.on("startGame", (roomId : string) => {
+socket.on("startGame", (roomId : string, settings) => {
 	log.info("Game started in room:", roomId);
+	game.settings(settings);
 	game.updateGraphics();
 });

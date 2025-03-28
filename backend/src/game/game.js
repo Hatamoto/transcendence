@@ -62,6 +62,13 @@ class Ball extends Entity {
 		this.xPos += this.xVel * this.speed;
 		this.yPos += this.yVel * this.speed;
 	}
+
+	set(value)
+	{
+		//this.height = value.ballSize;
+		//this.width = value.ballSize;
+		this.speed = value.ballSpeed;
+	}
 }
 
 class Player extends Entity {
@@ -129,6 +136,13 @@ class Game {
 		this.computer = new Computer(50, 20, 200, 780);
 
 		setInterval(() => this.update(this), 1000 / 60);
+	}
+
+	settings(settings)
+	{
+		const {ballSettings, playerSettings} = settings;
+		console.log("SpeedTWO: " + ballSettings.ballSpeed);
+		this.ball.set(ballSettings);
 	}
 
 	keyDown(e, playerID) {

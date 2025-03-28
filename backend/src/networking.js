@@ -78,7 +78,7 @@ export function setupNetworking(server){
 
 		socket.on("disconnect", () => {
 		log.info("User disconnected:", socket.id);
-		
+
 		// Clean up rooms and connections when a player disconnects
 		for (const roomId in rooms) {
 			if (rooms[roomId].players[socket.id]) {
@@ -145,17 +145,17 @@ export function setupNetworking(server){
 			joinRoom(roomId, socket);
 		});
 
-		socket.on('hostStart', () => {
+		socket.on('hostStart', (settings) => {
 			const playerRoom = [...socket.rooms][1];
 			if (!playerRoom || !rooms[playerRoom]) return;
 
 			if (Object.keys(rooms[playerRoom].players).length === 2) {
-				
 				const playerIds = Object.keys(rooms[playerRoom].players);
 
-				games[playerRoom] = new Game(playerIds[0], playerIds[1]);		
+				games[playerRoom] = new Game(playerIds[0], playerIds[1]);
+				games[playerRoom].settings(settings);		
 				initializeWebRTC(playerRoom);
-				io.to(playerRoom).emit("startGame", playerRoom, socket.id);
+				io.to(playerRoom).emit("startGame", playerRoom, settings);
 			}
 		});
 
@@ -339,6 +339,7 @@ function joinRoom(roomId, socket)
 		};
 
 		socket.join(roomId);
+		io.to(roomId).emit("playerJoined", Object.keys(rooms[roomId].players).length);
 		log.info(`${socket.id} joined room ${roomId}`);
 	} else {
 		socket.emit("roomFull", roomId);
@@ -353,13 +354,4 @@ function joinRoom(roomId, socket)
 		const playerIds = Object.keys(rooms[roomId].players);
 		io.sockets.sockets.get(playerIds[0]).emit("roomFull");
 	}
-
-	//if (Object.keys(rooms[roomId].players).length === 2) {
-	//	const playerIds = Object.keys(rooms[roomId].players);
-	//	games[roomId] = new Game(playerIds[0], playerIds[1]);
-
-	//	initializeWebRTC(roomId);
-
-	//	io.to(roomId).emit("startGame", roomId, rooms[roomId].hostId);
-	//}
 }
