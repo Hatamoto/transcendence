@@ -1,4 +1,4 @@
-import { logoutUser, loginUser, getToken} from '../controllers/loginController.js'
+import { logoutUser, loginUser, getToken, verifyOtp } from '../controllers/loginController.js'
 import { authenticateToken } from '../middleware/authentication.js'
 
 const logoutOpts = {
@@ -7,7 +7,7 @@ const logoutOpts = {
       type: 'object',
       required: ['token'],
       properties: {
-        token: {type: 'string' },
+        token: { type: 'string' },
       },
     },
   },
@@ -42,4 +42,17 @@ const tokenOpts = {
   handler: getToken,
 }
 
-export { loginOpts, logoutOpts, tokenOpts }
+const otpVerifyOpts = {
+  schema: {
+    body: {
+      type: 'object',
+      properties: {
+        otpCode: {type: 'string' },
+      },
+    },
+  },
+  preHandler: authenticateToken,
+  handler: verifyOtp,
+}
+
+export { loginOpts, logoutOpts, tokenOpts, otpVerifyOpts }

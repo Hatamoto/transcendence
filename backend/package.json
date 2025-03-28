@@ -28,11 +28,17 @@
     "ejs": "^3.1.10",
     "fastify": "^5.2.1",
     "fastify-cli": "^7.3.0",
+    "fastify-nodemailer": "^5.0.0",
     "fastify-plugin": "^5.0.1",
     "form-auto-content": "^3.2.1",
+    "hi-base32": "^0.5.1",
+    "otp-generator": "^4.0.1",
+    "otpauth": "^9.3.6",
+    "speakeasy": "^2.0.0",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
     "tap": "^21.1.0",
+    "twilio": "^5.5.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
