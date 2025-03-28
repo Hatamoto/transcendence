@@ -1,8 +1,3 @@
-import { loadFrontPage } from "../pages/frontpage.js";
-import { loadLoginForm } from "../pages/loginForm.js";
-import { loadRegistrationForm } from "../pages/registrationForm.js";
-import { loadGameRoom } from "../pages/gameRoom.js";
-
 class MultiKeyMap<V extends Function> {
 	private map: Map<string, V> = new Map();
 	
@@ -19,10 +14,10 @@ class MultiKeyMap<V extends Function> {
   
 const routes = new MultiKeyMap();
 
-routes.set(['/', 'Home'], loadFrontPage);
-routes.set(['/login', 'Login'], loadLoginForm);
-routes.set(['/register', 'Register'], loadRegistrationForm);
-routes.set(['/game', 'Game'], loadGameRoom);
+routes.set(['/', 'Home'], () => import('../pages/frontpage.js').then(module => module.loadFrontPage));
+routes.set(['/login', 'Login'], () => import('../pages/loginForm.js').then(module => module.loadLoginForm));
+routes.set(['/register', 'Register'], () => import('../pages/registrationForm.js').then(module => module.loadRegistrationForm));
+routes.set(['/game', 'Game'], () => import('../pages/gameRoom.js').then(module => module.loadGameRoom));
 
 export function route(event: Event, path: string): void {
     event.preventDefault();
@@ -42,13 +37,18 @@ function loadPage(path: string): void {
 	console.log(routes.get(path));
 	const routeHandler = routes.get(path);
     if (routeHandler) {
-        routeHandler();
+		routeHandler()
+			.then((handler: Function) => {
+				handler();
+			})
+			.catch((error: Error) => {
+				throw new Error('Something went wrong when loading the page'); //mayeb make general error handle anchor here
+            });
     } else {
 		fetch('/templates/404.html')
 			.then(response => {
-				if (!response.ok) {
+				if (!response.ok)
 					throw new Error(`Fetch failed: ${response.status}`);
-				}
 				return response.text();
 			})
 			.then(html => {

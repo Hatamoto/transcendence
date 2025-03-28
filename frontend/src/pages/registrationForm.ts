@@ -1,4 +1,5 @@
 import { registerUser } from "../services/api.js";
+import { RegisterRequest } from "../services/api.js";
 
 export function loadRegistrationForm(): void {
 	const app = document.getElementById('root')!;
@@ -13,12 +14,11 @@ export function loadRegistrationForm(): void {
 		.then(html => {
 			app.innerHTML = html;
 
-			const passwordError = document.getElementById('password-error') as HTMLElement;
-			
+			const passwordError = document.getElementById('password-error') as HTMLElement;	
 			document.getElementById('register-form')!.addEventListener('submit', async (e) => {
 				e.preventDefault();
 
-				const username = (document.getElementById('username') as HTMLInputElement).value;
+				const name = (document.getElementById('username') as HTMLInputElement).value;
 				const email = (document.getElementById('email') as HTMLInputElement).value;
 				const password = (document.getElementById('password') as HTMLInputElement).value;
 				const confirmPassword = (document.getElementById('confirm-password') as HTMLInputElement).value;
@@ -29,7 +29,12 @@ export function loadRegistrationForm(): void {
 				}
 
 				passwordError.style.display = 'none';
-				const success = await registerUser(username, email, password); //bad request
+				const user: RegisterRequest = {
+					name,
+					email,
+					password
+				};
+				const success = await registerUser(user); //bad request
 
 				if (success) {
 					alert('WORKED'); //temp
@@ -38,7 +43,7 @@ export function loadRegistrationForm(): void {
 		})
 		.catch(error => {
 			console.error('Error loading register page:', error);
-			alert('Something went wrong. Please try again later.');
+			alert('Something went wrong. Please try again later.'); //make error handling unified
 		});
 }
 

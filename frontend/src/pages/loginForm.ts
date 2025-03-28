@@ -12,6 +12,7 @@ export function loadLoginForm(): void {
 		})
 		.then(html => {
 			app.innerHTML = html;
+			
 			document.getElementById('login-form')!.addEventListener('submit', async (e) => {
 				e.preventDefault();
 
@@ -27,6 +28,6 @@ export function loadLoginForm(): void {
 		})
 		.catch(error => {
 			console.error('Error loading login page:', error);
-			alert('Something went wrong. Please try again later.');
+			alert('Something went wrong. Please try again later.'); //make error handling unified
 		});
 }

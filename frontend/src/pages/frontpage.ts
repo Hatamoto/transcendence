@@ -11,6 +11,7 @@ export function loadFrontPage(): void {
 	})
 	.then(html => {
 		app.innerHTML = html;
+		
 		document.getElementById('login-button')!.addEventListener('click', (event) => {
 			event.preventDefault();
 			route(event, '/login');
@@ -21,12 +22,12 @@ export function loadFrontPage(): void {
 			route(event, '/register');
 		});
 
-		// document.getElementById('game-debug')!.addEventListener('click', (event) => {
-		//     route(event, '/debug');
-		// });
+		document.getElementById('game-debug')!.addEventListener('click', (event) => {
+			route(event, '/game');
+		});
 	})
 	.catch(error => {
 		console.error('Error loading login page:', error);
-		alert('Something went wrong. Please try again later.');
+		alert('Something went wrong. Please try again later.'); //make error handling unified
 	});
 }
