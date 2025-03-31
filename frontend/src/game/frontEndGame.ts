@@ -296,7 +296,10 @@ socket.on("roomFull", () => {
 	strtBtn.classList.remove("bg-red-500");
     strtBtn.classList.add("bg-green-500");
 
-	gameEdit.classList.remove("hidden", "mt-4");
+	strtBtn.classList.remove("hidden");
+    strtBtn.classList.add("block");
+
+	gameEdit.classList.remove("hidden");
 
 	strtBtn.addEventListener("click", () => {
 		const ballSizeValue = ballSize.value.trim() === "" ? ballSize.placeholder : ballSize.value;

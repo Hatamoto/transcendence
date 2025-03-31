@@ -15,11 +15,11 @@ export function loadGameRoom(): void {
 					class="block w-full bg-green-500 text-white text-center py-2 rounded-md hover:bg-green-600">
 				Start New Game
 			</button>
-			<button id="start-btn" 
-					class="block w-full bg-red-500 text-white text-center py-2 rounded-md hover:bg-green-600">
+			<button id="start-btn"
+					class="hidden w-full bg-red-500 text-white text-center py-2 rounded-md hover:bg-green-600">
 				Start The Game
 			</button>
-			<details id="edit-game" class="hidden mt-4">
+			<details id="edit-game" class="hidden">
 				<summary class="cursor-pointer bg-blue-500 text-white p-2 rounded">
 					Open Input Fields
 				</summary>

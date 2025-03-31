@@ -28,6 +28,8 @@ class Entity {
 	}
 }
 
+let frame = 1;
+
 class Ball extends Entity {
 	constructor(h, w, y, x) {
 		super(h, w, y, x);
@@ -38,7 +40,7 @@ class Ball extends Entity {
 	}
 
 	update(player, player2) {
-		if (this.yPos >= 580) this.yVel = -1;
+		if (this.yPos += this.height >= 600) this.yVel = -1;
 		else if (this.yPos <= 0) this.yVel = 1;
 
 		if (
@@ -48,7 +50,6 @@ class Ball extends Entity {
 		) {
 			this.xVel = 1;
 		}
-
 		if (
 			this.xPos + this.width >= player2.xPos &&
 			this.yPos + this.height >= player2.yPos &&
@@ -57,17 +58,19 @@ class Ball extends Entity {
 			this.xVel = -1;
 		}
 
-		if (this.xPos <= 0 || this.xPos + this.width >= 800) this.xPos = 400 - 10;
-
+		if (this.xPos <= 0 || this.xPos + this.width >= 800) 
+		{
+			this.xPos = 400 - this.width / 2;
+		}
 		this.xPos += this.xVel * this.speed;
 		this.yPos += this.yVel * this.speed;
 	}
 
 	set(value)
 	{
-		//this.height = value.ballSize;
-		//this.width = value.ballSize;
-		this.speed = value.ballSpeed;
+		this.height = Number(value.ballSize);
+		this.width = Number(value.ballSize);
+		this.speed = Number(value.ballSpeed);
 	}
 }
 
@@ -141,7 +144,6 @@ class Game {
 	settings(settings)
 	{
 		const {ballSettings, playerSettings} = settings;
-		console.log("SpeedTWO: " + ballSettings.ballSpeed);
 		this.ball.set(ballSettings);
 	}
 
