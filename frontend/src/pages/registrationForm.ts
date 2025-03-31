@@ -1,5 +1,4 @@
-import { registerUser } from "../services/api.js";
-import { RegisterRequest } from "../services/api.js";
+import { UserRequest, registerUser } from "../services/api.js";
 
 export function loadRegistrationForm(): void {
 	const app = document.getElementById('root')!;
@@ -29,12 +28,12 @@ export function loadRegistrationForm(): void {
 				}
 
 				passwordError.style.display = 'none';
-				const user: RegisterRequest = {
+				const user: UserRequest = {
 					name,
 					email,
 					password
 				};
-				const success = await registerUser(user); //bad request
+				const success = await registerUser(user); //needs to check return status now
 
 				if (success) {
 					alert('WORKED'); //temp

@@ -1,4 +1,4 @@
-import { loginUser } from '../services/api.js';
+import { LoginRequest, loginUser } from '../services/api.js';
 import { loadGameRoom } from './gameRoom.js'; // Correct path to gameRoom.ts
 
 export function loadLoginForm(): void {
@@ -16,10 +16,14 @@ export function loadLoginForm(): void {
 			document.getElementById('login-form')!.addEventListener('submit', async (e) => {
 				e.preventDefault();
 
-				const username = (document.getElementById('username') as HTMLInputElement).value;
+				const name = (document.getElementById('username') as HTMLInputElement).value;
 				const password = (document.getElementById('password') as HTMLInputElement).value;
 
-				const success = await loginUser(username, password);
+				const user: LoginRequest = {
+					name,
+					password
+				};
+				const success = await loginUser(user);
 
 				if (success) {
 //					loadGameRoom();
