@@ -28,8 +28,6 @@ class Entity {
 	}
 }
 
-let frame = 1;
-
 class Ball extends Entity {
 	constructor(h, w, y, x) {
 		super(h, w, y, x);
@@ -86,6 +84,9 @@ class Player extends Entity {
 	}
 
 	move() {
+		if (this.yPos + this.height + this.yVel * this.speed >= 600) return;
+		else if (this.yPos + this.yVel * this.speed <= 0) return;
+
 		this.yPos += this.yVel * this.speed;
 	}
 

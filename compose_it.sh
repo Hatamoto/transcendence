@@ -1,5 +1,5 @@
 #!/bin/bash
-export HOST_LAN_IP=$(ip route get 1 | awk '{print $(NF-2)}')
+export HOST_LAN_IP=$(ip route get 1 | awk 'NF>=3 {print $(NF-2)}')
 
 echo "Using LAN IP: $HOST_LAN_IP"
 

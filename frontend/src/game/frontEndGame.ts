@@ -259,7 +259,6 @@ export class frontEndGame {
 		this.ctx.fillRect(this.ballX, this.ballY, this.ballSize, this.ballSize);
 		this.ctx.fillRect(10, this.player1PosY, 10, 50);
 		this.ctx.fillRect(780, this.player2PosY, 10, 50);
-		//Game.testnum
 	}
 
 	settings(settings)
@@ -318,7 +317,7 @@ socket.on("roomFull", () => {
 })
 
 socket.on("startGame", (roomId : string, settings) => {
-	log.info("Game started in room:", roomId, socket);
+	log.info("Game started in room:", roomId);
 	game.settings(settings);
 	game.updateGraphics();
 });
