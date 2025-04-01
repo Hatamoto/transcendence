@@ -55,8 +55,8 @@ async function dbInit(fastify, options) {
     CREATE TABLE IF NOT EXISTS otp_codes (
     id INTEGER PRIMARY KEY,
     user_id INTEGER NOT NULL,
-    otp_code TEXT NOT NULL,
-    otp_secret TEXT NOT NULL,
+    otp_code TEXT,
+    otp_secret TEXT,
     expires_at DATETIME NOT NULL,
     FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
   );
@@ -96,10 +96,10 @@ async function dbInit(fastify, options) {
       id INTEGER PRIMARY KEY,
       user_id INTEGER,
       temp_token TEXT NOT NULL,
-      expires_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
   `)
+
   fastify.decorate("db", db);
 
   fastify.addHook("onClose", (fastify, done) => {

@@ -1,6 +1,5 @@
 import { generateAccessToken } from '../middleware/authentication.js'
 import bcrypt from 'bcrypt'
-import twilio from 'twilio'
 import { 
   twoFactorAuthApp,
   twoFactorAuthEmail, 
@@ -9,8 +8,6 @@ import {
   verifyEmailOtp,
   verifySmsOtp
  } from '../middleware/authentication.js'
-
-const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
 
 const completeLogin = async function(req, reply, user) {
   try {
@@ -67,15 +64,22 @@ const loginUser = async function (req, reply) {
     if (user.two_fa_enabled === 1) {
       const tempToken = req.server.jwt.sign({ id: user.id }, process.env.TEMP_SECRET, { expiresIn: '5m' })
 
-      const insertTempStatement = req.server.db.prepare(`INSERT INTO pending_logins (user_id, temp_token, expires_at) VALUES (?, ?, DATETIME('now', '+5 minutes'))`)
+      console.log("temp token: ", tempToken)
+      const insertTempStatement = req.server.db.prepare(`INSERT INTO pending_logins (user_id, temp_token) VALUES (?, ?)`)
+
       insertTempStatement.run(user.id, tempToken)
 
-      if (user.two_fa_method === 'sms') twoFactorAuthSms(req, reply, user)
-      else if (user.two_fa_method === 'email') twoFactorAuthEmail(req, reply, user)
-      else if(user.two_fa_method === 'auth_app') twoFactorAuthApp(req, reply, user)
+      let messageId
+
+      if (user.two_fa_method === 'sms')
+        messageId = await twoFactorAuthSms(req, reply, user)
+      else if (user.two_fa_method === 'email') 
+        messageId = twoFactorAuthEmail(req, reply, user)
+      else if(user.two_fa_method === 'auth_app')
+        messageId = twoFactorAuthApp(req, reply, user)
       else return reply.code(401).send({ error: 'Two-Factor Authentication is enabled, but no method was found' })
       
-      return reply.send({ temp_token: tempToken, message: '2FA code sent. Verify to continue.' })
+      return reply.send({ temp_token: tempToken, message: '2FA code sent. Verify to continue.', messageId })
     }
     
     return completeLogin(req, reply, user)

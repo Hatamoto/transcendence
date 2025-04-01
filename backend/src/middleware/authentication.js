@@ -10,16 +10,15 @@ const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TO
 const authenticateToken = async (req, reply, done) => {
   const authHeader = req.headers['authorization']
   const token = authHeader && authHeader.split(' ')[1]
-  
-  console.log("auth token", token)
-  console.log("ACCESS_TOKEN_SECRET:", process.env.ACCESS_TOKEN_SECRET)
+
   if (!token) return reply.code(401).send({ error: "No token provided" })
 
   try {
     const user = await req.server.jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
     req.user = user;
-  } catch (err) {
+  } catch (error) {
+    console.log(error)
     return reply.code(403).send({ error: 'Unauthorized' });
   }
 }
@@ -43,42 +42,75 @@ async function twoFactorAuthSms (req, reply, user) {
         to: user.number,
         channel: 'sms'
       })
-      return reply.send({ success: true, status: message.status })
+      resolve({ success: true, status: message.status })
   } catch (error) {
-    return reply.code(500).send({ error: error.message })
+    console.log(error)
+    reject(error)
+    //return reply.code(500).send({ error: error.message })
   }
 }
 
 function twoFactorAuthEmail(req, reply, user) {
-  let { nodeMailer } = req.server.nodeMailer
-  const recipient = user.email
-  const otp = otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false })
-  
-  try {
-    const putStatement = req.server.db.prepare('INSERT INTO otp_codes (otp_code, user_id, expires_at) VALUES(?, ?, ?)')
-    putStatement.run(otp, user.id, DATETIME('now', '+1 minutes'))
+  return new Promise((resolve, reject) => {
+    const recipient = user.email
+    const otp = otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false })
     
-    nodeMailer.sendMail({
-      from: 'info@transendence.com',
-      to: recipient,
-      subject: 'Two-Factor Authentication code',
-      text: otp
-    }, (error, info) => {
-      if (error) return reply.code(404).send({ error: error.message })
+    // try {
+    //   const putStatement = req.server.db.prepare('INSERT INTO otp_codes (otp_code, user_id, expires_at) VALUES(?, ?, ?)')
+    //   putStatement.run(otp, user.id, strftime('%Y-%m-%d %H:%M:%S', 'now', '+1 minutes'))
       
-      return reply.send({ messageId: info.messageId })
-    })
-  } catch (error) {
-    return reply.code(500).send({ error: error.message })
-  }
+    //   nodeMailer.sendMail({
+    //     from: 'info@transendence.com',
+    //     to: recipient,
+    //     subject: 'Two-Factor Authentication code',
+    //     text: otp
+    //   }, (error, info) => {
+    //     if (error) return reply.code(404).send({ error: error.message })
+        
+    //     return reply.send({ messageId: info.messageId })
+    //   })
+    // } catch (error) {
+    //   console.log(error)
+    //   return reply.code(500).send({ error: error.message })
+    // }
+  
+    try {
+      const putStatement = req.server.db.prepare(
+        'INSERT INTO otp_codes (otp_code, user_id, expires_at) VALUES(?, ?, datetime(\'now\', \'+1 minutes\'))'
+      )
+      putStatement.run(otp, user.id)
+      
+      if (!req.server.nodeMailer) {
+        return reject(new Error('Nodemailer is not initialized'));
+      }
+
+      req.server.nodeMailer.sendMail(
+        {
+          from: 'info@transendence.com',
+          to: recipient,
+          subject: 'Two-Factor Authentication code',
+          text: otp
+        },
+        (error, info) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(info.messageId);
+          }
+        }
+      );
+    } catch (error) {
+      reject(error);
+    }
+  })
 }
 
 const twoFactorAuthApp = async function(req, reply, user) {
   try {
     const base32_secret = generateRandomBase32()
 
-    const putStatement = req.server.db.prepare('INSERT INTO otp_codes (otp_secret, user_id, expires_at) VALUES(?, ?, ?)')
-    putStatement.run(base32_secret, user.id, DATETIME('now', '+1 minutes'))
+    const putStatement = req.server.db.prepare('INSERT INTO otp_codes (otp_secret, user_id, expires_at) VALUES(?, ?, strftime("%Y-%m-%d %H:%M:%S", "now", "+1 minutes"))')
+    putStatement.run(base32_secret, user.id)
   
     let totp = OTPAuth.TOTP({
       issuer: "Transendence",
@@ -89,9 +121,11 @@ const twoFactorAuthApp = async function(req, reply, user) {
     })
     let otpAuthUrl = totp.toString()
 
-    return reply.send({ secret: base32_secret, auth_url: otpAuthUrl })
+    resolve({ secret: base32_secret, auth_url: otpAuthUrl })
   } catch (error) {
-    return reply.code(500).send({ error: error.message })
+    console.log(error)
+    reject(error)
+    //return reply.code(500).send({ error: error.message })
   }
 }
 
@@ -99,7 +133,7 @@ async function verifyAppOtp(req, reply, user) {
   const { otp } = req.body;
 
   try {
-    const otpRecord = req.server.db.prepare('SELECT otp_secret FROM otp_codes WHERE user_id = ? AND expires_at > DATETIME("now")').get(user.id);
+    const otpRecord = req.server.db.prepare('SELECT otp_secret FROM otp_codes WHERE user_id = ? AND expires_at > CURRENT_TIMESTAMP').get(user.id);
 
     if (otpRecord) {
       let totp = OTPAuth.TOTP({
@@ -118,6 +152,7 @@ async function verifyAppOtp(req, reply, user) {
       return false
     }
   } catch (error) {
+    console.log(error)
     return reply.code(500).send({ error: error.message });
   }
 }
@@ -126,13 +161,14 @@ async function verifyEmailOtp(req, reply, user) {
   const { otp } = req.body;
 
   try {
-    const otpRecord = req.server.db.prepare('SELECT * FROM otp_codes WHERE otp_code = ? AND user_id = ? AND expires_at > DATETIME("now")').get(otp, user.id);
+    const otpRecord = req.server.db.prepare('SELECT * FROM otp_codes WHERE otp_code = ? AND user_id = ? AND expires_at > CURRENT_TIMESTAMP').get(otp, user.id);
 
     if (otpRecord)
       return true
     else
       return false
   } catch (error) {
+    console.log(error)
     return reply.code(500).send({ error: error.message });
   }
 }
@@ -154,6 +190,7 @@ async function verifySmsOtp(req, reply, user) {
     else
       return false
   } catch (error) {
+    console.log(error)
     return reply.code(500).send({ error: error.message });
   }
 }
