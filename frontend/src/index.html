@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+  
 <head>
    <meta charset="UTF-8">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Transe</title>
+   <title>Transcendence</title>
    <link rel="stylesheet" href="/output.css">
    <style>
      body {
@@ -15,7 +16,7 @@
      }
      
      header {
-       background-color: #2D3748;
+       background-color: #026519;
        color: white;
        padding: 20px 20px;
        display: flex;
@@ -31,29 +32,37 @@
      }
      
      .sidebar {
+       display: flex;
+       flex-direction: column;
+       align-items: start;
        width: 250px;
-       background-color: #4A5568;
-       color: white;
+       background-color: #026519;
+       color: rgba(255, 255, 255, 0.537);
        padding-top: 20px;
        position: fixed;
        top: 80px;
-       bottom: 0;
+       left: -250px;
+       height: 100vh;
+       transition: transform 0.3s ease;
      }
      
      .sidebar a {
        display: block;
        padding: 10px 20px;
-       color: white;
+       color: rgba(255, 255, 255, 0.537);
        text-decoration: none;
        margin: 10px 0;
      }
      
      .sidebar a:hover {
-       background-color: #2C5282;
+       background-color: #2b6c0d;
+     }
+
+     .sidebar.open {
+      transform: translateX(250px);
      }
      
      main {
-       margin-left: 260px;
        padding: 20px;
        flex-grow: 1;
        background-color: #F7FAFC;
@@ -73,24 +82,45 @@
          margin-left: 0;
          padding: 20px;
        }
+
+       .sidebar.open {
+        transform: translateX(200px);
+       }
      }
    </style>
 </head>
+
 <body>
    <header>
-     <h1>PLEASE FIX ME</h1>
+     <h1>TRANSCENDENCE</h1>
    </header>
    
-   <div class="sidebar">
+   <div id="sidebar" class="sidebar">
      <a href="/" onclick="route('/')">Home</a>
      <a href="/login" onclick="route('/login')">Login</a>
      <a href="/register" onclick="route('/register')">Register</a>
    </div>
    
-   <main id="root">
+   <main id="root" class="flex justify-center items-center">
      <div class="debug">TEST</div>
    </main>
 
+  
    <script type="module" src="init.js"></script>
+   
+   <button id="openSidebarButton" style="position: absolute; top: 20px; left: 20px;">☰</button>
+
+   <script>
+    window.addEventListener('DOMContentLoaded', (event) => {
+       const sidebar = document.getElementById('sidebar');
+       const openSidebarButton = document.getElementById('openSidebarButton');
+
+       openSidebarButton.addEventListener('click', () => {
+          sidebar.classList.toggle('open');
+          
+          openSidebarButton.textContent = sidebar.classList.contains('open') ? '✖' : '☰';
+       });
+    });
+ </script>
 </body>
 </html>
