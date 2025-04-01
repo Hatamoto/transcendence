@@ -240,14 +240,8 @@ export {
   updateUserOpts,
   updatePasswordOpts,
   dashboardOpts,
-<<<<<<< HEAD
   gameroomOpts,
   gameOpts,
   userLogoutOpts,
   uploadOpts
-=======
-  uploadOpts,
-  tfaEnableOpts,
-  tfaDisableOpts
->>>>>>> origin/Merging-front&backend
 }
