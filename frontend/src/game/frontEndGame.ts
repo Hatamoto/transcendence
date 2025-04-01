@@ -1,5 +1,5 @@
 // @ts-ignore
-const socket = io();
+import socket from '../utils/socket.js';
 import { Logger, LogLevel } from '../utils/logger.js';
 import { TURN_URL, TURN_USER, TURN_PASS, EXT_IP, STUN_URL} from '../config/env-config.js';
 
@@ -318,7 +318,7 @@ socket.on("roomFull", () => {
 })
 
 socket.on("startGame", (roomId : string, settings) => {
-	log.info("Game started in room:", roomId);
+	log.info("Game started in room:", roomId, socket);
 	game.settings(settings);
 	game.updateGraphics();
 });
