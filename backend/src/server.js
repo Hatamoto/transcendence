@@ -1,7 +1,7 @@
 import dotenv from "dotenv"
 import Fastify from 'fastify'
 import fastifyStatic from '@fastify/static'
-import { root, userRoutes } from './routes/routes.js'
+import { root, userRoutes, friendRoutes } from './routes/routes.js'
 import dbInit from './database.js'
 import path from 'path'
 import { fileURLToPath } from 'url';
@@ -25,6 +25,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // Path to frontend output
 const FRONTEND_DIST = path.resolve(__dirname, '../../frontend/dist');
+
+dotenv.config();
 
 const fastify = Fastify({
   // logger: true
@@ -125,6 +127,7 @@ fastify.register(cookie)
 fastify.register(multipart)
 await fastify.register(root)
 await fastify.register(userRoutes)
+await fastify.register(friendRoutes)
 
 fastify.listen({ port: process.env.PORT, host: process.env.HOST }, function (err, address) {
 	if (err) {

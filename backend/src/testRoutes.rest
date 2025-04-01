@@ -1,0 +1,80 @@
+### Add user
+
+POST http://localhost:3000/api/user
+Content-Type: application/json
+
+{
+    "name": "Tomi",
+    "email": "tomi.kartaslammi@gmail.com",
+    "number": "+358443014007",
+    "password": "Salasan4_"
+}
+
+### Login user
+
+POST http://localhost:4000/api/login
+Content-Type: application/json
+
+{
+    "username": "Tomi",
+    "password": "Salasan4_"
+}
+
+### Enable 2FA
+
+POST http://localhost:3000/api/2fa/enable
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IlRvbWkiLCJpYXQiOjE3NDMxNzA2MDAsImV4cCI6MTc0MzE3NDIwMH0.eOcNLWYjy0cc1lBwHz4C8UYy6eFyUfyevEd424cg5NA
+
+{
+    "method": "sms"
+}
+
+### disable 2FA
+
+POST http://localhost:3000/api/2fa/disable
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IlRvbWkiLCJpYXQiOjE3NDMxNTY5NjgsImV4cCI6MTc0MzE2MDU2OH0.cfe5fV5bkh1Ywm8YcQ2RkQIt7TGtnJqEF2pMI8F23Io
+
+### Logout user
+
+DELETE http://localhost:4000/api/logout
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IlRvbWkiLCJpYXQiOjE3NDMxNTc3NzIsImV4cCI6MTc0MzE2MTM3Mn0.UtjgLL2-qRFfs4H4WCqwX-APzVOMxaH8ebTVbXzqk1c
+
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IlRvbWkiLCJpYXQiOjE3NDMxNTc3NzJ9.2eJTYvQfcipSpsyYx2SpsAYhgdZyJnZW6X4_DF2RhRY"
+}
+
+###
+
+POST http://localhost:4000/api/verify/otp
+Content-Type: application/json
+Authorization: Bearer
+
+{
+    "otp": ""
+}
+
+### Get users
+
+GET http://localhost:3000/api/users
+
+### Delete user
+
+DELETE http://localhost:3000/api/user/1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6IlRvbWkiLCJpYXQiOjE3NDMxNTAyMDksImV4cCI6MTc0MzE1MzgwOX0.DYaTP5MRFJnEIFUalO0bnlXD5dYC6TjSR26rz4kqaOg
+
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6IlRvbWkiLCJpYXQiOjE3NDMxNTAyMDl9.WzEHfcYCjqAkFDp5ypp8mHnBZ9uuvXDZq6nqjiO8jFA"
+}
+
+### Get new refresh token
+
+POST http://localhost:4000/api/token
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6IlRvbWkiLCJpYXQiOjE3NDMxNTAyMDksImV4cCI6MTc0MzE1MzgwOX0.DYaTP5MRFJnEIFUalO0bnlXD5dYC6TjSR26rz4kqaOg
+
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6IlRvbWkiLCJpYXQiOjE3NDMxNTAyMDl9.WzEHfcYCjqAkFDp5ypp8mHnBZ9uuvXDZq6nqjiO8jFA"
+}
