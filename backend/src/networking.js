@@ -91,6 +91,7 @@ export function setupNetworking(server){
 				// deleting room when its empty
 				if (Object.keys(rooms[roomId].players).length === 0) {
 					delete rooms[roomId];
+					games[roomId].stop();
 					delete games[roomId];
 					log.info(`Room ${roomId} deleted`);
 				}
@@ -115,8 +116,6 @@ export function setupNetworking(server){
 				log.warn(`No player room found for socket ${socket.id}`);
 			}
 		});
-
-		socket.on("connect", () => log.info("socket.io connected:", socket.id));
 
 		socket.on("joinRoom", (roomId) => {
 			if (!rooms[roomId]) {
@@ -297,6 +296,8 @@ function startGameLoop(roomId) {
 	if (!game || !room) return;
 	
 	const gameLoop = () => {
+	if (!game.isRunning())
+		return ;
 	game.update(game);
 	
 	const positions = game.getPos();

@@ -40,7 +40,7 @@ class Ball extends Entity {
 	}
 
 	update(player, player2) {
-		if (this.yPos += this.height >= 600) this.yVel = -1;
+		if (this.yPos + this.height >= 600) this.yVel = -1;
 		else if (this.yPos <= 0) this.yVel = 1;
 
 		if (
@@ -124,6 +124,7 @@ class Computer extends Entity {
 
 class Game {
 	constructor(playerOne, playerTwo) {
+		this.running = true;
 		this.width = 800;
 		this.height = 600;
 		this.players = [];
@@ -137,8 +138,6 @@ class Game {
 
 		this.ball = new Ball(20, 20, this.height / 2, this.width / 2 - 10);
 		this.computer = new Computer(50, 20, 200, 780);
-
-		setInterval(() => this.update(this), 1000 / 60);
 	}
 
 	settings(settings)
@@ -156,12 +155,6 @@ class Game {
 		return [this.players[0].getpos(), this.players[1].getpos(), this.ball.getpos()];
 	}
 
-	static gameLoop(gameInstance) {
-		gameInstance.update(gameInstance);
-		gameInstance.updateGraphics();
-		requestAnimationFrame(() => Game.gameLoop(gameInstance));
-	}
-
 	update(gameInstance) {
 		gameInstance.players.forEach(player => {
 			if (player.getKeysPressed()[KeyBindings.UP]) {
@@ -177,6 +170,14 @@ class Game {
 		gameInstance.ball.update(gameInstance.players[0], gameInstance.players[1]);
 	}
 
+	stop() {
+		this.running = false;
+	}
+
+	isRunning()
+	{
+		return (this.running);
+	}
 }
 
 export { Game };
