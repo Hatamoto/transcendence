@@ -17,7 +17,7 @@ export function loadGameRoom(): void {
 			</button>
 			<label for="colorSelect">Choose ball color:</label>
 			<select id="colorSelect" name="mySelect">
-				<option value="" disabled selected>Select an option</option>
+				<option value="white" selected>White</option>
 				<option value="green">Green</option>
 				<option value="blue">Blue</option>
 				<option value="red">Red</option>

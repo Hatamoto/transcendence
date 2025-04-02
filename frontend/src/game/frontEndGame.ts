@@ -42,14 +42,6 @@ export class frontEndGame {
         
 		this.setupButtons();
 
-		// this.loadIceConfig().then(config => {
-		// 	log.info("ICE config loaded");
-		// 	this.configuration = config;
-		// 	this.peerConnection = new RTCPeerConnection(this.configuration);
-		// 	log.info("Peer connection created");
-		// 	this.setupPeerConnectionEvents();
-		// });
-
 		const ip = this.getExternalIP();
 		if (ip) {
 			log.info("Your external IP is:", ip);
@@ -280,7 +272,7 @@ socket.on("connect", () => {
 	log.info("Connected to server");
 });
 
-let game;
+let game : frontEndGame;
 
 export function createNewGame()
 {
