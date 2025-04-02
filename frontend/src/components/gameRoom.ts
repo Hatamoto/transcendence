@@ -15,6 +15,15 @@ export function loadGameRoom(): void {
 					class="block w-full bg-green-500 text-white text-center py-2 rounded-md hover:bg-green-600">
 				Start New Game
 			</button>
+			<label for="colorSelect">Choose ball color:</label>
+			<select id="colorSelect" name="mySelect">
+				<option value="" disabled selected>Select an option</option>
+				<option value="green">Green</option>
+				<option value="blue">Blue</option>
+				<option value="red">Red</option>
+				<option value="purple">Purple</option>
+			</select>
+			</button>
 			<button id="start-btn"
 					class="hidden w-full bg-red-500 text-white text-center py-2 rounded-md hover:bg-green-600">
 				Start The Game

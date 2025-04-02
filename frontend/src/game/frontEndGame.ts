@@ -14,9 +14,9 @@ enum KeyBindings{
 
 export class frontEndGame {
 	private static keysPressed: { [key: string]: boolean } = {};
-	private testbtn : HTMLElement;
 	private gameCanvas : HTMLCanvasElement;
 	private ctx : CanvasRenderingContext2D;
+	private color : string;
 	public player1PosY : number = 30;
 	public player2PosY : number = 30; // change public to private later
 	public ballY : number;
@@ -39,12 +39,9 @@ export class frontEndGame {
 		this.ctx = this.gameCanvas.getContext("2d")!;
 		this.gameCanvas.width = 800;
 		this.gameCanvas.height = 600;
-
-		this.testbtn = document.getElementById("test-btn");
-		this.testbtn.addEventListener("click", () => {
-			socket.emit("joinRoomQue");
-		});
         
+		this.setupButtons();
+
 		// this.loadIceConfig().then(config => {
 		// 	log.info("ICE config loaded");
 		// 	this.configuration = config;
@@ -162,6 +159,16 @@ export class frontEndGame {
 		}
 	}
 
+	setupButtons()
+	{
+		const testbtn = document.getElementById("test-btn");
+		
+		testbtn.addEventListener("click", () => {
+			socket.emit("joinRoomQue");
+		});
+
+	}
+
 	setupPeerConnectionEvents() {
 		log.info("Setting up peer connection events");
 		// Send ICE candidates to backend explicitly
@@ -255,14 +262,15 @@ export class frontEndGame {
 			this.ctx.fillStyle = "white";
 			this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 5, 15, 20);
 		}
-		this.ctx.fillStyle = "green";
+		this.ctx.fillStyle = this.color;
 		this.ctx.fillRect(this.ballX, this.ballY, this.ballSize, this.ballSize);
 		this.ctx.fillRect(10, this.player1PosY, 10, 50);
 		this.ctx.fillRect(780, this.player2PosY, 10, 50);
 	}
 
-	settings(settings)
+	settings(settings, color)
 	{
+		this.color = color;
 		const {ballSettings, playerSettings} = settings;
 		this.ballSize = ballSettings.ballSize;
 	}
@@ -317,7 +325,9 @@ socket.on("roomFull", () => {
 })
 
 socket.on("startGame", (roomId : string, settings) => {
+	const select = document.getElementById("colorSelect") as HTMLSelectElement;
+	const color = select.options[select.selectedIndex].value;
 	log.info("Game started in room:", roomId);
-	game.settings(settings);
+	game.settings(settings, color);
 	game.updateGraphics();
 });
