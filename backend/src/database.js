@@ -37,9 +37,10 @@ async function dbInit(fastify, options) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY,
+      google_id TEXT UNIQUE DEFAULT NULL,
       name TEXT UNIQUE NOT NULL,
       email TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
+      password TEXT,
       number TEXT UNIQUE DEFAULT NULL,
       status INTEGER NOT NULL DEFAULT 0 CHECK(status IN (0 ,1)),
       wins INTEGER NOT NULL DEFAULT 0,
@@ -50,17 +51,6 @@ async function dbInit(fastify, options) {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `)
-
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS otp_codes (
-    id INTEGER PRIMARY KEY,
-    user_id INTEGER NOT NULL,
-    otp_code TEXT,
-    otp_secret TEXT,
-    expires_at DATETIME NOT NULL,
-    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
-  );
-`)
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS refresh_tokens (
@@ -88,15 +78,6 @@ async function dbInit(fastify, options) {
       PRIMARY KEY (user_id, friend_id),
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
       FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE
-    );
-  `)
-
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS pending_logins (
-      id INTEGER PRIMARY KEY,
-      user_id INTEGER,
-      temp_token TEXT NOT NULL,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
   `)
 

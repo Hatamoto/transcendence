@@ -4,9 +4,9 @@ POST http://localhost:3000/api/user
 Content-Type: application/json
 
 {
-    "name": "3333",
-    "email": "fd@gmail.com",
-    "number": "+401234567",
+    "name": "user2",
+    "email": "user2@gmail.com",
+    "number": "+3583242124",
     "password": "Salasan4_"
 }
 
@@ -16,43 +16,22 @@ POST http://localhost:4000/api/login
 Content-Type: application/json
 
 {
-    "username": "3333",
+    "username": "user2",
     "password": "Salasan4_"
 }
 
-### Enable 2FA
-
-POST http://localhost:3000/api/2fa/enable
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6IjMzMzMiLCJpYXQiOjE3NDM1MTI2MzMsImV4cCI6MTc0MzUxNjIzM30.51HHQLEYZNGPV2lUTuyNMSkSpWUtclxOsyliufWfdFY
-
-{
-    "method": "sms"
-}
-
-### disable 2FA
-
-POST http://localhost:3000/api/2fa/disable
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IlRvbWkiLCJpYXQiOjE3NDM0OTQzMDIsImV4cCI6MTc0MzQ5NzkwMn0.y-e5SJZaNsdhOdWXG2Yv9A69WptKSq8Cc9RGPgf5w3w
 ### Logout user
 
 DELETE http://localhost:4000/api/logout
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IlRvbWkiLCJpYXQiOjE3NDM0OTQzMDIsImV4cCI6MTc0MzQ5NzkwMn0.y-e5SJZaNsdhOdWXG2Yv9A69WptKSq8Cc9RGPgf5w3w
 
 {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IlRvbWkiLCJpYXQiOjE3NDM0OTQyMjZ9.oo_WhSEbByiOnld44XRbw3mRfd9qsugo_Cs6G7ioC-M"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IlRvbWkgS2FydGFzbGFtbWkiLCJpYXQiOjE3NDM2Njc2MTl9.zs1TosEYgPRZLaxrlc68WT8Dwpnr8lKVHaam-qenIGo"
 }
 
-###
+### Google sign in
 
-POST http://localhost:4000/api/verify/otp
-Content-Type: application/json
-Authorization: Bearer
-
-{
-    "otp": ""
-}
+GET http://localhost:4000/api/googleauth
 
 ### Get users
 
@@ -62,18 +41,58 @@ GET http://localhost:3000/api/users
 
 DELETE http://localhost:3000/api/user/1
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IlRvbWkiLCJpYXQiOjE3NDM0OTQzMDIsImV4cCI6MTc0MzQ5NzkwMn0.y-e5SJZaNsdhOdWXG2Yv9A69WptKSq8Cc9RGPgf5w3w
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IlRvbWkgS2FydGFzbGFtbWkiLCJpYXQiOjE3NDM2Njc0ODgsImV4cCI6MTc0MzY3MTA4OH0.6Po11mMi0waT75NalcJ_YHySplFE4yw2jGUYSNqj2xg
 
 {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IlRvbWkiLCJpYXQiOjE3NDM0OTMzNjd9.0NVG9imcA2XDfnCA5n7fF-wnlKnYgyNlPjA5NxP-ij4"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IlRvbWkgS2FydGFzbGFtbWkiLCJpYXQiOjE3NDM2Njc0ODh9.TTi0kujPUuB6iEFYsOMxVTfFl-dc7RIf70kzE9SnHbM"
 }
 
 ### Get new refresh token
 
 POST http://localhost:4000/api/token
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IlRvbWkiLCJpYXQiOjE3NDM0OTQyMjYsImV4cCI6MTc0MzQ5NzgyNn0._56Ri3Lbd-M03eDmh9ZMjlRm9LpuadTFdCB59rkDyTs
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywibmFtZSI6InVzZXIzIiwiaWF0IjoxNzQzNTk0MTY5LCJleHAiOjE3NDM1OTc3Njl9.7aKGtTxs2b7Im09jkrM_kVC_3BlgBvMaXpvpmvWrITQ
 
 {
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6IlRvbWkiLCJpYXQiOjE3NDM0OTQyMjZ9.oo_WhSEbByiOnld44XRbw3mRfd9qsugo_Cs6G7ioC-M"
 }
+
+### Send friend request
+
+POST http://localhost:3000/api/friend/request
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6InVzZXIxIiwiaWF0IjoxNzQzNjgwNTYyLCJleHAiOjE3NDM2ODQxNjJ9.HMjdLiGGzH22izfrzEzMLOD0CCUcxoqjjFgtZFH0s1I
+
+{
+    "friendId": "2"
+}
+
+### Accept friend request
+
+POST http://localhost:3000/api/friend/accept
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6InVzZXIyIiwiaWF0IjoxNzQzNjgwNjI3LCJleHAiOjE3NDM2ODQyMjd9.3Rh5wmH6T2-IdaKBf-SyiDhjzGN5qx08y-Gr2PQmfSI
+
+{
+    "friendId": "1"
+}
+
+### Check pending friedn requests
+
+GET http://localhost:3000/api/friend/check_pending
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6InVzZXIyIiwiaWF0IjoxNzQzNjgwNjI3LCJleHAiOjE3NDM2ODQyMjd9.3Rh5wmH6T2-IdaKBf-SyiDhjzGN5qx08y-Gr2PQmfSI
+
+### Block friend request
+
+POST http://localhost:3000/api/friend/block
+Content-Type: application/json
+Authorization: Bearer
+
+{
+    "friendId": "2"
+}
+
+### Find all friends for user
+
+GET http://localhost:3000/api/friends
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6InVzZXIxIiwiaWF0IjoxNzQzNjgwNTYyLCJleHAiOjE3NDM2ODQxNjJ9.HMjdLiGGzH22izfrzEzMLOD0CCUcxoqjjFgtZFH0s1I

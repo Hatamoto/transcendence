@@ -32,6 +32,7 @@ const addUser = async function (req, reply) {
     const salt = await bcrypt.genSalt(10)
     hashedPassword = await bcrypt.hash(password, salt)
   }
+
   const user = {
    id: uuidv4(),
    name,
@@ -42,7 +43,7 @@ const addUser = async function (req, reply) {
   try {
     const insertStatement = req.server.db.prepare('INSERT INTO users (name, email, password, number, avatar) VALUES (?, ?, ?, ?, ?)')
     insertStatement.run(name, email, hashedPassword, number, avatar)
-    
+
     return reply.code(201).send(user)
   } catch (error) {
     console.log(error)
@@ -55,21 +56,21 @@ const addUser = async function (req, reply) {
 }
 
 const getUser = async function (req, reply) {
-    const { id } = req.params
+  const { id } = req.params
 
-    try {
-      const getStatement = req.server.db.prepare('SELECT * FROM users WHERE id = ?')
-      const user = getStatement.get(id)
+  try {
+    const getStatement = req.server.db.prepare('SELECT * FROM users WHERE id = ?')
+    const user = getStatement.get(id)
 
-      if (!user) {
-        return reply.code(404).send({ error: "User not found" })
-      }
-  
-      return reply.send(user)
-    } catch (error) {
-      return reply.code(500).send({ error: error.message })
+    if (!user) {
+      return reply.code(404).send({ error: "User not found" })
     }
+
+    return reply.send(user)
+  } catch (error) {
+    return reply.code(500).send({ error: error.message })
   }
+}
 
 const deleteUser = async function (req, reply) {
   const {id} = req.params

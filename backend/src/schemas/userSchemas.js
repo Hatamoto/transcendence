@@ -6,11 +6,9 @@ import {
   updateUser,
   updatePassword,
   getDashboard,
-  uploadAvatar,
-  tfaEnable,
-  tfaDisable
+  uploadAvatar
 } from '../controllers/userController.js'
-import { authenticateToken } from '../middleware/authentication.js'
+import authenticateToken from '../middleware/authentication.js'
 import User from '../models/userModel.js'
 
 const getUsersOpts = {
@@ -161,44 +159,6 @@ const uploadOpts = {
   handler: uploadAvatar,
 }
 
-const tfaEnableOpts = {
-  schema: {
-    body: {
-      type: 'object',
-      required: ['method'],
-      properties: {
-        method: { type: 'string' },
-      },
-    },
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          message: { type: 'string' },
-        },
-      },
-    },
-  },
-  preHandler: authenticateToken,
-  handler: tfaEnable,
-}
-
-const tfaDisableOpts = {
-  schema: {
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          message: { type: 'string' },
-        },
-      },
-    },
-  },
-  preHandler: authenticateToken,
-  handler: tfaDisable,
-}
-
-
 export {
   getUserOpts,
   getUsersOpts,
@@ -207,7 +167,5 @@ export {
   updateUserOpts,
   updatePasswordOpts,
   dashboardOpts,
-  uploadOpts,
-  tfaEnableOpts,
-  tfaDisableOpts
+  uploadOpts
 }

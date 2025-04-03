@@ -1,5 +1,5 @@
-import { logoutUser, loginUser, getToken, verifyOtp } from '../controllers/loginController.js'
-import { authenticateToken } from '../middleware/authentication.js'
+import { logoutUser, loginUser, getToken, googleAuthHandler } from '../controllers/loginController.js'
+import authenticateToken from '../middleware/authentication.js'
 
 const logoutOpts = {
   schema: {
@@ -11,7 +11,6 @@ const logoutOpts = {
       },
     },
   },
-  preHandler: authenticateToken,
   handler: logoutUser,
 }
 
@@ -42,17 +41,9 @@ const tokenOpts = {
   handler: getToken,
 }
 
-const otpVerifyOpts = {
-  schema: {
-    body: {
-      type: 'object',
-      properties: {
-        otpCode: {type: 'string' },
-      },
-    },
-  },
-  preHandler: authenticateToken,
-  handler: verifyOtp,
+const googleAuthOpts = {
+  schema: {},
+  handler: googleAuthHandler,
 }
 
-export { loginOpts, logoutOpts, tokenOpts, otpVerifyOpts }
+export { loginOpts, logoutOpts, tokenOpts, googleAuthOpts }

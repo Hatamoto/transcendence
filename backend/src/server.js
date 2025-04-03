@@ -20,7 +20,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 
 const fastify = Fastify({
-	//logger: true
+	logger: true
 })
 
 await fastify.register(dbInit)
