@@ -1,4 +1,5 @@
 import { createNewGame } from '../game/frontEndGame.js';
+import { startChat } from '../utils/chat.js';
 import { Logger, LogLevel } from '../utils/logger.js';
 
 const log = new Logger(LogLevel.INFO);
@@ -46,9 +47,17 @@ export function loadGameRoom(): void {
             </button>
         </div>
 		<div id="game-container" class="bg-green-100 p-2 rounded-lg shadow-md mt-4 w-[820px] h-[620px]"></div>
+		<div id="chat-container" class="bg-green-900 p-2 rounded-lg shadow-md mt-4 w-[400px] h-[620px] fixed top-4 right-4">
+		<input id="chat-box" type="text" placeholder="" class="block w-full p-2 border border-gray-300 rounded mt-2" maxlength="50">
+		<button id="send-btn"
+			class="w-full bg-purple-500 text-white text-center py-2 rounded-md hover:bg-green-600">
+			Send
+		</button>
+		</div>
     `;
 
 	createNewGame();
+	startChat();
 
     const logoutBtn = document.getElementById('logout-btn');
     logoutBtn?.addEventListener('click', async () => {

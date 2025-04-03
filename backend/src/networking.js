@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import wrtc from "wrtc";
 import { Game } from './game/game.js';
 import { Logger, LogLevel } from './utils/logger.js';
+import { startChat } from "./chat.js";
 
 const log = new Logger(LogLevel.INFO);
 
@@ -67,7 +68,8 @@ export function setupNetworking(server){
 		},
 	});
 
-	io.on("connection", (socket) => {  
+	io.on("connection", (socket) => { 
+		startChat(io, socket);
 		log.info("A user connected:", socket.id);
 
 		socket.on('frontend-log', (logdata) => {
@@ -91,8 +93,10 @@ export function setupNetworking(server){
 				// deleting room when its empty
 				if (Object.keys(rooms[roomId].players).length === 0) {
 					delete rooms[roomId];
-					games[roomId].stop();
-					delete games[roomId];
+					if (games[roomId]) {
+						games[roomId].stop();
+						delete games[roomId];
+					}
 					log.info(`Room ${roomId} deleted`);
 				}
 			}
