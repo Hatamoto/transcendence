@@ -311,7 +311,8 @@ function startGameLoop(roomId) {
 		try {
 			dataChannel.send(JSON.stringify({
 			type: 'gameState',
-			positions: positions
+			positions: positions,
+			scores: game.getScores()
 			}));
 		} catch (err) {
 			log.error(`Error sending game state to player ${playerId}:`, err);

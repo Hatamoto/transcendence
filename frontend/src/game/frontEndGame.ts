@@ -17,6 +17,8 @@ export class frontEndGame {
 	private gameCanvas : HTMLCanvasElement;
 	private ctx : CanvasRenderingContext2D;
 	private color : string;
+	private player1Score : number = 0;
+	private player2Score : number = 0;
 	public player1PosY : number = 30;
 	public player2PosY : number = 30; // change public to private later
 	public ballY : number;
@@ -192,7 +194,7 @@ export class frontEndGame {
 				try {
 					const data = JSON.parse(e.data);
 					if (data.type === 'gameState') {
-						this.updateGameState(data.positions);
+						this.updateGameState(data.positions, data.scores);
 						log.debug(" Game state updated");
 					}
 				} catch (err) {
@@ -229,7 +231,10 @@ export class frontEndGame {
 		});
 	}
 
-	updateGameState(positions) {
+	updateGameState(positions, scores) {
+		this.player1Score = scores[0];
+		this.player2Score = scores[1];
+
 		if (positions && positions.length >= 3) {
 		  // Update player 1 position
 		  this.player1PosY = positions[0][0];
@@ -254,6 +259,9 @@ export class frontEndGame {
 			this.ctx.fillStyle = "white";
 			this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 5, 15, 20);
 		}
+		this.ctx.font = "48px 'Comic Sans MS', cursive, sans-serif";
+		this.ctx.fillText(this.player2Score.toString(), this.gameCanvas.width / 2 - 48 * 2, 50);
+		this.ctx.fillText(this.player1Score.toString(), this.gameCanvas.width / 2 + 48, 50);
 		this.ctx.fillStyle = this.color;
 		this.ctx.fillRect(this.ballX, this.ballY, this.ballSize, this.ballSize);
 		this.ctx.fillRect(10, this.player1PosY, 10, 50);

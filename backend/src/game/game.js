@@ -26,6 +26,10 @@ class Entity {
 	getpos() {
 		return [this.yPos, this.xPos];
 	}
+
+	getPoints() {
+		return this.points;
+	}
 }
 
 class Ball extends Entity {
@@ -56,9 +60,16 @@ class Ball extends Entity {
 			this.xVel = -1;
 		}
 
-		if (this.xPos <= 0 || this.xPos + this.width >= 800) 
+		if (this.xPos <= 0) 
 		{
+			player.points++;
 			this.xPos = 400 - this.width / 2;
+			this.yVel = Math.random() < 0.5 ? 1 : -1;
+		} else if (this.xPos + this.width >= 800)
+		{
+			player2.points++;
+			this.xPos = 400 - this.width / 2;
+			this.yVel = Math.random() < 0.5 ? 1 : -1;
 		}
 		this.xPos += this.xVel * this.speed;
 		this.yPos += this.yVel * this.speed;
@@ -77,6 +88,7 @@ class Player extends Entity {
 		super(h, w, y, x);
 		this.speed = 4;
 		this.keysPressed = {};
+		this.points = 0;
 	}
 
 	setvel(velocityY) {
@@ -154,6 +166,11 @@ class Game {
 
 	getPos() {
 		return [this.players[0].getpos(), this.players[1].getpos(), this.ball.getpos()];
+	}
+
+	getScores()
+	{
+		return [this.players[0].getPoints(), this.players[1].getPoints()];
 	}
 
 	update(gameInstance) {
