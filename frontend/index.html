@@ -2,12 +2,24 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link href="./src/output.css" rel="stylesheet">
+    <link href="./output.css" rel="stylesheet">
+    
+    <!-- Move the import map here so it loads before any scripts -->
+    <!--<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/v135/react@18.2.0/es2022/react.development.js",
+    "react/jsx-runtime": "https://esm.sh/v135/react@18.2.0/es2022/jsx-runtime.development.js",
+    "react-dom": "https://esm.sh/v135/react-dom@18.2.0/es2022/react-dom.development.js",
+    "react-dom/client": "https://esm.sh/v135/react-dom@18.2.0/es2022/client.development.js",
+    "react-router-dom": "https://esm.sh/v135/react-router-dom@6.4.1"
+  }
+}-->
+</script>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="./main.js"></script>
+    <script src="https://cdn.socket.io/4.4.0/socket.io.min.js"></script>
   </body>
-
-  <script src="https://cdn.socket.io/4.4.0/socket.io.min.js"></script>
 </html>
