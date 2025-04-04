@@ -45,13 +45,10 @@ async function dbInit(fastify, options) {
       name TEXT UNIQUE NOT NULL,
       email TEXT UNIQUE NOT NULL,
       password TEXT,
-      number TEXT UNIQUE DEFAULT NULL,
       status INTEGER NOT NULL DEFAULT 0 CHECK(status IN (0 ,1)),
       wins INTEGER NOT NULL DEFAULT 0,
       losses INTEGER NOT NULL DEFAULT 0,
       avatar TEXT NOT NULL,
-      two_fa_enabled INTEGER NOT NULL DEFAULT 0 CHECK(status IN (0 ,1)),
-      two_fa_method TEXT CHECK(two_fa_method IN ('sms', 'email', 'auth_app')),
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `)
