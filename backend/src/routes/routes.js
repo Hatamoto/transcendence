@@ -29,7 +29,7 @@ let cachedIP = null;
 async function root (fastify, options) {
   fastify.get('/', async (req, reply) => {
     try {
-      return reply.view('../public/index.ejs')
+		return reply.sendFile('index.html');
     } catch (error) {
       console.log(error)
 	  reply.code(500).send('Internal Server Error');

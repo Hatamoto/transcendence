@@ -11,14 +11,15 @@ import view from '@fastify/view'
 import jwt from '@fastify/jwt'
 import multipart from '@fastify/multipart'
 import { fileURLToPath } from 'url';
+import { setupNetworking } from './networking.js';
+import { Logger, LogLevel } from './utils/logger.js';
+import webrtcConfigRoute from './routes/env.js';
 
 
 // Compute __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-import { setupNetworking } from './networking.js';
-import { Logger, LogLevel } from './utils/logger.js';
-import webrtcConfigRoute from './routes/env.js';
+const FRONTEND_DIST = path.resolve(__dirname, '../../frontend/dist');
 
 const log = new Logger(LogLevel.INFO);
 
@@ -27,7 +28,7 @@ log.info("Creating server")
 dotenv.config();
 
 const fastify = Fastify({
-	logger: true
+	logger: false
 })
 
 fastify.register(view, {

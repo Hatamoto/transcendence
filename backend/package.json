@@ -7,7 +7,7 @@
     "build": "npm run build:frontend",
     "build:frontend": "cd ../frontend && npm run build",
     "clean": "rm -rf ../frontend/dist",
-    "start": "node server",
+    "start": "node ./src/server",
     "dev": "nodemon server",
     "devAuth": "nodemon src/authServer.js"
   },
@@ -38,7 +38,8 @@
     "sqlite3": "^5.1.7",
     "uuid": "^11.1.0",
 	"socket.io": "^4.8.1",
-	"socket.io-client": "^4.8.1"
+	"socket.io-client": "^4.8.1",
+	"wrtc": "^0.4.7"
   },
   "devDependencies": {
     "nodemon": "^3.1.9",
