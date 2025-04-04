@@ -19,7 +19,7 @@ const getUsers = async function (req, reply) {
 }
 
 const addUser = async function (req, reply) {
-  const { name, email, password, number } = req.body
+  const { name, email, password } = req.body
   const avatar = process.env.DEFAULT_AVATAR
   let hashedPassword = password
   const passwordPattern = /^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:'",.<>?])/
@@ -41,8 +41,8 @@ const addUser = async function (req, reply) {
   }
 
   try {
-    const insertStatement = req.server.db.prepare('INSERT INTO users (name, email, password, number, avatar) VALUES (?, ?, ?, ?, ?)')
-    insertStatement.run(name, email, hashedPassword, number, avatar)
+    const insertStatement = req.server.db.prepare('INSERT INTO users (name, email, password, avatar) VALUES (?, ?, ?, ?)')
+    insertStatement.run(name, email, hashedPassword, avatar)
 
     return reply.code(201).send(user)
   } catch (error) {
@@ -87,7 +87,7 @@ const deleteUser = async function (req, reply) {
 
 const updateUser = async function (req, reply) {
   const {id} = req.params
-  const { name, email, number } = req.body
+  const { name, email } = req.body
   
   try {
     const getStatement = req.server.db.prepare('SELECT * FROM users WHERE id = ?')
@@ -171,42 +171,6 @@ const uploadAvatar = async function(req, reply) {
   }
 }
 
-const tfaEnable = async function(req, reply) {
-  const { method } = req.body
-  
-  try {
-    const number = req.server.db.prepare('SELECT number FROM users WHERE id = ?').get(req.user.id)
-
-    if (method === 'sms' && !number) {
-      return reply.code(400).send({ error: "User needs to have phone number added to enable sms authentication" })
-    }
-  } catch (error) {
-    return reply.code(500).send({ error: error.message })
-  }
-  try {
-    const updateStatement = req.server.db.prepare('UPDATE users SET two_fa_enabled = 1, two_fa_method = ? WHERE id = ?')
-    updateStatement.run(method, req.user.id)
-
-    return reply.send({ message: 'Two-Factor Authentication enabled'})
-  } catch (error) {
-    return reply.code(500).send({ message: error.message })
-  }
-}
-
-const tfaDisable = async function(req, reply) {
-  try {
-    const updateStatement = req.server.db.prepare('UPDATE users SET two_fa_enabled = 0, two_fa_method = NULL WHERE id = ?')
-    updateStatement.run(req.user.id)
-
-    const deleteStatement = req.server.db.prepare('DELETE FROM otp_codes WHERE user_id = ?')
-    deleteStatement.run(req.user.id)
-
-    return reply.send({ message: "Two-Factor Authentication disabled" })
-  } catch (error) {
-    return reply.code(500).send({ message: error.message })
-  }
-}
-
 export { 
   getUser,
   addUser,
@@ -215,7 +179,5 @@ export {
   updateUser,
   updatePassword,
   getDashboard,
-  uploadAvatar,
-  tfaEnable,
-  tfaDisable
+  uploadAvatar
 }
