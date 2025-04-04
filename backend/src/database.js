@@ -1,9 +1,13 @@
 import fp from 'fastify-plugin'
 import Database from 'better-sqlite3'
+import { Logger, LogLevel } from './utils/logger.js';
+
+const log = new Logger(LogLevel.INFO);
 
 async function dbInit(fastify, options) {
+  log.info("Creating database");
   const dbFile = process.env.DB_FILE || "./database.db"
-  const db = new Database(dbFile, { verbose: console.log })
+  const db = new Database(dbFile); //, { verbose: console.log })
 
 //   db.exec(`
 //     DROP TABLE IF EXISTS otp_codes;
@@ -87,7 +91,7 @@ async function dbInit(fastify, options) {
     db.close();
     done();
   });
-  console.log("Database created successfully");
+  log.info("Database created successfully");
 }
 
 export default fp(dbInit);
