@@ -1,11 +1,17 @@
-import { useEffect } from "react";
 import Header from "../components/headers";
 import { createNewGame } from "../game/frontEndGame";
+import { useEffect, useRef } from "react";
+
 
 export default function GameRoom() {
 
+	const hasRun = useRef(false);
+
 	useEffect(() => {
+	  if (!hasRun.current) {
 		createNewGame();
+		hasRun.current = true;
+	  }
 	}, []);
 
 	return (
@@ -13,7 +19,6 @@ export default function GameRoom() {
 			<Header />
 			<div id="gameroom-page" className="bg-green-100 p-8 rounded-lg shadow-md w-[820px]">
 				<h1 className="text-2xl font-bold text-center mb-4">Welcome to the Gameroom!</h1>
-				<p className="text-center text-gray-600 mb-4">You are now logged in.</p>
 				<p id="size-txt" className="text-center text-gray-600 mb-4">Lobby size: 0/2</p>
 				
 				<button id="test-btn" className="block w-full bg-green-500 text-white text-center py-2 rounded-md hover:bg-green-600">
