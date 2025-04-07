@@ -5,15 +5,10 @@ import {
   deleteUser,
   updateUser,
   updatePassword,
-  loginUser,
   getDashboard,
-  userLogout,
-  uploadAvatar,
-  getGameroom,
-  getGame
-} from '../controllers/UserController.js'
+  uploadAvatar
+} from '../controllers/userController.js'
 import authenticateToken from '../middleware/authentication.js'
-import authenticate from '../middleware/authentication.js';
 import User from '../models/userModel.js'
 
 const getUsersOpts = {
@@ -32,14 +27,17 @@ const addUserOpts = {
   schema: {
     body: {
       type: 'object',
-      required: ['name', 'email', 'password'],
+      required: ['name', 'email', 'number', 'password'],
       properties: {
         name: { type: 'string' },
         email: { type: 'string', format: 'email' },
+        number: {
+          type: 'string',
+          pattern: "^\\+\\d{6,15}$",
+        },
         password: { 
           type: 'string',
           minLength: 8,
-          pattern: '^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};\'":,.<>?])',
          },
       },
     },
@@ -82,6 +80,7 @@ const deleteUserOpts = {
       },
     },
   },
+  preHandler: authenticateToken,
   handler: deleteUser,
 }
 
@@ -93,10 +92,23 @@ const updateUserOpts = {
         id: { type: 'integer', minimum: 1 }
       },
     },
+    body: {
+      type: 'object',
+      required: ['name', 'email', 'number'],
+      properties: {
+        name: { type: 'string' },
+        email: { type: 'string', format: 'email' },
+        number: {
+          type: 'string',
+          pattern: "^\\+\\d{6,15}$",
+        },
+      },
+    },
     response: {
       200: User,
     },
   },
+  preHandler: authenticateToken,
   handler: updateUser,
 }
 
@@ -109,7 +121,7 @@ const updatePasswordOpts = {
       },
     },
     body: {
-	  type: 'object',
+      type: 'object',
       required: ['password'],
       properties: {
         password: { 
@@ -127,67 +139,23 @@ const updatePasswordOpts = {
       },
     },
   },
+  preHandler: authenticateToken,
   handler: updatePassword,
 }
 
-const loginUserOpts = {
-  schema: {
-    body: {
-      type: 'object',
-      required: ['username', 'password'],
-      properties: {
-        username: { type: 'string' },
-        password: { type: 'string' },
-      },
-    },
-  },
-  handler: loginUser,
-}
-
 const dashboardOpts = {
-  schema: {
-	type: 'object',
-  },
+  schema: {},
   preHandler: authenticateToken,
   handler: getDashboard,
-}
-
-const gameroomOpts = {
-	schema: {
-	  type: 'object',
-	},
-	preHandler: authenticateToken,
-	handler: getGameroom,
-}
-
-const gameOpts = {
-	schema: {
-		type: 'object',
-	},
-	preHandler: authenticateToken,
-	handler: getGameroom,
-}
-
-const userLogoutOpts = {
-  schema: {
-    response: {
-      200: {
-		type: 'object',
-	  },
-    },
-  },
-  handler: userLogout,
 }
 
 const uploadOpts = {
   schema: {
     response: {
-      204: {
-		type: 'object',
-	  },
+      204: {},
     },
   },
-  preHandler: authenticate,
+  preHandler: authenticateToken,
   handler: uploadAvatar,
 }
 
@@ -198,10 +166,6 @@ export {
   deleteUserOpts,
   updateUserOpts,
   updatePasswordOpts,
-  loginUserOpts,
   dashboardOpts,
-  gameroomOpts,
-  gameOpts,
-  userLogoutOpts,
   uploadOpts
 }

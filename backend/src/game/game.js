@@ -26,6 +26,10 @@ class Entity {
 	getpos() {
 		return [this.yPos, this.xPos];
 	}
+
+	getPoints() {
+		return this.points;
+	}
 }
 
 class Ball extends Entity {
@@ -38,7 +42,7 @@ class Ball extends Entity {
 	}
 
 	update(player, player2) {
-		if (this.yPos >= 580) this.yVel = -1;
+		if (this.yPos + this.height >= 600) this.yVel = -1;
 		else if (this.yPos <= 0) this.yVel = 1;
 
 		if (
@@ -48,7 +52,6 @@ class Ball extends Entity {
 		) {
 			this.xVel = 1;
 		}
-
 		if (
 			this.xPos + this.width >= player2.xPos &&
 			this.yPos + this.height >= player2.yPos &&
@@ -57,10 +60,26 @@ class Ball extends Entity {
 			this.xVel = -1;
 		}
 
-		if (this.xPos <= 0 || this.xPos >= 800) this.xPos = 400 - 10;
-
+		if (this.xPos <= 0) 
+		{
+			player.points++;
+			this.xPos = 400 - this.width / 2;
+			this.yVel = Math.random() < 0.5 ? 1 : -1;
+		} else if (this.xPos + this.width >= 800)
+		{
+			player2.points++;
+			this.xPos = 400 - this.width / 2;
+			this.yVel = Math.random() < 0.5 ? 1 : -1;
+		}
 		this.xPos += this.xVel * this.speed;
 		this.yPos += this.yVel * this.speed;
+	}
+
+	set(value)
+	{
+		this.height = Number(value.ballSize);
+		this.width = Number(value.ballSize);
+		this.speed = Number(value.ballSpeed);
 	}
 }
 
@@ -69,6 +88,7 @@ class Player extends Entity {
 		super(h, w, y, x);
 		this.speed = 4;
 		this.keysPressed = {};
+		this.points = 0;
 	}
 
 	setvel(velocityY) {
@@ -76,6 +96,9 @@ class Player extends Entity {
 	}
 
 	move() {
+		if (this.yPos + this.height + this.yVel * this.speed >= 600) return;
+		else if (this.yPos + this.yVel * this.speed <= 0) return;
+
 		this.yPos += this.yVel * this.speed;
 	}
 
@@ -114,6 +137,7 @@ class Computer extends Entity {
 
 class Game {
 	constructor(playerOne, playerTwo) {
+		this.running = true;
 		this.width = 800;
 		this.height = 600;
 		this.players = [];
@@ -127,8 +151,12 @@ class Game {
 
 		this.ball = new Ball(20, 20, this.height / 2, this.width / 2 - 10);
 		this.computer = new Computer(50, 20, 200, 780);
+	}
 
-		setInterval(() => this.update(this), 1000 / 60);
+	settings(settings)
+	{
+		const {ballSettings, playerSettings} = settings;
+		this.ball.set(ballSettings);
 	}
 
 	keyDown(e, playerID) {
@@ -140,10 +168,9 @@ class Game {
 		return [this.players[0].getpos(), this.players[1].getpos(), this.ball.getpos()];
 	}
 
-	static gameLoop(gameInstance) {
-		gameInstance.update(gameInstance);
-		gameInstance.updateGraphics();
-		requestAnimationFrame(() => Game.gameLoop(gameInstance));
+	getScores()
+	{
+		return [this.players[0].getPoints(), this.players[1].getPoints()];
 	}
 
 	update(gameInstance) {
@@ -161,6 +188,14 @@ class Game {
 		gameInstance.ball.update(gameInstance.players[0], gameInstance.players[1]);
 	}
 
+	stop() {
+		this.running = false;
+	}
+
+	isRunning()
+	{
+		return (this.running);
+	}
 }
 
 export { Game };

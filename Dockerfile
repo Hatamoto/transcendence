@@ -36,4 +36,4 @@ ENTRYPOINT ["/entrypoint.sh"]
 EXPOSE 5001
 
 # Default CMD (can be overridden)
-CMD ["npm", "run", "dev", "--prefix", "backend"]
+CMD ["npm", "run", "start", "--prefix", "backend"]

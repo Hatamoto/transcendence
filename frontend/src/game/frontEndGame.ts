@@ -1,9 +1,9 @@
 // @ts-ignore
-const socket = io();
+import socket from '../utils/socket.js';
 import { Logger, LogLevel } from '../utils/logger.js';
 import { TURN_URL, TURN_USER, TURN_PASS, EXT_IP, STUN_URL} from '../config/env-config.js';
 
-const log = new Logger(LogLevel.DEBUG);
+const log = new Logger(LogLevel.INFO);
 
 log.info("UI ready")
 
@@ -14,13 +14,16 @@ enum KeyBindings{
 
 export class frontEndGame {
 	private static keysPressed: { [key: string]: boolean } = {};
-	private testbtn : HTMLElement;
-	public gameCanvas : HTMLCanvasElement;
-	public ctx : CanvasRenderingContext2D;
+	private gameCanvas : HTMLCanvasElement;
+	private ctx : CanvasRenderingContext2D;
+	private color : string;
+	private player1Score : number = 0;
+	private player2Score : number = 0;
 	public player1PosY : number = 30;
 	public player2PosY : number = 30; // change public to private later
 	public ballY : number;
 	public ballX : number;
+	public ballSize : number;
 
 	private dataChannel: RTCDataChannel | null = null;
 
@@ -32,17 +35,22 @@ export class frontEndGame {
     private bufferedCandidates: RTCIceCandidateInit[] = [];
 
 	constructor() {
-
+		const container = document.getElementById("game-container");
 		this.gameCanvas = document.createElement("canvas");
+		container.appendChild(this.gameCanvas);
 		this.ctx = this.gameCanvas.getContext("2d")!;
 		this.gameCanvas.width = 800;
 		this.gameCanvas.height = 600;
-
-		this.testbtn = document.getElementById("test-btn");
-		this.testbtn.addEventListener("click", () => {
-			socket.emit("joinRoomQue");
-		});
         
+		this.setupButtons();
+
+		const ip = this.getExternalIP();
+		if (ip) {
+			log.info("Your external IP is:", ip);
+		} else {
+			log.warn("Could not get external IP.");
+		}
+
 		log.info("EXT_IP:", EXT_IP);
 		log.info("TURN_URL:", TURN_URL);
 		log.info("TURN_USER:", TURN_USER);
@@ -127,6 +135,34 @@ export class frontEndGame {
 		});
 	}
 
+	private async loadIceConfig(): Promise<RTCConfiguration> {
+		const response = await fetch('/webrtc-config');
+		const data = await response.json();
+		return { iceServers: data.iceServers };
+	}
+
+	private async getExternalIP(): Promise<string | null> {
+		try {
+			log.info("Fetching external IP");
+			const res = await fetch('/external-ip');
+			const data = await res.json();
+			return data.ip;
+		} catch (err) {
+			log.error("Failed to fetch external IP:", err);
+			return null;
+		}
+	}
+
+	setupButtons()
+	{
+		const testbtn = document.getElementById("test-btn");
+		
+		testbtn.addEventListener("click", () => {
+			socket.emit("joinRoomQue");
+		});
+
+	}
+
 	setupPeerConnectionEvents() {
 		log.info("Setting up peer connection events");
 		// Send ICE candidates to backend explicitly
@@ -158,7 +194,7 @@ export class frontEndGame {
 				try {
 					const data = JSON.parse(e.data);
 					if (data.type === 'gameState') {
-						this.updateGameState(data.positions);
+						this.updateGameState(data.positions, data.scores);
 						log.debug(" Game state updated");
 					}
 				} catch (err) {
@@ -195,7 +231,10 @@ export class frontEndGame {
 		});
 	}
 
-	updateGameState(positions) {
+	updateGameState(positions, scores) {
+		this.player1Score = scores[0];
+		this.player2Score = scores[1];
+
 		if (positions && positions.length >= 3) {
 		  // Update player 1 position
 		  this.player1PosY = positions[0][0];
@@ -217,14 +256,23 @@ export class frontEndGame {
 		this.ctx.fillStyle = "#000";
 		this.ctx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
 		for (var i = 0; i <= this.gameCanvas.height; i += 30) {
-			this.ctx.fillStyle = "red";
+			this.ctx.fillStyle = "white";
 			this.ctx.fillRect(this.gameCanvas.width / 2 - 10, i + 5, 15, 20);
 		}
-		this.ctx.fillStyle = "red";
-		this.ctx.fillRect(this.ballX, this.ballY, 20, 20);
-		this.ctx.fillRect(20, this.player1PosY, 10, 50);
+		this.ctx.font = "48px 'Comic Sans MS', cursive, sans-serif";
+		this.ctx.fillText(this.player2Score.toString(), this.gameCanvas.width / 2 - 48 * 2, 50);
+		this.ctx.fillText(this.player1Score.toString(), this.gameCanvas.width / 2 + 48, 50);
+		this.ctx.fillStyle = this.color;
+		this.ctx.fillRect(this.ballX, this.ballY, this.ballSize, this.ballSize);
+		this.ctx.fillRect(10, this.player1PosY, 10, 50);
 		this.ctx.fillRect(780, this.player2PosY, 10, 50);
-		//Game.testnum
+	}
+
+	settings(settings, color)
+	{
+		this.color = color;
+		const {ballSettings, playerSettings} = settings;
+		this.ballSize = ballSettings.ballSize;
 	}
 }
 
@@ -232,21 +280,54 @@ socket.on("connect", () => {
 	log.info("Connected to server");
 });
 
-let game;
+let game : frontEndGame;
 
 export function createNewGame()
 {
 	game = new frontEndGame();
-	const container = document.getElementById("game-container");
-	if (container) {
-		log.info("Game container found, canvas added");
-		container.appendChild(game.gameCanvas);
-	} else {
-		log.warn("Could not find #game-container");
-	}
 }
 
-socket.on("startGame", (roomId : string) => {
+socket.on("playerJoined", (playerAmount) => {
+	const sizeTxt = document.getElementById("size-txt");
+
+	sizeTxt.textContent = "Lobby size: " + playerAmount + "/2";
+});
+
+socket.on("roomFull", () => {
+	const strtBtn = document.getElementById("start-btn");
+	const gameEdit = document.getElementById("edit-game");
+
+	const ballSize  = (document.getElementById("ball-size") as HTMLInputElement)
+	const ballSpeed = (document.getElementById("ball-speed") as HTMLInputElement)
+
+	strtBtn.classList.remove("bg-red-500");
+    strtBtn.classList.add("bg-green-500");
+
+	strtBtn.classList.remove("hidden");
+    strtBtn.classList.add("block");
+
+	gameEdit.classList.remove("hidden");
+
+	strtBtn.addEventListener("click", () => {
+		const ballSizeValue = ballSize.value.trim() === "" ? ballSize.placeholder : ballSize.value;
+		const ballSpeedValue = ballSpeed.value.trim() === "" ? ballSpeed.placeholder : ballSpeed.value;
+
+		socket.emit("hostStart", {
+			ballSettings: {
+				ballSize: ballSizeValue,
+				ballSpeed: ballSpeedValue
+			},
+			playerSettings: {
+
+			}
+		});
+	});
+})
+
+socket.on("startGame", (roomId : string, settings) => {
+	const select = document.getElementById("colorSelect") as HTMLSelectElement;
+	const color = select.options[select.selectedIndex].value;
 	log.info("Game started in room:", roomId);
+	game.settings(settings, color);
 	game.updateGraphics();
 });

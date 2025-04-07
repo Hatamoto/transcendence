@@ -22,11 +22,17 @@ const addUser = async function (req, reply) {
   const { name, email, password } = req.body
   const avatar = process.env.DEFAULT_AVATAR
   let hashedPassword = password
+  const passwordPattern = /^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:'",.<>?])/
+  
+  if (!passwordPattern.test(password)) {
+    return reply.code(400).send({ error: 'Password must contain at least one digit, one letter, and one special character.' })
+  }
 
   if (password) {
     const salt = await bcrypt.genSalt(10)
     hashedPassword = await bcrypt.hash(password, salt)
   }
+
   const user = {
    id: uuidv4(),
    name,
@@ -35,14 +41,14 @@ const addUser = async function (req, reply) {
   }
 
   try {
-    const insertStatement = req.server.db.prepare("INSERT INTO users (name, email, password, avatar) VALUES (?, ?, ?, ?)")
+    const insertStatement = req.server.db.prepare('INSERT INTO users (name, email, password, avatar) VALUES (?, ?, ?, ?)')
     insertStatement.run(name, email, hashedPassword, avatar)
-    
+
     return reply.code(201).send(user)
   } catch (error) {
     console.log(error)
     if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-      return reply.code(409).send({ error: "Username already in use" })
+      return reply.code(409).send({ error: "Username or email already in use" })
     } else {
       return reply.code(500).send({ error: error.message })
     }
@@ -50,21 +56,21 @@ const addUser = async function (req, reply) {
 }
 
 const getUser = async function (req, reply) {
-    const { id } = req.params
+  const { id } = req.params
 
-    try {
-      const getStatement = req.server.db.prepare('SELECT * FROM users WHERE id = ?')
-      const user = getStatement.get(id)
+  try {
+    const getStatement = req.server.db.prepare('SELECT * FROM users WHERE id = ?')
+    const user = getStatement.get(id)
 
-      if (!user) {
-        return reply.code(404).send({ error: "User not found" })
-      }
-  
-      return reply.send(user)
-    } catch (error) {
-      return reply.code(500).send({ error: error.message })
+    if (!user) {
+      return reply.code(404).send({ error: "User not found" })
     }
+
+    return reply.send(user)
+  } catch (error) {
+    return reply.code(500).send({ error: error.message })
   }
+}
 
 const deleteUser = async function (req, reply) {
   const {id} = req.params
@@ -135,77 +141,16 @@ const updatePassword = async function (req, reply) {
       } else {
         return reply.code(500).send({ error: error.message })
       }
-  }
+    }
 }
-
-const loginUser = async function (req, reply) {
-	const { username, password } = req.body;
-  
-	try {
-	  const getStatement = req.server.db.prepare('SELECT * FROM users WHERE name = ?');
-	  const user = getStatement.get(username);
-  
-	  if (!user) {
-		return reply.code(401).send({ error: 'Incorrect username or password' });
-	  }
-  
-	  const isMatch = await bcrypt.compare(password, user.password);
-	  if (!isMatch) {
-		return reply.code(401).send({ error: 'Incorrect username or password' });
-	  }
-  
-	  const userInfo = { id: user.id, name: user.name };
-	  const accessToken = req.server.jwt.sign(userInfo, { expiresIn: '1h' });
-  
-	  const updateStatement = req.server.db.prepare('UPDATE users SET status = 1 WHERE name = ?');
-	  updateStatement.run(username);
-  
-	  // Send JSON Response Instead of HTML
-	  return reply
-		.code(200)
-		.header('Content-Type', 'application/json')
-		.send({ success: true, username: user.name, accessToken });
-  
-	} catch (error) {
-	  return reply.code(500).send({ error: error.message });
-	}
-  };
 
 const getDashboard = async function(req, reply) {
   try {
-	console.log("Trying dasboard")
     const username = req.user.name
     return reply.view('../public/dashboard.ejs', { username })
   } catch (error) {
     console.log(error)
   }
-}
-
-const getGameroom = async function(req, reply) {
-	try {
-		console.log("Trying gameroom")
-		const username = req.user.name
-		return reply.view('../public/gameroom.ejs', { username })
-	} catch (error) {
-		console.log(error)
-	}
-}
-
-const getGame = async function(req, reply) {
-	try {
-		console.log("Trying a new game")
-		const username = req.user.name
-		return reply.view('../public/game.ejs', { username })
-	} catch (error) {
-		console.log(error)
-	}
-}
-
-const userLogout = async function(req, reply) {
-  const username = req.user
-  const updateStatement = req.server.db.prepare('UPDATE users SET status = 0 WHERE name = ?')
-    updateStatement.run(username)
-  return reply.redirect('/')
 }
 
 const uploadAvatar = async function(req, reply) {
@@ -233,10 +178,6 @@ export {
   deleteUser,
   updateUser,
   updatePassword,
-  loginUser,
   getDashboard,
-  getGameroom,
-  getGame,
-  userLogout,
   uploadAvatar
 }

@@ -1,5 +1,5 @@
 // @ts-ignore
-const socket = io();
+import socket from './socket.js';
 
 export enum LogLevel {
 	DEBUG = 0,
