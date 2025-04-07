@@ -8,7 +8,7 @@ import {
   updateUserOpts, 
   updatePasswordOpts,
   dashboardOpts,
-  uploadOpts,
+  uploadOpts
 } from '../schemas/userSchemas.js'
 import { 
   loginOpts,
