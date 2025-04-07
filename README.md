@@ -4,4 +4,4 @@
 <pre><code>bash clean_it.sh</code></pre>
 <p>Build and Run:</p>
 <pre><code>bash compose_it.sh</code></pre>
-![Robot](https://github.com/aaroh4/transcendence/backend/avatars/image.png)
+![Mascot](https://github.com/aaroh4/transcendence/backend/src/avatars/image.png)
