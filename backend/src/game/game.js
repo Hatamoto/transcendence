@@ -1,7 +1,7 @@
 "use strict";
 import { Logger, LogLevel } from '../utils/logger.js';
 
-const log = new Logger(LogLevel.DEBUG);
+const log = new Logger(LogLevel.INFO);
 
 const KeyBindings = {
 	UP: "KeyW",
@@ -35,7 +35,7 @@ class Entity {
 class Ball extends Entity {
 	constructor(h, w, y, x) {
 		super(h, w, y, x);
-		this.speed = 6;
+		this.speed = 5;
 
 		this.xVel = Math.random() < 0.5 ? 1 : -1;
 		this.yVel = Math.random() < 0.5 ? 1 : -1;

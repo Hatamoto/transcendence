@@ -80,8 +80,8 @@ export class frontEndGame {
 		socket.on('offer', async (offer) => {
 			try {
 				if (!this.peerConnection) {
-					const config = await this.loadIceConfig();
-					this.configuration = config;
+					// const config = await this.loadIceConfig();
+					// this.configuration = config;
 					this.peerConnection = new RTCPeerConnection(this.configuration);
 					log.info("Peer connection created");
 					this.setupPeerConnectionEvents();
