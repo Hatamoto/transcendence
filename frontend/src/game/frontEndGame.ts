@@ -15,6 +15,7 @@ enum KeyBindings{
 export class frontEndGame {
 	private static keysPressed: { [key: string]: boolean } = {};
 	private gameCanvas : HTMLCanvasElement;
+	private container : HTMLElement;
 	private ctx : CanvasRenderingContext2D;
 	private color : string;
 	private player1Score : number = 0;
@@ -35,13 +36,8 @@ export class frontEndGame {
     private bufferedCandidates: RTCIceCandidateInit[] = [];
 
 	constructor() {
-		const container = document.getElementById("game-container");
-		this.gameCanvas = document.createElement("canvas");
-		container.appendChild(this.gameCanvas);
-		this.ctx = this.gameCanvas.getContext("2d")!;
-		this.gameCanvas.width = 800;
-		this.gameCanvas.height = 600;
-        
+		this.container = document.getElementById("game-container");
+		this.createCanvas();
 		this.setupButtons();
 
 		const ip = this.getExternalIP();
@@ -51,11 +47,11 @@ export class frontEndGame {
 			log.warn("Could not get external IP.");
 		}
 
-		log.info("EXT_IP:", EXT_IP);
-		log.info("TURN_URL:", TURN_URL);
-		log.info("TURN_USER:", TURN_USER);
-		log.info("TURN_PASS:", TURN_PASS);
-		log.info("STUN_URL:", STUN_URL);
+		//log.info("EXT_IP:", EXT_IP);
+		//log.info("TURN_URL:", TURN_URL);
+		//log.info("TURN_USER:", TURN_USER);
+		//log.info("TURN_PASS:", TURN_PASS);
+		//log.info("STUN_URL:", STUN_URL);
 
 		this.configuration = {
 			iceServers: [
@@ -135,11 +131,11 @@ export class frontEndGame {
 		});
 	}
 
-	private async loadIceConfig(): Promise<RTCConfiguration> {
-		const response = await fetch('/webrtc-config');
-		const data = await response.json();
-		return { iceServers: data.iceServers };
-	}
+	//private async loadIceConfig(): Promise<RTCConfiguration> {
+	//	const response = await fetch('/webrtc-config');
+	//	const data = await response.json();
+	//	return { iceServers: data.iceServers };
+	//}
 
 	private async getExternalIP(): Promise<string | null> {
 		try {
@@ -151,6 +147,15 @@ export class frontEndGame {
 			log.error("Failed to fetch external IP:", err);
 			return null;
 		}
+	}
+
+	createCanvas()
+	{
+		this.gameCanvas = document.createElement("canvas");
+		this.container.appendChild(this.gameCanvas);
+		this.ctx = this.gameCanvas.getContext("2d")!;
+		this.gameCanvas.width = 800;
+		this.gameCanvas.height = 600;
 	}
 
 	setupButtons()
@@ -326,12 +331,15 @@ socket.on("roomFull", () => {
 socket.on("startGame", (roomId : string, settings) => {
 	const select = document.getElementById("colorSelect") as HTMLSelectElement;
 	const color = select.options[select.selectedIndex].value;
+
+	document.getElementById("gameroom-page").hidden = true;
 	log.info("Game started in room:", roomId);
 	game.settings(settings, color);
 	game.updateGraphics();
 });
 
 socket.on("gameOver", (winner : number) => {
+	document.getElementById("gameroom-page").hidden = false;
 	var textNode = document.createTextNode("Winner: " + winner);
 	const container = document.getElementById("game-container");
 

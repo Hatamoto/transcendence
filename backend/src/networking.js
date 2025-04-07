@@ -15,7 +15,7 @@ class IDAllocator {
         this.maxID = maxID;
         this.openRooms = new Set();
 		this.freeIDs = new Set();
-		for (let i = 0; i < maxID; i++) {
+		for (let i = 1; i <= maxID; i++) {
 			this.freeIDs.add(i);
 		}
     }
@@ -25,24 +25,25 @@ class IDAllocator {
 			return (this.openRooms.values().next().value);
     	}
 		else if (this.freeIDs.size > 0) {
-			this.freeIDs.delete(this.freeIDs.values().next().value);
-			return (this.freeIDs.values().next().value);
+			const value = Math.min(...this.freeIDs);
+			this.freeIDs.delete(value);
+			return (value);
 		}
 		else 
 			return (-1);
 	}
 
     freeRoom(id) {
-		this.freeIDs.add(id);
+		this.freeIDs.add(Number(id));
 		if (this.openRooms.has(id))
 			this.openRooms.delete(id);
     }
 
-	openRoom(id) {
+	openRoomDoors(id) {
 		this.openRooms.add(id);
 	}
 
-	closeRoom(id) {
+	closeRoomDoors(id) {
 		this.openRooms.delete(id);
 	}
 }
@@ -50,7 +51,7 @@ class IDAllocator {
 let io;
 const games = {};
 const rooms = {};
-const roomIds = new IDAllocator(1000);
+const roomIds = new IDAllocator(50);
 
 export function setupNetworking(server){
 	log.debug('Checking WebRTC globals:');
@@ -84,7 +85,6 @@ export function setupNetworking(server){
 		// Clean up rooms and connections when a player disconnects
 		for (const roomId in rooms) {
 			if (rooms[roomId].players[socket.id]) {
-				roomIds.freeRoom(roomId);
 				delete rooms[roomId].players[socket.id];
 				log.info(`Player ${socket.id} removed from room ${roomId}`);
 				
@@ -97,6 +97,7 @@ export function setupNetworking(server){
 						games[roomId].stop();
 						delete games[roomId];
 					}
+					roomIds.freeRoom(roomId);
 					log.info(`Room ${roomId} deleted`);
 				}
 			}
@@ -121,16 +122,16 @@ export function setupNetworking(server){
 			}
 		});
 
-		socket.on("joinRoom", (roomId) => {
-			if (!rooms[roomId]) {
-				rooms[roomId] = {
-				players: {},
-				gameStarted: false,
-				hostId: null
-				};
-			}
-			joinRoom(roomId, socket);
-		});
+		//socket.on("joinRoom", (roomId) => {
+		//	if (!rooms[roomId]) {
+		//		rooms[roomId] = {
+		//		players: {},
+		//		gameStarted: false,
+		//		hostId: null
+		//		};
+		//	}
+		//	joinRoom(roomId, socket);
+		//});
 
 
 		socket.on("joinRoomQue", () => {
@@ -138,7 +139,7 @@ export function setupNetworking(server){
 			if (roomId == -1 || socket.rooms.size > 1)
 				return ;
 			if (!rooms[roomId]) {
-				roomIds.openRoom(roomId);
+				roomIds.openRoomDoors(roomId);
 				rooms[roomId] = {
 				players: {},
 				gameStarted: false,
@@ -146,7 +147,7 @@ export function setupNetworking(server){
 				};
 			}
 			else
-				roomIds.closeRoom(roomId);
+				roomIds.closeRoomDoors(roomId);
 			joinRoom(roomId, socket);
 		});
 
@@ -302,6 +303,7 @@ function startGameLoop(roomId) {
 	const gameLoop = () => {
 	if (!game.isRunning())
 		return ;
+	log.info("Game running: " + roomId);
 
 	if (game.getScores()[0] >= 5)
 	{
