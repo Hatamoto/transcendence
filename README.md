@@ -4,4 +4,5 @@
 <pre><code>bash clean_it.sh</code></pre>
 <p>Build and Run:</p>
 <pre><code>bash compose_it.sh</code></pre>
+
 ![Mascot](backend/src/avatars/image.png)
