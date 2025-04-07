@@ -19,11 +19,11 @@ export class frontEndGame {
 	private color : string;
 	private player1Score : number = 0;
 	private player2Score : number = 0;
-	public player1PosY : number = 30;
-	public player2PosY : number = 30; // change public to private later
-	public ballY : number;
-	public ballX : number;
-	public ballSize : number;
+	private player1PosY : number = 0;
+	private player2PosY : number = 0;
+	private ballY : number;
+	private ballX : number;
+	private ballSize : number;
 
 	private dataChannel: RTCDataChannel | null = null;
 
@@ -303,8 +303,7 @@ socket.on("roomFull", () => {
 	strtBtn.classList.remove("bg-red-500");
     strtBtn.classList.add("bg-green-500");
 
-	strtBtn.classList.remove("hidden");
-    strtBtn.classList.add("block");
+	strtBtn.hidden = false
 
 	gameEdit.hidden = false;
 
