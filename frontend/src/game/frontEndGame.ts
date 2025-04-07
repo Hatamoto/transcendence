@@ -330,3 +330,14 @@ socket.on("startGame", (roomId : string, settings) => {
 	game.settings(settings, color);
 	game.updateGraphics();
 });
+
+socket.on("gameOver", (winner : number) => {
+	var textNode = document.createTextNode("Winner: " + winner);
+	const container = document.getElementById("game-container");
+
+	var canvas = container.querySelector("canvas");
+
+	canvas.remove();
+
+	container.prepend(textNode);
+});

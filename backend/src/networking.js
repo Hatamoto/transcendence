@@ -302,6 +302,21 @@ function startGameLoop(roomId) {
 	const gameLoop = () => {
 	if (!game.isRunning())
 		return ;
+
+	if (game.getScores()[0] >= 5)
+	{
+		game.stop();
+		io.to(roomId).emit('gameOver', 1);
+		return ;
+	}
+	else if (game.getScores()[1] >= 5)
+	{
+		game.stop();
+		io.to(roomId).emit('gameOver', 2);
+		return ;
+	}
+		
+
 	game.update(game);
 	
 	const positions = game.getPos();
