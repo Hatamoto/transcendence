@@ -33,7 +33,7 @@ export default function GameRoom() {
 					Start The Game
 				</button>
 
-				<details id="edit-game" className="hidden">
+				<details id="edit-game" hidden>
 					<summary className="cursor-pointer bg-blue-500 text-fuchsia-800 p-2 rounded">
 						Open Input Fields
 					</summary>

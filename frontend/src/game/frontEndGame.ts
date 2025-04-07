@@ -306,7 +306,7 @@ socket.on("roomFull", () => {
 	strtBtn.classList.remove("hidden");
     strtBtn.classList.add("block");
 
-	gameEdit.classList.remove("hidden");
+	gameEdit.hidden = false;
 
 	strtBtn.addEventListener("click", () => {
 		const ballSizeValue = ballSize.value.trim() === "" ? ballSize.placeholder : ballSize.value;
