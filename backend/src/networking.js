@@ -301,25 +301,28 @@ function startGameLoop(roomId) {
 	if (!game || !room) return;
 	
 	const gameLoop = () => {
+
+	const startTime = Date.now();
+
 	if (!game.isRunning())
 		return ;
 	log.info("Game running: " + roomId);
 
-	if (game.getScores()[0] >= 5)
-	{
-		game.stop();
-		io.to(roomId).emit('gameOver', 1);
-		return ;
-	}
-	else if (game.getScores()[1] >= 5)
-	{
-		game.stop();
-		io.to(roomId).emit('gameOver', 2);
-		return ;
-	}
+	//if (game.getScores()[0] >= 5)
+	//{
+	//	game.stop();
+	//	io.to(roomId).emit('gameOver', 1);
+	//	return ;
+	//}
+	//else if (game.getScores()[1] >= 5)
+	//{
+	//	game.stop();
+	//	io.to(roomId).emit('gameOver', 2);
+	//	return ;
+	//}
 		
 
-	game.update(game);
+	game.update();
 	
 	const positions = game.getPos();
 	
@@ -340,13 +343,17 @@ function startGameLoop(roomId) {
 		}
 		}
 	}
+
+	const endTime = Date.now();
+	const elapsed = endTime - startTime;
+	const nextFrameDelay = Math.max(0, (1000 / 60) - elapsed);
 	
 	if (rooms[roomId]) {
-		setTimeout(gameLoop, 1000 / 60); // 60 FPS
+		game.gameLoopTimer = setTimeout(gameLoop, nextFrameDelay);
 	}
 	};
 	
-	gameLoop();
+	setImmediate(gameLoop);
 }
 
 
