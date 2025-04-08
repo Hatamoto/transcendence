@@ -33,17 +33,15 @@ const Login: React.FC = () => {
 		  password: formState.password
 		};
 
-		try {
-			const success = await loginUser(user);
-	  
-			if (success) {
-				navigate("/user");
-			} else {
-				alert('Login failed. Please check your credentials.');
-			}
-		} catch (error) {
-			console.error('Error logging in: ', error);
-			alert('Something went wrong. Please try again later.');
+		console.log("Calling loginUser API");
+		const success = await loginUser(user);
+		console.log("Returning from loginUser API with status:", success);
+
+
+		if (success) {
+			navigate("/user");
+		} else {
+			alert('Login failed. Please check your credentials.');
 		}
 
 	};

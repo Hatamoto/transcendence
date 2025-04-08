@@ -32,22 +32,31 @@ export interface User {
 async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
 	const { method, url, body, headers } = options;
   
+	console.log("before fetch apicall")
+	const response = await fetch(url, {
+		method,
+		headers,
+		body: body ? JSON.stringify(body) : undefined,
+		credentials: 'include',
+	});
 	try {
-		const response = await fetch(url, {
-			method,
-			headers,
-			body: body ? JSON.stringify(body) : undefined,
-			credentials: 'include',
-		});
+		console.log("after fetch apicall", body)
   
 		const responseData = await response.json();
-  
+		console.log("after await json: ", response.status)
 		if (!response.ok)
 			return { status: response.status, data: undefined };
 
+		console.log("after fetch returning with status: ", response.status)
 		return { status: response.status, data: responseData }
 	
 	} catch (error) {
+		console.log("In catch block full response", response)
+		console.log("In catch block body", response.body)
+		console.log("In catch block header", response.headers)
+		console.log("In catch block status", response.status)
+		console.log("In catch block ok", response.ok)
+		console.log("In catch block url", response.url)
 		throw error; // idk what happens here :()()() saku mita helvettia
 	}
 }
@@ -61,9 +70,10 @@ export async function loginUser(user: LoginRequest): Promise<number> {
 		'Content-Type': 'application/json',
 		},
 	};
+	console.log("Before return in loginUser to APICALL");
 //	document.cookie = `accessToken=${data.accessToken}; path=/; SameSite=Lax`;
 // needs to be changed to take data to save login tokens
-	return (await apiCall(options)).status;
+	return ((await apiCall(options)).status);
 }
 
 export async function registerUser(user: RegistrationRequest): Promise<number> {
