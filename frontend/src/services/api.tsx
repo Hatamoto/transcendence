@@ -9,7 +9,26 @@ interface ApiReturn<T> {
 	status: number,
 	data?: T;
 }
-  
+
+export interface LoginRequest {
+	username: string;
+	password: string;
+}
+
+export interface RegistrationRequest {
+	name: string;
+	email: string;
+	password: string;
+}
+
+export interface User {
+	name: string;
+	onlineStatus: boolean;
+	wins: number;
+	losses: number;
+	avatarPath: string;
+}
+
 async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
 	const { method, url, body, headers } = options;
   
@@ -29,13 +48,8 @@ async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
 		return { status: response.status, data: responseData }
 	
 	} catch (error) {
-		throw error; // idk what happens here :()()()
+		throw error; // idk what happens here :()()() saku mita helvettia
 	}
-}
-
-export interface LoginRequest {
-	name: string;
-	password: string;
 }
 
 export async function loginUser(user: LoginRequest): Promise<number> {
@@ -52,30 +66,16 @@ export async function loginUser(user: LoginRequest): Promise<number> {
 	return (await apiCall(options)).status;
 }
 
-export interface UserRequest {
-	name: string;
-	email: string;
-	password: string; //number missing in this version
-}
-
-export async function registerUser(user: UserRequest): Promise<number> {
+export async function registerUser(user: RegistrationRequest): Promise<number> {
 	const options : ApiOptions = {
 		method: 'POST',
-		url: '/api/users',
+		url: '/api/user',
 		body: user,            
 		headers: {
 		'Content-Type': 'application/json',
 		},
 	};
 	return ((await apiCall(options)).status);
-}
-
-export interface User {
-	name: string;
-	onlineStatus: boolean;
-	wins: number;
-	losses: number;
-	avatarPath: string;
 }
 
 export async function getAllUsers(): Promise<User[] | number> {
@@ -94,7 +94,7 @@ export async function getAllUsers(): Promise<User[] | number> {
 
 export async function getUser(id: string): Promise<User | number> {
 	const options : ApiOptions = {
-		method: 'POST',
+		method: 'GET',
 		url: `/api/user/${id}`, 
 		headers: {
 		'Content-Type': 'application/json',
@@ -112,7 +112,7 @@ export async function getDashboard() {
 export async function uploadAvatar() {
 }
 
-export async function updateUser(id: string, user: UserRequest) {
+export async function updateUser(id: string, user: RegistrationRequest) {
 	const options : ApiOptions = {
 		method: 'PUT',
 		url: `/api/user/${id}`,
@@ -128,7 +128,7 @@ export async function updateUser(id: string, user: UserRequest) {
 export async function updatePassword(id: string, password: string) {
 	const options : ApiOptions = {
 		method: 'PUT',
-		url: `/api/user/${id}`,
+		url: `/api/user/pwd/${id}`,
 		body: { password: password },
 		headers: {
 		'Content-Type': 'application/json',
@@ -148,29 +148,6 @@ export async function deleteUser(id: string) {
 	return ((await apiCall(options)).status);
 } //i guess we doublecheck in front 
 
-export async function enable2FA(method: 'sms' | 'email' | 'app') {
-	const options : ApiOptions = {
-		method: 'POST',
-		url: '/api/2fa/enable',
-		body: { method: method },  
-		headers: {
-		'Content-Type': 'application/json',
-		},
-	};
-	return ((await apiCall(options)).status);
-} //we autheticate user on front before?
-
-export async function disable2FA() {
-	const options : ApiOptions = {
-		method: 'POST',
-		url: '/api/2fa/disable',
-		headers: {
-		'Content-Type': 'application/json',
-		},
-	};
-	return ((await apiCall(options)).status);
-}
-
 export async function friendRequest(id: string) {
 	const options : ApiOptions = {
 		method: 'POST',
@@ -182,5 +159,3 @@ export async function friendRequest(id: string) {
 	};
 	return ((await apiCall(options)).status);
 }
-
-
