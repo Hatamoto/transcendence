@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import axios from 'axios'
-import { verifyIdToken, completeLogin } from '../../../authentication_server/services/authenticationServices.js'
+import { verifyIdToken, completeLogin } from '../services/authenticationServices.js'
 
 const logoutUser = async function(req, reply) {
   const { token } = req.body
@@ -23,12 +23,13 @@ const logoutUser = async function(req, reply) {
 }
 
 const loginUser = async function (req, reply) {
+  console.log("req bodyyyy", req.body)
   const { username, password } = req.body
-
+  console.log(`NAME PASSWORD, ${username}, ${password}`)
   try {
     const user = req.server.db.prepare('SELECT * FROM users WHERE name = ?').get(username)
     if (!user) return reply.code(401).send({ error: 'Incorrect username or password' })
-    
+
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) return reply.code(401).send({ error: 'Incorrect username or password' })
     

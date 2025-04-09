@@ -1,6 +1,6 @@
 import dotenv from "dotenv"
 import Fastify from 'fastify'
-import { loginRoutes } from '../server/src/routes/routes.js'
+import loginRoutes from './routes/authRoutes.js'
 import dbInit from '../server/src/database.js'
 import jwt from '@fastify/jwt'
 
