@@ -4,8 +4,8 @@ POST http://localhost:3000/api/user
 Content-Type: application/json
 
 {
-    "name": "testi",
-    "email": "testi@moi.com",
+    "name": "testis",
+    "email": "testis@moi.com",
     "password": "Test123!"
 }
 
@@ -15,7 +15,7 @@ POST http://localhost:4000/api/login
 Content-Type: application/json
 
 {
-    "username": "testi",
+    "username": "testis",
     "password": "Test123!"
 }
 
@@ -25,7 +25,7 @@ DELETE http://localhost:4000/api/logout
 Content-Type: application/json
 
 {
-    "token": ""
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6InRlc3RpIiwiaWF0IjoxNzQ0Mjg0OTc4fQ.QVkNEZHfwyEIX5iftddQX6xoZUcLDjeKP81vDDXa1XA"
 }
 
 ### Google sign in
@@ -38,12 +38,12 @@ GET http://localhost:3000/api/users
 
 ### Delete user
 
-DELETE http://localhost:3000/api/user/1
+DELETE http://localhost:3000/api/user/2
 Content-Type: application/json
-Authorization: Bearer 
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywibmFtZSI6InRlc3RpcyIsImlhdCI6MTc0NDI4NTQ5MSwiZXhwIjoxNzQ0Mjg5MDkxfQ.TaRTX_v5Qc2k5NOdLDa8p7-OJk_U9vuW8xX1yw-kH9Q
 
 {
-    "token": ""
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywibmFtZSI6InRlc3RpcyIsImlhdCI6MTc0NDI4NTQ5MX0.MfZjBYq7CZZ623Z4-yWDWaCXwOXOlVWf3j1Y-y51U0Y"
 }
 
 ### Get new refresh token
@@ -94,4 +94,4 @@ Authorization: Bearer
 ### Find all friends for user
 
 GET http://localhost:3000/api/friends
-Authorization: Bearer 
+Authorization: Bearer ayJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6InRlc3RpIiwiaWF0IjoxNzQ0Mjc4MDg0LCJleHAiOjE3NDQyODE2ODR9.WoLtOePwlvNheh4llONsIFyjfE71Ik800UmvQ4CRDNc
