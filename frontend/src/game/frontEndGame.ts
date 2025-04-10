@@ -15,15 +15,16 @@ enum KeyBindings{
 export class frontEndGame {
 	private static keysPressed: { [key: string]: boolean } = {};
 	private gameCanvas : HTMLCanvasElement;
+	private container : HTMLElement;
 	private ctx : CanvasRenderingContext2D;
 	private color : string;
 	private player1Score : number = 0;
 	private player2Score : number = 0;
-	public player1PosY : number = 30;
-	public player2PosY : number = 30; // change public to private later
-	public ballY : number;
-	public ballX : number;
-	public ballSize : number;
+	private player1PosY : number = 0;
+	private player2PosY : number = 0;
+	private ballY : number;
+	private ballX : number;
+	private ballSize : number;
 
 	private dataChannel: RTCDataChannel | null = null;
 
@@ -35,13 +36,7 @@ export class frontEndGame {
     private bufferedCandidates: RTCIceCandidateInit[] = [];
 
 	constructor() {
-		const container = document.getElementById("game-container");
-		this.gameCanvas = document.createElement("canvas");
-		container.appendChild(this.gameCanvas);
-		this.ctx = this.gameCanvas.getContext("2d")!;
-		this.gameCanvas.width = 800;
-		this.gameCanvas.height = 600;
-        
+		this.container = document.getElementById("game-container");
 		this.setupButtons();
 
 		const ip = this.getExternalIP();
@@ -51,11 +46,11 @@ export class frontEndGame {
 			log.warn("Could not get external IP.");
 		}
 
-		log.info("EXT_IP:", EXT_IP);
-		log.info("TURN_URL:", TURN_URL);
-		log.info("TURN_USER:", TURN_USER);
-		log.info("TURN_PASS:", TURN_PASS);
-		log.info("STUN_URL:", STUN_URL);
+		//log.info("EXT_IP:", EXT_IP);
+		//log.info("TURN_URL:", TURN_URL);
+		//log.info("TURN_USER:", TURN_USER);
+		//log.info("TURN_PASS:", TURN_PASS);
+		//log.info("STUN_URL:", STUN_URL);
 
 		this.configuration = {
 			iceServers: [
@@ -80,8 +75,8 @@ export class frontEndGame {
 		socket.on('offer', async (offer) => {
 			try {
 				if (!this.peerConnection) {
-					const config = await this.loadIceConfig();
-					this.configuration = config;
+					// const config = await this.loadIceConfig();
+					// this.configuration = config;
 					this.peerConnection = new RTCPeerConnection(this.configuration);
 					log.info("Peer connection created");
 					this.setupPeerConnectionEvents();
@@ -135,11 +130,11 @@ export class frontEndGame {
 		});
 	}
 
-	private async loadIceConfig(): Promise<RTCConfiguration> {
-		const response = await fetch('/webrtc-config');
-		const data = await response.json();
-		return { iceServers: data.iceServers };
-	}
+	//private async loadIceConfig(): Promise<RTCConfiguration> {
+	//	const response = await fetch('/webrtc-config');
+	//	const data = await response.json();
+	//	return { iceServers: data.iceServers };
+	//}
 
 	private async getExternalIP(): Promise<string | null> {
 		try {
@@ -151,6 +146,15 @@ export class frontEndGame {
 			log.error("Failed to fetch external IP:", err);
 			return null;
 		}
+	}
+
+	createCanvas()
+	{
+		this.gameCanvas = document.createElement("canvas");
+		this.container.appendChild(this.gameCanvas);
+		this.ctx = this.gameCanvas.getContext("2d")!;
+		this.gameCanvas.width = 800;
+		this.gameCanvas.height = 600;
 	}
 
 	setupButtons()
@@ -303,10 +307,9 @@ socket.on("roomFull", () => {
 	strtBtn.classList.remove("bg-red-500");
     strtBtn.classList.add("bg-green-500");
 
-	strtBtn.classList.remove("hidden");
-    strtBtn.classList.add("block");
+	strtBtn.hidden = false
 
-	gameEdit.classList.remove("hidden");
+	gameEdit.hidden = false;
 
 	strtBtn.addEventListener("click", () => {
 		const ballSizeValue = ballSize.value.trim() === "" ? ballSize.placeholder : ballSize.value;
@@ -327,7 +330,29 @@ socket.on("roomFull", () => {
 socket.on("startGame", (roomId : string, settings) => {
 	const select = document.getElementById("colorSelect") as HTMLSelectElement;
 	const color = select.options[select.selectedIndex].value;
+
+	const winnerElement = document.getElementById("winner-text");
+    if (winnerElement) {
+        winnerElement.remove();
+    }
+
+	document.getElementById("gameroom-page").hidden = true;
 	log.info("Game started in room:", roomId);
+	game.createCanvas();
 	game.settings(settings, color);
-	game.updateGraphics();
+	//game.updateGraphics();
+});
+
+socket.on("gameOver", (winner : number) => {
+	document.getElementById("gameroom-page").hidden = false;
+	var winnerElement = document.createElement("span");
+	winnerElement.id = "winner-text";
+	winnerElement.textContent = "Winner: " + winner;
+	const container = document.getElementById("game-container");
+
+	var canvas = container.querySelector("canvas");
+
+	canvas.remove();
+
+	container.prepend(winnerElement);
 });

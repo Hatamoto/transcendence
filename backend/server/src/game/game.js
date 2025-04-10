@@ -1,7 +1,7 @@
 "use strict";
 import { Logger, LogLevel } from '../utils/logger.js';
 
-const log = new Logger(LogLevel.DEBUG);
+const log = new Logger(LogLevel.INFO);
 
 const KeyBindings = {
 	UP: "KeyW",
@@ -35,13 +35,13 @@ class Entity {
 class Ball extends Entity {
 	constructor(h, w, y, x) {
 		super(h, w, y, x);
-		this.speed = 6;
+		this.speed = 5;
 
 		this.xVel = Math.random() < 0.5 ? 1 : -1;
 		this.yVel = Math.random() < 0.5 ? 1 : -1;
 	}
 
-	update(player, player2) {
+	update(player, player2, deltaTime) {
 		if (this.yPos + this.height >= 600) this.yVel = -1;
 		else if (this.yPos <= 0) this.yVel = 1;
 
@@ -71,8 +71,8 @@ class Ball extends Entity {
 			this.xPos = 400 - this.width / 2;
 			this.yVel = Math.random() < 0.5 ? 1 : -1;
 		}
-		this.xPos += this.xVel * this.speed;
-		this.yPos += this.yVel * this.speed;
+		this.xPos += this.xVel * this.speed * deltaTime;
+		this.yPos += this.yVel * this.speed * deltaTime;
 	}
 
 	set(value)
@@ -95,11 +95,11 @@ class Player extends Entity {
 		this.yVel = velocityY;
 	}
 
-	move() {
+	move(deltaTime) {
 		if (this.yPos + this.height + this.yVel * this.speed >= 600) return;
 		else if (this.yPos + this.yVel * this.speed <= 0) return;
 
-		this.yPos += this.yVel * this.speed;
+		this.yPos += this.yVel * this.speed * deltaTime;
 	}
 
 	getKeysPressed() {
@@ -111,29 +111,29 @@ class Player extends Entity {
 	}
 }
 
-class Computer extends Entity {
-	constructor(h, w, y, x) {
-		super(h, w, y, x);
-		this.speed = 4;
-	}
+//class Computer extends Entity {
+//	constructor(h, w, y, x) {
+//		super(h, w, y, x);
+//		this.speed = 4;
+//	}
 
-	setvel(velocityY) {
-		this.yVel = velocityY;
-	}
+//	setvel(velocityY) {
+//		this.yVel = velocityY;
+//	}
 
-	move(ball, canvas) {
-		if (ball.yPos < this.yPos && ball.xVel === 1) {
-			this.yVel = -1;
-			if (this.yPos <= 20) this.yVel = 0;
-		} else if (ball.yPos > this.yPos + this.height && ball.xVel === 1) {
-			this.yVel = 1;
-			if (this.yPos + this.height >= canvas.height - 20) this.yVel = 0;
-		} else {
-			this.yVel = 0;
-		}
-		this.yPos += this.yVel * this.speed;
-	}
-}
+//	move(ball, canvas) {
+//		if (ball.yPos < this.yPos && ball.xVel === 1) {
+//			this.yVel = -1;
+//			if (this.yPos <= 20) this.yVel = 0;
+//		} else if (ball.yPos > this.yPos + this.height && ball.xVel === 1) {
+//			this.yVel = 1;
+//			if (this.yPos + this.height >= canvas.height - 20) this.yVel = 0;
+//		} else {
+//			this.yVel = 0;
+//		}
+//		this.yPos += this.yVel * this.speed;
+//	}
+//}
 
 class Game {
 	constructor(playerOne, playerTwo) {
@@ -150,7 +150,9 @@ class Game {
 		this.playerIdMap.set(playerTwo, 1);
 
 		this.ball = new Ball(20, 20, this.height / 2, this.width / 2 - 10);
-		this.computer = new Computer(50, 20, 200, 780);
+		//this.computer = new Computer(50, 20, 200, 780);
+
+		this.lastUpdateTime = Date.now();
 	}
 
 	settings(settings)
@@ -173,8 +175,12 @@ class Game {
 		return [this.players[0].getPoints(), this.players[1].getPoints()];
 	}
 
-	update(gameInstance) {
-		gameInstance.players.forEach(player => {
+	update() {
+		const now = Date.now();
+		const deltaTime = (now - this.lastUpdateTime) / 16.67; // Normalize to ~60 FPS
+		this.lastUpdateTime = now;
+
+		this.players.forEach(player => {
 			if (player.getKeysPressed()[KeyBindings.UP]) {
 				player.setvel(-1);
 			} else if (player.getKeysPressed()[KeyBindings.DOWN]) {
@@ -182,14 +188,15 @@ class Game {
 			} else {
 				player.setvel(0);
 			}
-			player.move();
+			player.move(deltaTime);
 		});
 
-		gameInstance.ball.update(gameInstance.players[0], gameInstance.players[1]);
+		this.ball.update(this.players[0], this.players[1], deltaTime);
 	}
 
 	stop() {
 		this.running = false;
+		clearTimeout(this.gameLoopTimer);
 	}
 
 	isRunning()

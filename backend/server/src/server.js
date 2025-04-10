@@ -13,7 +13,6 @@ import multipart from '@fastify/multipart'
 import { fileURLToPath } from 'url';
 import { setupNetworking } from './networking.js';
 import { Logger, LogLevel } from './utils/logger.js';
-import webrtcConfigRoute from './routes/env.js';
 
 
 // Compute __dirname for ES modules
@@ -41,9 +40,6 @@ fastify.register(view, {
 
 const server = fastify.server;
 setupNetworking(server);
-
-// Register WebCRT config routes
-fastify.register(webrtcConfigRoute);
 
 // Serve frontend files
 fastify.register(fastifyStatic, {
