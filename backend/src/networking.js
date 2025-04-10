@@ -10,6 +10,7 @@ global.RTCPeerConnection = wrtc.RTCPeerConnection;
 global.RTCSessionDescription = wrtc.RTCSessionDescription;
 global.RTCIceCandidate = wrtc.RTCIceCandidate;
 
+// Alloactes ids whenever they are freed
 class IDAllocator {
     constructor(maxID) {
         this.maxID = maxID;
@@ -211,8 +212,14 @@ export function setupNetworking(server){
 function initializeWebRTC(roomId) {
 	const room = rooms[roomId];
 	if (!room || Object.keys(room.players).length < 2) return;
-	
 	const playerIds = Object.keys(room.players);
+	
+	if (playerIds.some(id => room.players[id].peerConnection)) {
+		log.info(`WebRTC already initialized for room ${roomId}, skipping`);
+		startGameLoop(roomId);
+		return;
+	}
+
 	log.info(`Initializing WebRTC connections for room ${roomId} with players:`, playerIds);
 	
 	log.debug("TURN server:", process.env.TURN_URL);
@@ -308,18 +315,22 @@ function startGameLoop(roomId) {
 		return ;
 	log.info("Game running: " + roomId);
 
-	//if (game.getScores()[0] >= 5)
-	//{
-	//	game.stop();
-	//	io.to(roomId).emit('gameOver', 1);
-	//	return ;
-	//}
-	//else if (game.getScores()[1] >= 5)
-	//{
-	//	game.stop();
-	//	io.to(roomId).emit('gameOver', 2);
-	//	return ;
-	//}
+	if (game.getScores()[0] >= 5)
+	{
+		game.stop();
+		io.to(roomId).emit('gameOver', 1);
+		//if (!notTournament) check here for when a game isnt tournament so 
+			room.gameStarted = false; // you can rematch
+		return ;
+	}
+	else if (game.getScores()[1] >= 5)
+	{
+		game.stop();
+		//if (!notTournament) check here for when a game isnt tournament so 
+			room.gameStarted = false; // you can rematch
+		io.to(roomId).emit('gameOver', 2);
+		return ;
+	}
 		
 
 	game.update();

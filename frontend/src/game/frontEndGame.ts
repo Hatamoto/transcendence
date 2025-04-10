@@ -37,7 +37,6 @@ export class frontEndGame {
 
 	constructor() {
 		this.container = document.getElementById("game-container");
-		this.createCanvas();
 		this.setupButtons();
 
 		const ip = this.getExternalIP();
@@ -332,20 +331,28 @@ socket.on("startGame", (roomId : string, settings) => {
 	const select = document.getElementById("colorSelect") as HTMLSelectElement;
 	const color = select.options[select.selectedIndex].value;
 
+	const winnerElement = document.getElementById("winner-text");
+    if (winnerElement) {
+        winnerElement.remove();
+    }
+
 	document.getElementById("gameroom-page").hidden = true;
 	log.info("Game started in room:", roomId);
+	game.createCanvas();
 	game.settings(settings, color);
-	game.updateGraphics();
+	//game.updateGraphics();
 });
 
 socket.on("gameOver", (winner : number) => {
 	document.getElementById("gameroom-page").hidden = false;
-	var textNode = document.createTextNode("Winner: " + winner);
+	var winnerElement = document.createElement("span");
+	winnerElement.id = "winner-text";
+	winnerElement.textContent = "Winner: " + winner;
 	const container = document.getElementById("game-container");
 
 	var canvas = container.querySelector("canvas");
 
 	canvas.remove();
 
-	container.prepend(textNode);
+	container.prepend(winnerElement);
 });
