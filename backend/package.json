@@ -1,49 +1,11 @@
 {
-  "name": "backend",
-  "version": "1.0.0",
-  "main": "src/server.js",
-  "type": "module",
-  "scripts": {
-    "build": "npm run build:frontend",
-    "build:frontend": "cd ../frontend && npm run build",
-    "clean": "rm -rf ../frontend/dist",
-    "start": "node ./src/server",
-    "dev": "nodemon server",
-    "devAuth": "nodemon src/authServer.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "@fastify/cookie": "^11.0.2",
-    "@fastify/env": "^5.0.2",
-    "@fastify/formbody": "^8.0.2",
-    "@fastify/jwt": "^9.0.4",
-    "@fastify/multipart": "^9.0.3",
-    "@fastify/session": "^11.1.0",
-    "@fastify/static": "^8.1.1",
-    "@fastify/view": "^10.0.2",
-    "axios": "^1.8.4",
-    "bcrypt": "^5.1.1",
-    "better-sqlite3": "^11.8.1",
-    "dotenv": "^16.4.7",
-    "ejs": "^3.1.10",
-    "fastify": "^5.2.1",
-    "fastify-cli": "^7.3.0",
-    "fastify-plugin": "^5.0.1",
-    "form-auto-content": "^3.2.1",
-    "google-auth-library": "^9.15.1",
-    "sqlite": "^5.1.1",
-    "sqlite3": "^5.1.7",
-    "uuid": "^11.1.0",
-	"socket.io": "^4.8.1",
-	"socket.io-client": "^4.8.1",
-	"wrtc": "^0.4.7"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.9",
-	"@types/socket.io-client": "^1.4.36"
-
-  }
+    "name": "backend-root",
+    "private": true,
+    "scripts": {
+        "dev": "concurrently \"npm run devAuth --prefix authentication_server\" \"npm run dev --prefix server\""
+    },
+    "devDependencies": {
+        "concurrency": "^0.1.4",
+        "concurrently": "^9.1.2"
+    }
 }

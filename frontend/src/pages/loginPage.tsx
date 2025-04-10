@@ -2,12 +2,15 @@ import Header from "../components/headers";
 import { LoginRequest, loginUser } from "../services/api";
 import React, { useState } from 'react';
 
+import { useNavigate } from "react-router-dom";//for dev
+
 interface LoginProps {
 	username: string;
 	password: string;
 }
 
 const Login: React.FC = () => {
+	const navigate = useNavigate();
 
 	const [formState, setFormState] = useState<LoginProps>({
 		username: '',
@@ -34,7 +37,7 @@ const Login: React.FC = () => {
 			const success = await loginUser(user);
 	  
 			if (success) {
-			  // Redirect or handle post-login action (e.g., userPage)
+				navigate("/user");
 			} else {
 				alert('Login failed. Please check your credentials.');
 			}
@@ -42,6 +45,7 @@ const Login: React.FC = () => {
 			console.error('Error logging in: ', error);
 			alert('Something went wrong. Please try again later.');
 		}
+
 	};
 	return (
 		<>
