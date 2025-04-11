@@ -1,11 +1,17 @@
-import { useEffect } from "react";
 import Header from "../components/headers";
 import { createNewGame } from "../game/frontEndGame";
+import { useEffect, useRef } from "react";
+
 
 export default function GameRoom() {
 
+	const hasRun = useRef(false);
+
 	useEffect(() => {
+	  if (!hasRun.current) {
 		createNewGame();
+		hasRun.current = true;
+	  }
 	}, []);
 
 	return (
@@ -13,27 +19,26 @@ export default function GameRoom() {
 			<Header />
 			<div id="gameroom-page" className="bg-green-100 p-8 rounded-lg shadow-md w-[820px]">
 				<h1 className="text-2xl font-bold text-center mb-4">Welcome to the Gameroom!</h1>
-				<p className="text-center text-gray-600 mb-4">You are now logged in.</p>
 				<p id="size-txt" className="text-center text-gray-600 mb-4">Lobby size: 0/2</p>
 				
-				<button id="test-btn" className="block w-full bg-green-500 text-white text-center py-2 rounded-md hover:bg-green-600">
+				<button id="test-btn" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
 					Start New Game
 				</button>
 
 				<label htmlFor="colorSelect">Choose ball color:</label>
-				<select id="colorSelect" name="mySelect">
-					<option value="white" selected>White</option>
+				<select id="colorSelect" name="mySelect" defaultValue="white">
+					<option value="white" >White</option>
 					<option value="green">Green</option>
 					<option value="blue">Blue</option>
 					<option value="red">Red</option>
 					<option value="purple">Purple</option>
 				</select>
 
-				<button id="start-btn" className="hidden w-full bg-red-500 text-white text-center py-2 rounded-md hover:bg-green-600">
+				<button id="start-btn" hidden className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
 					Start The Game
 				</button>
 
-				<details id="edit-game" className="hidden">
+				<details id="edit-game" hidden>
 					<summary className="cursor-pointer bg-blue-500 text-fuchsia-800 p-2 rounded">
 						Open Input Fields
 					</summary>
