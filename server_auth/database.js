@@ -7,7 +7,7 @@ const log = new Logger(LogLevel.INFO);
 async function dbInit(fastify, options) {
   log.info("Creating database");
   const dbFile = process.env.DB_FILE || "../../data/database.db"
-  const db = new Database(dbFile); //, { verbose: console.log })
+  const db = new Database(dbFile); //, { verbose: console.log });
 
 //   db.exec(`
 //     DROP TABLE IF EXISTS otp_codes;

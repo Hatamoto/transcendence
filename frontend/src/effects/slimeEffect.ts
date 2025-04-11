@@ -104,23 +104,20 @@ export const startSlimeEffect = () => {
 		}
 
 		reset() {
-			console.log("Resetting drip...");
+
 
 			this.radius = Math.random() * 80 + 20;
-			console.log("New radius:", this.radius);
 		
 			this.x = 2 * this.radius + Math.random() * (this.effect.width - this.radius * 4);
 			this.y = this.radius + HEADER_HEIGHT;
-			console.log("New position -> x:", this.x, "y:", this.y);
 		
 			this.vy = this.gravity;
-			console.log("Initial vy (vertical acceleration):", this.vy);
 		
 			this.speedY = Math.max(Math.random() * MAX_SPEEDY, MIN_SPEEDY);
-			console.log("Initial speedY:", this.speedY);
+
 		
 			this.va = Math.random() * 0.1 - 0.05;
-			console.log("New angular velocity (va):", this.va);
+
 
 			// this.radius = Math.random() * 80 + 20;
 			// this.x = 2 * this.radius + Math.random() * (this.effect.width - this.radius * 4);

@@ -55,7 +55,7 @@ async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
 export async function loginUser(user: LoginRequest): Promise<number> {
 	const options : ApiOptions = {
 		method: 'POST',
-		url: '/api/login', //this changed ?!?
+		url: '/auth/login', //this changed ?!?
 		body: user,            
 		headers: {
 		'Content-Type': 'application/json',

@@ -1,11 +1,21 @@
 // @ts-ignore
 import socket from '../utils/socket.js';
 import { Logger, LogLevel } from '../utils/logger.js';
-import { TURN_URL, TURN_USER, TURN_PASS, EXT_IP, STUN_URL} from '../config/env-config.js';
+//import { TURN_URL, TURN_USER, TURN_PASS, EXT_IP, STUN_URL} from '../config/env-config.js';
 
+const STUN_URL = import.meta.env.VITE_STUN_URL;
+const TURN_URL = import.meta.env.VITE_TURN_URL;
+const TURN_USER = import.meta.env.VITE_TURN_USER;
+const TURN_PASS = import.meta.env.VITE_TURN_PASS;
+const EXT_IP = import.meta.env.VITE_EXT_IP;
 const log = new Logger(LogLevel.INFO);
 
 log.info("UI ready")
+log.info("STUN_URL:", STUN_URL);
+log.info("TURN_URL:", TURN_URL);
+log.info("TURN_USER:", TURN_USER);
+log.info("TURN_PASS:", TURN_PASS);
+log.info("EXT_IP:", EXT_IP);
 
 enum KeyBindings{
 	UP = 'KeyW',
@@ -139,7 +149,7 @@ export class frontEndGame {
 	private async getExternalIP(): Promise<string | null> {
 		try {
 			log.info("Fetching external IP");
-			const res = await fetch('/external-ip');
+			const res = await fetch('/api/external-ip');
 			const data = await res.json();
 			return data.ip;
 		} catch (err) {
@@ -194,15 +204,20 @@ export class frontEndGame {
 			this.dataChannel.onerror = (e) => log.error("Data channel error:", e);
 			  
 			this.dataChannel.onmessage = (e) => {
-				log.debug("Message received from backend:", e.data);
+				log.debug("Raw message from backend:", e.data);
 				try {
 					const data = JSON.parse(e.data);
+					if (!data.type) {
+						throw new Error("Missing type field in message");
+					}
 					if (data.type === 'gameState') {
 						this.updateGameState(data.positions, data.scores);
-						log.debug(" Game state updated");
+						log.debug("Game state updated");
+					} else {
+						log.info("Unhandled message type:", data.type);
 					}
 				} catch (err) {
-					log.error("Error handling data channel message:", err);
+					log.error("Error handling data channel message:", e.data, err);
 				}
 			};
 		};
@@ -221,8 +236,12 @@ export class frontEndGame {
 		document.addEventListener('keydown', (e) => {
 			if (e.code === KeyBindings.UP || e.code === KeyBindings.DOWN) {
 				const data = { key: e.code, isPressed: true };
-				log.debug("Sending key down event:", data);
-				dataChannel.send(JSON.stringify(data));
+				log.debug("Sending key down event:", JSON.stringify(data));
+				if (dataChannel.readyState === 'open') {
+					dataChannel.send(JSON.stringify(data));
+				} else {
+					log.warn("DataChannel not open, cannot send:", data);
+				}
 			}
 		});
 		

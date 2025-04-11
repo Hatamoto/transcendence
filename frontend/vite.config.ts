@@ -5,6 +5,14 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true, // Listen on 0.0.0.0
+	proxy: {
+		'/auth': 'http://auth-server:4000',
+		'/api': 'http://main-server:5001',
+		'/socket.io': {
+			target: 'ws://main-server:5001',
+			ws: true
+		  }
+	},
     port: 5173,
     strictPort: true,
     watch: {

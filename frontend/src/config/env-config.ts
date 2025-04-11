@@ -1,6 +1,6 @@
 // frontend/src/env-config.ts
-export const STUN_URL = "__STUN_URL__";
-export const TURN_URL = "__TURN_URL__";
-export const TURN_USER = "__TURN_USER__";
-export const TURN_PASS = "__TURN_PASS__";
-export const EXT_IP = "__EXT_IP__";
+export const STUN_URL = import.meta.env.VITE_STUN_URL;
+export const TURN_URL = import.meta.env.VITE_TURN_URL;
+export const TURN_USER = import.meta.env.VITE_TURN_USER;
+export const TURN_PASS = import.meta.env.VITE_TURN_PASS;
+export const EXT_IP = import.meta.env.VITE_EXT_IP;

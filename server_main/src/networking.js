@@ -4,7 +4,7 @@ import { Game } from './game/game.js';
 import { Logger, LogLevel } from './utils/logger.js';
 import { startChat } from "./chat.js";
 
-const log = new Logger(LogLevel.INFO);
+const log = new Logger(LogLevel.DEBUG);
 
 global.RTCPeerConnection = wrtc.RTCPeerConnection;
 global.RTCSessionDescription = wrtc.RTCSessionDescription;
@@ -122,18 +122,6 @@ export function setupNetworking(server){
 				log.warn(`No player room found for socket ${socket.id}`);
 			}
 		});
-
-		//socket.on("joinRoom", (roomId) => {
-		//	if (!rooms[roomId]) {
-		//		rooms[roomId] = {
-		//		players: {},
-		//		gameStarted: false,
-		//		hostId: null
-		//		};
-		//	}
-		//	joinRoom(roomId, socket);
-		//});
-
 
 		socket.on("joinRoomQue", () => {
 			const roomId = roomIds.allocate();
@@ -273,6 +261,7 @@ function initializeWebRTC(roomId) {
 					games[roomId].keyDown(player.keysPressed, playerId);
 				}
 			}
+			log.debug("Parsed data channel message:", data);
 		} catch (e) {
 			log.error("Error parsing data channel message:", e);
 		}
@@ -313,7 +302,7 @@ function startGameLoop(roomId) {
 
 	if (!game.isRunning())
 		return ;
-	log.info("Game running: " + roomId);
+	// log.debug("Game running: " + roomId);
 
 	if (game.getScores()[0] >= 5)
 	{
