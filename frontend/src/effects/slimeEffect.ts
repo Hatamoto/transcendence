@@ -10,38 +10,27 @@ export const startSlimeEffect = () => {
 
 	console.log("Header height:", HEADER_HEIGHT);
 
-	// Position canvas below the header
-	canvas.style.position = "fixed";
-	canvas.style.top = `${HEADER_HEIGHT}px`;
-	canvas.style.left = "0";
-	canvas.style.width = "100vw";
-	canvas.style.height = `calc(100vh - ${HEADER_HEIGHT}px)`;
-	canvas.style.zIndex = "-1";
-	canvas.style.backgroundColor = "black";
-	canvas.style.pointerEvents = "none";
-	canvas.style.filter = "blur(calc(var(--liquid-factor, 20) * 1px)) contrast(calc(var(--liquid-factor, 20) * 3))";
-	canvas.style.scale = "1.1";
-
 	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight - HEADER_HEIGHT;
+	canvas.height = window.innerHeight;;
 
 	// Style constants
 	const SLIME_CORE_COLOR = "#00ff88";
 	const SLIME_GLOW_COLOR = "rgba(0, 255, 150, 0.15)";
-	const SLIME_STROKE_COLOR = "rgba(0, 255, 100, 0.2)";
-	const SLIME_TRAIL_FILL = "rgba(0, 0, 0, 0.08)";
-	const SPEEDX = 0.04;
-	const MIN_SPEEDY = 0.2;  // enforce minimum downward speed
-	const MAX_SPEEDY = 0.3;
-	const GRAVITY = 0.005;
+	const SLIME_STROKE_COLOR = "rgba(5, 5, 5, 0.85)";
+	const SLIME_TRAIL_FILL = "rgba(0, 0, 0, 0.4)";
+	const SPEEDX = 0.002;
+	const SPEEDY = 0.0005;
+	const GRAVITY = 0.00001;
 	const LINE_WIDTH = 60;
 	const LIQUID_PULSE_SPEED = 0.02;
 	const LIQUID_PULSE_BASE = 20;
 	const LIQUID_PULSE_RANGE = 5;
-	const GLOW_RADIUS_FACTOR = 1.8;
-	const DRIP_COUNT_INITIAL = 100;
+	const GLOW_RADIUS_FACTOR = 1.0;
+	const DRIP_COUNT_INITIAL = 50;
+	const RADIUS_FACTOR = 70;
 
 	let glowRadiusFactor = GLOW_RADIUS_FACTOR;
+	let dripCount = DRIP_COUNT_INITIAL;
 
 	const ctx = canvas.getContext("2d");
 	if (!ctx) return;
@@ -67,28 +56,28 @@ export const startSlimeEffect = () => {
 
 		constructor(effect: DrippingEffect) {
 			this.effect = effect;
-			this.radius = Math.random() * 80 + 20;
+			this.radius = Math.random() * (RADIUS_FACTOR / 2) + (RADIUS_FACTOR / 4);
 			this.x = 2 * this.radius + Math.random() * (effect.width - this.radius * 4);
-			this.y = this.radius + HEADER_HEIGHT + Math.random() * (effect.height - this.radius * 2); // full space, center always below top
-			this.speedX = Math.random() * SPEEDX - SPEEDX / 2;
-			this.speedY = Math.max(Math.random() * MAX_SPEEDY, MIN_SPEEDY);
+			this.y = this.radius + Math.random() * (effect.height - this.radius * 2); // full space, center always below top
+			this.speedX = Math.random() * SPEEDX - SPEEDX / 4;
+			this.speedY = Math.max(Math.random() * SPEEDY);
 			this.angle = 0;
-			this.va = Math.random() * 0.1 - 0.05; // angular velocity (wobble/drift)
+			this.va = Math.random() * 0.02 - 0.05; // angular velocity (wobble/drift)
 			this.range = Math.random() * 10;
 			this.gravity = Math.random() * GRAVITY;
-			this.vy = Math.random() * GRAVITY; // Vertical acceleration - gravity influences this
+			this.vy = this.gravity; // Vertical acceleration - gravity influences this
 		}
 
 		update() {
 			if (this.x < this.radius || this.x > this.effect.width - this.radius) this.speedX *= -1;
 			if (this.y > this.effect.height + this.radius) this.reset();
-			if (this.y < this.radius + HEADER_HEIGHT) this.y = this.radius + HEADER_HEIGHT; // never go above top
+			if (this.y < this.radius) this.y = this.radius; // never go above top
 			this.vy += this.gravity;
 			this.speedY += this.vy;
 			this.angle += this.va;
 
 			this.x += this.speedX * Math.cos(this.angle) * this.range;
-			this.y += Math.max(this.speedY, MIN_SPEEDY);
+			this.y += Math.max(this.speedY + this.vy, 0.02);
 		}
 
 		draw(ctx: CanvasRenderingContext2D) {
@@ -104,27 +93,12 @@ export const startSlimeEffect = () => {
 		}
 
 		reset() {
-
-
-			this.radius = Math.random() * 80 + 20;
-		
+			this.radius = Math.random() * RADIUS_FACTOR + (RADIUS_FACTOR / 4);
 			this.x = 2 * this.radius + Math.random() * (this.effect.width - this.radius * 4);
-			this.y = this.radius + HEADER_HEIGHT;
-		
+			this.y = HEADER_HEIGHT - this.radius * Math.random(); // full space, center always below top
 			this.vy = this.gravity;
-		
-			this.speedY = Math.max(Math.random() * MAX_SPEEDY, MIN_SPEEDY);
-
-		
+			this.speedY = Math.max(Math.random() * SPEEDY);
 			this.va = Math.random() * 0.1 - 0.05;
-
-
-			// this.radius = Math.random() * 80 + 20;
-			// this.x = 2 * this.radius + Math.random() * (this.effect.width - this.radius * 4);
-			// this.y = this.radius + HEADER_HEIGHT;
-			// this.vy = Math.random() * GRAVITY;
-			// this.speedY = Math.max(Math.random() * MAX_SPEEDY, MIN_SPEEDY);
-			// this.va = Math.random() * 0.1 - 0.05;
 		}
 	}
 
@@ -161,6 +135,11 @@ export const startSlimeEffect = () => {
 	let animationId: number;
 
 	const animate = () => {
+		if (document.querySelector("#game-container canvas")) {
+			cancelAnimationFrame(animationId);
+			console.info("🎮 Game started — slime effect disabled");
+			return;
+		}
 		frameCount++;
 		const now = performance.now();
 		const delta = now - lastTimestamp;
@@ -169,7 +148,8 @@ export const startSlimeEffect = () => {
 		if (delta > 1000) {
 			console.warn("Restarting due to freeze...");
 			effect.drips = [];
-			effect.init(DRIP_COUNT_INITIAL);
+			dripCount = Math.max(10, dripCount - 5);
+			effect.init(dripCount);
 			return animate();
 		}
 
@@ -200,7 +180,7 @@ export const startSlimeEffect = () => {
 	let glowT = 0;
 	const pulseGlow = () => {
 		glowT += 0.02;
-		glowRadiusFactor = 1.6 + Math.sin(glowT) * 0.4;
+		glowRadiusFactor = GLOW_RADIUS_FACTOR + Math.sin(glowT) * 0.1;
 		requestAnimationFrame(pulseGlow);
 	};
 	pulseGlow();

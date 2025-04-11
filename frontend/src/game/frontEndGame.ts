@@ -1,14 +1,10 @@
 // @ts-ignore
 import socket from '../utils/socket.js';
+import { startSlimeEffect } from '../effects/slimeEffect.js';	
 import { Logger, LogLevel } from '../utils/logger.js';
-//import { TURN_URL, TURN_USER, TURN_PASS, EXT_IP, STUN_URL} from '../config/env-config.js';
+import { TURN_URL, TURN_USER, TURN_PASS, EXT_IP, STUN_URL} from '../config/env-config.js';
 
-const STUN_URL = import.meta.env.VITE_STUN_URL;
-const TURN_URL = import.meta.env.VITE_TURN_URL;
-const TURN_USER = import.meta.env.VITE_TURN_USER;
-const TURN_PASS = import.meta.env.VITE_TURN_PASS;
-const EXT_IP = import.meta.env.VITE_EXT_IP;
-const log = new Logger(LogLevel.INFO);
+const log = new Logger(LogLevel.WARN);
 
 log.info("UI ready")
 log.info("STUN_URL:", STUN_URL);
@@ -374,4 +370,6 @@ socket.on("gameOver", (winner : number) => {
 	canvas.remove();
 
 	container.prepend(winnerElement);
+
+	startSlimeEffect();
 });
