@@ -8,29 +8,22 @@ export const startSlimeEffect = () => {
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight;
 
-	// ctx.fillStyle = "green";
-	// ctx.fillStyle = "lawngreen";
-	// ctx.fillStyle = "lime";
-	// ctx.fillStyle = "white";
-	// ctx.fillStyle = "yellow";
-	// ctx.fillStyle = "black";
-	// ctx.fillStyle = "#00ff00"; // bright green
-	// ctx.fillStyle = "#ff00ff"; // pink
-	// ctx.fillStyle = "#333333"; // dark gray
-	// ctx.fillStyle = "rgb(0,255,0)";    // green
-	// ctx.fillStyle = "rgba(0,255,0,0.4)"; // translucent green
+	// 🧠 Track current animation frame ID for cancellation
+	let animationId: number;
 
 	// 🎨 Slime visual theme — change these to customize the effect
-	const SLIME_COLOR = "lime";                          // Color of the blobs
-	const SLIME_STROKE_COLOR = "rgba(0,255,0,0.4)";    // Color of the lines between blobs
-	const SLIME_TRAIL_FILL = "rgba(0, 0, 0, 0.1)";     // Background trail fade
-	const SPEEDX = 0.1;                                   // Speed of the blobs in the x direction
-	const SPEEDY = 0.2;                                   // Speed of the blobs
-	const GRAVITY = 0.005;                                 // Gravity effect on the blobs
-	
-	// 🟢 MAIN SLIME COLOR — This sets the color of the "drip" circles.
-	ctx.fillStyle = SLIME_COLOR;
-	// 🟡 CONNECTION LINE COLOR — Used in connectParticles() to draw lines between close drips.
+	const SLIME_CORE_COLOR = "rgba(155, 201, 20, 0.86)";                              // Core blob color
+	const SLIME_GLOW_COLOR = "rgba(222, 251, 5, 0.3)";
+	const SLIME_STROKE_COLOR = "rgba(139, 176, 30, 0.8)";      // Lines between blobs
+	const SLIME_TRAIL_FILL = "rgba(0, 0, 0, 0.1)";           // Canvas-wide fade effect
+	const SPEEDX = 0.05;                                      // X-axis jitter
+	const SPEEDY = 0.1;                                      // Initial downward drip speed
+	const GRAVITY = 0.01;                                   // Drip acceleration
+	const LIQUID_PULSE_SPEED = 0.02;   // How fast the goo pulses
+	const LIQUID_PULSE_BASE = 20;      // Minimum base blur factor
+	const LIQUID_PULSE_RANGE = 5;      // Amplitude of pulsing
+
+	ctx.fillStyle = SLIME_CORE_COLOR;
 	ctx.strokeStyle = SLIME_STROKE_COLOR;
 	ctx.lineWidth = 50;
 	ctx.lineCap = "round";
@@ -54,8 +47,8 @@ export const startSlimeEffect = () => {
 			this.radius = Math.random() * 80 + 20;
 			this.x = 2 * this.radius + Math.random() * (this.effect.width - this.radius * 4);
 			this.y = -this.radius;
-			this.speedX = Math.random() * SPEEDX - 0.1;
-			this.speedY = Math.random() * SPEEDY + 0.2;
+			this.speedX = Math.random() * SPEEDX;
+			this.speedY = Math.random() * SPEEDY;
 			this.angle = 0;
 			this.va = Math.random() * 0.1 - 0.05;
 			this.range = Math.random() * 10;
@@ -79,7 +72,15 @@ export const startSlimeEffect = () => {
 		}
 
 		draw(context: CanvasRenderingContext2D) {
+			// Draw the glow layer — larger and semi-transparent
 			context.beginPath();
+			context.fillStyle = SLIME_GLOW_COLOR;
+			context.arc(this.x, this.y, this.radius * 1.4, 0, Math.PI * 2); // glow is bigger
+			context.fill();
+		
+			// Draw the core layer — solid and centered
+			context.beginPath();
+			context.fillStyle = SLIME_CORE_COLOR;
 			context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
 			context.fill();
 		}
@@ -89,7 +90,7 @@ export const startSlimeEffect = () => {
 			this.x = this.radius * 2 + Math.random() * (this.effect.width - this.radius * 4);
 			this.y = -this.radius;
 			this.vy = 0;
-			this.speedY = Math.random() * SPEEDY + 0.2;
+			this.speedY = Math.random() * SPEEDY;
 			this.va = Math.random() * 0.1 - 0.05;
 		}
 	}
@@ -133,7 +134,7 @@ export const startSlimeEffect = () => {
 					}
 				}
 				if (this.drips[a].radius < 20 && this.drips[a].y > this.height) {
-					this.drips[a] = new Drip(this); // Replace it instead of removing
+					this.drips[a] = new Drip(this);
 				}
 			}
 		}
@@ -146,62 +147,83 @@ export const startSlimeEffect = () => {
 	}
 
 	const effect = new DrippingEffect(canvas.width, canvas.height);
-	effect.init(20);
+	effect.init(40);
+
+	effect.update = function () {
+		this.drips.forEach(drip => drip.update());
+	
+		// Slowly reduce to 30 drips over time
+		if (this.drips.length > 20 && Math.random() < 0.2) {
+			this.drips.pop(); // remove one occasionally
+		}
+	};
+
+	let frameCount = 0;
+	let lastTimestamp = performance.now();
 
 	function restartSlime() {
+		// 🛑 Cancel current animation loop
+		cancelAnimationFrame(animationId);
+
+		// 🔁 Reset timing and state
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		lastTimestamp = performance.now();
 		frameCount = 0;
 		effect.reset(canvas.width, canvas.height);
-		animate(); // start fresh
-	}
 
-	let frameCount = 0;
-	let lastTimestamp = performance.now();
+		// ▶️ Start new loop
+		animate();
+	}
 
 	const animate = () => {
 		frameCount++;
 		const now = performance.now();
 		const delta = now - lastTimestamp;
-		lastTimestamp = now
-		// Detect freeze (no frames for 1s)
+		lastTimestamp = now;
+
+		// ❄️ Detect a freeze (>1s between frames)
 		if (delta > 1000) {
 			console.warn("Slime effect frozen. Restarting...");
 			restartSlime();
-		return;
-	}
+			return;
+		}
+
+		// 🧼 Occasionally deep clear the canvas
 		if (frameCount % 600 === 0) {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 		}
+
 		ctx.fillStyle = SLIME_TRAIL_FILL;
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
-		// 🟢 REDRAW DRIPS — Must reset to blob color before each frame.
-		ctx.fillStyle = SLIME_COLOR;
+
+		ctx.fillStyle = SLIME_CORE_COLOR;
 		effect.update();
 		effect.draw(ctx);
+
 		if (frameCount % 4 === 0) {
 			effect.connectParticles(ctx);
 		}
-		requestAnimationFrame(animate);
+
+		animationId = requestAnimationFrame(animate);
 	};
 
 	animate();
 
-	// 🟣 OPTIONAL: Pulses the --liquid-factor for dynamic gooeyness
+	// 🌊 Pulse gooiness with CSS variable
 	let t = 0;
 	function pulseLiquidFactor() {
-		t += 0.02;
-		const value = 20 + Math.sin(t) * 5;
+		t += LIQUID_PULSE_SPEED;
+		const value = LIQUID_PULSE_BASE + Math.sin(t) * LIQUID_PULSE_RANGE;
 		document.documentElement.style.setProperty("--liquid-factor", value.toFixed(2));
 		requestAnimationFrame(pulseLiquidFactor);
 	}
 	pulseLiquidFactor();
 
+	// 🪟 Reset on resize
 	window.addEventListener("resize", () => {
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
-		// 🟢 Again, set the blob color after resize
-		ctx.fillStyle = SLIME_COLOR;
+		ctx.fillStyle = SLIME_CORE_COLOR;
 		effect.reset(canvas.width, canvas.height);
 	});
 };
