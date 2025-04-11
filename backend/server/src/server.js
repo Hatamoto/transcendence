@@ -18,13 +18,14 @@ import { Logger, LogLevel } from './utils/logger.js';
 // Compute __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const FRONTEND_DIST = path.resolve(__dirname, '../../frontend/dist');
+const FRONTEND_DIST = path.resolve(__dirname, '../../../frontend/dist');
 
 const log = new Logger(LogLevel.INFO);
 
 log.info("Creating server")
+log.info("DIST:::: " + FRONTEND_DIST);
 
-dotenv.config();
+dotenv.config({ path: "../.env" });
 
 const fastify = Fastify({
 	logger: false

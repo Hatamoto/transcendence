@@ -13,17 +13,12 @@ RUN apt-get update && apt-get install -y curl
 
 RUN npm update
 
-# Copy only existing package.json and lock files
-# Use a wildcard to include package-lock.json if it exists
-COPY ./backend/package*.json ./backend/
-COPY ./frontend/package*.json ./frontend/
+COPY . .
 
-# Install dependencies separately for caching
 RUN cd backend && npm install
 RUN cd frontend && npm install
-
-# Copy full source code after dependencies
-COPY . .
+RUN cd backend/server && npm install
+RUN cd backend/authentication_server && npm install
 
 # Make entrypoint script executable and copy it
 COPY entrypoint.sh /entrypoint.sh
@@ -34,6 +29,7 @@ ENTRYPOINT ["/entrypoint.sh"]
 
 # Expose port used by Fastify
 EXPOSE 5001
+EXPOSE 4000
 
 # Default CMD (can be overridden)
 CMD ["npm", "run", "start", "--prefix", "backend"]

@@ -4,7 +4,7 @@ import loginRoutes from './routes/authRoutes.js'
 import dbInit from '../server/src/database.js'
 import jwt from '@fastify/jwt'
 
-dotenv.config();
+dotenv.config({ path: "../.env" });
 
 const fastify = Fastify({
   logger: true
