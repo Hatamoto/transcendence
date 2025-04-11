@@ -5,7 +5,23 @@
     <link href="./output.css" rel="stylesheet">
   </head>
   <body>
-    <div id="root"></div>
+	<canvas
+	id="slime-bg"
+	style="
+		position: fixed;
+		inset: 0;
+		z-index: -1;
+		width: 100vw;
+		height: 100vh;
+		background-color: black;
+		filter: blur(calc(var(--liquid-factor, 20) * 1px)) contrast(calc(var(--liquid-factor, 20) * 3));
+		scale: 1.1;
+		pointer-events: none;
+		filter: blur(10px) contrast(2)
+	"
+	>
+	</canvas>
+	<div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script src="https://cdn.socket.io/4.4.0/socket.io.min.js"></script>
   </body>
