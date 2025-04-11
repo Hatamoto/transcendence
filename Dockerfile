@@ -16,7 +16,7 @@ RUN npm update
 COPY . .
 
 RUN cd backend && npm install
-RUN cd frontend && npm install
+RUN cd frontend && npm install && npm run tailwind
 RUN cd backend/server && npm install
 RUN cd backend/authentication_server && npm install
 
