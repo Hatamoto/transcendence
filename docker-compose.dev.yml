@@ -1,0 +1,74 @@
+
+name: tr-dev
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      - HOST=0.0.0.0
+      - NODE_ENV=${NODE_ENV}
+    depends_on:
+      - auth-server
+      - main-server
+
+  auth-server:
+    build:
+      context: ./server_auth
+      dockerfile: Dockerfile.dev
+    env_file:
+      - ./server_auth/.env
+    volumes:
+      - ./server_auth:/app
+      - /app/node_modules
+      - db-data:/app/data
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=${NODE_ENV}
+    depends_on:
+      - database
+
+  main-server:
+    build:
+      context: ./server_main
+      dockerfile: Dockerfile.dev
+    env_file:
+      - ./server_main/.env
+    volumes:
+      - ./server_main:/app
+      - /app/node_modules
+      - db-data:/app/data
+    ports:
+      - "5001:5001"
+    environment:
+      - NODE_ENV=${NODE_ENV}
+    depends_on:
+      - database
+
+  turn:
+    image: instrumentisto/coturn
+    network_mode: host
+    command: >
+      --no-dtls --no-tls --verbose
+      --lt-cred-mech
+      --use-auth-secret
+      --static-auth-secret=pass
+      --realm=localhost
+      --listening-port=3478
+      --log-file=./turn.log
+
+  database:
+    image: busybox
+    volumes:
+      - db-data:/data
+    command: tail -f /dev/null  # Keeps container alive
+
+volumes:
+  db-data:

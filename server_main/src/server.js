@@ -14,6 +14,7 @@ import { fileURLToPath } from 'url';
 import { setupNetworking } from './networking.js';
 import { Logger, LogLevel } from './utils/logger.js';
 
+dotenv.config();
 
 // Compute __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -24,8 +25,6 @@ const log = new Logger(LogLevel.INFO);
 
 log.info("Creating server")
 log.info("DIST:::: " + FRONTEND_DIST);
-
-dotenv.config({ path: "../.env" });
 
 const fastify = Fastify({
 	logger: false
@@ -78,5 +77,5 @@ fastify.listen({ port: process.env.PORT || 5001, host: process.env.HOST }, funct
 		fastify.log.error(err)
 		process.exit(1)
 	}
-	log.info(`Server listening at ${address}`)
+	log.info(`Main server listening at ${address}`)
 })

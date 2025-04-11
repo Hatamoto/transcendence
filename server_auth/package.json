@@ -5,7 +5,8 @@
     "type": "module",
     "scripts": {
       "start": "node authServer",
-      "devAuth": "nodemon authServer.js"
+      "devAuth": "npx nodemon authServer.js",
+	  "dev": "npx nodemon authServer.jss"
     },
     "keywords": [],
     "author": "",
