@@ -1,31 +1,54 @@
 export const startSlimeEffect = () => {
 	const canvas = document.getElementById("slime-bg") as HTMLCanvasElement;
-	if (!canvas) return;
+	const header = document.querySelector("header") as HTMLElement;
+
+	console.log("🟢 startSlimeEffect initialized");
+
+	if (!canvas || !header) return;
+
+	const HEADER_HEIGHT = header.offsetHeight;
+
+	console.log("Header height:", HEADER_HEIGHT);
+
+	// Position canvas below the header
+	canvas.style.position = "fixed";
+	canvas.style.top = `${HEADER_HEIGHT}px`;
+	canvas.style.left = "0";
+	canvas.style.width = "100vw";
+	canvas.style.height = `calc(100vh - ${HEADER_HEIGHT}px)`;
+	canvas.style.zIndex = "-1";
+	canvas.style.backgroundColor = "black";
+	canvas.style.pointerEvents = "none";
+	canvas.style.filter = "blur(calc(var(--liquid-factor, 20) * 1px)) contrast(calc(var(--liquid-factor, 20) * 3))";
+	canvas.style.scale = "1.1";
+
+	canvas.width = window.innerWidth;
+	canvas.height = window.innerHeight - HEADER_HEIGHT;
+
+	// Style constants
+	const SLIME_CORE_COLOR = "#00ff88";
+	const SLIME_GLOW_COLOR = "rgba(0, 255, 150, 0.15)";
+	const SLIME_STROKE_COLOR = "rgba(0, 255, 100, 0.2)";
+	const SLIME_TRAIL_FILL = "rgba(0, 0, 0, 0.08)";
+	const SPEEDX = 0.04;
+	const MIN_SPEEDY = 0.2;  // enforce minimum downward speed
+	const MAX_SPEEDY = 0.3;
+	const GRAVITY = 0.005;
+	const LINE_WIDTH = 60;
+	const LIQUID_PULSE_SPEED = 0.02;
+	const LIQUID_PULSE_BASE = 20;
+	const LIQUID_PULSE_RANGE = 5;
+	const GLOW_RADIUS_FACTOR = 1.8;
+	const DRIP_COUNT_INITIAL = 100;
+
+	let glowRadiusFactor = GLOW_RADIUS_FACTOR;
 
 	const ctx = canvas.getContext("2d");
 	if (!ctx) return;
 
-	canvas.width = window.innerWidth;
-	canvas.height = window.innerHeight;
-
-	// 🧠 Track current animation frame ID for cancellation
-	let animationId: number;
-
-	// 🎨 Slime visual theme — change these to customize the effect
-	const SLIME_CORE_COLOR = "rgba(155, 201, 20, 0.86)";                              // Core blob color
-	const SLIME_GLOW_COLOR = "rgba(222, 251, 5, 0.3)";
-	const SLIME_STROKE_COLOR = "rgba(139, 176, 30, 0.8)";      // Lines between blobs
-	const SLIME_TRAIL_FILL = "rgba(0, 0, 0, 0.1)";           // Canvas-wide fade effect
-	const SPEEDX = 0.05;                                      // X-axis jitter
-	const SPEEDY = 0.1;                                      // Initial downward drip speed
-	const GRAVITY = 0.01;                                   // Drip acceleration
-	const LIQUID_PULSE_SPEED = 0.02;   // How fast the goo pulses
-	const LIQUID_PULSE_BASE = 20;      // Minimum base blur factor
-	const LIQUID_PULSE_RANGE = 5;      // Amplitude of pulsing
-
 	ctx.fillStyle = SLIME_CORE_COLOR;
 	ctx.strokeStyle = SLIME_STROKE_COLOR;
-	ctx.lineWidth = 50;
+	ctx.lineWidth = LINE_WIDTH;
 	ctx.lineCap = "round";
 	ctx.lineJoin = "round";
 
@@ -45,53 +68,66 @@ export const startSlimeEffect = () => {
 		constructor(effect: DrippingEffect) {
 			this.effect = effect;
 			this.radius = Math.random() * 80 + 20;
-			this.x = 2 * this.radius + Math.random() * (this.effect.width - this.radius * 4);
-			this.y = -this.radius;
-			this.speedX = Math.random() * SPEEDX;
-			this.speedY = Math.random() * SPEEDY;
+			this.x = 2 * this.radius + Math.random() * (effect.width - this.radius * 4);
+			this.y = this.radius + HEADER_HEIGHT + Math.random() * (effect.height - this.radius * 2); // full space, center always below top
+			this.speedX = Math.random() * SPEEDX - SPEEDX / 2;
+			this.speedY = Math.max(Math.random() * MAX_SPEEDY, MIN_SPEEDY);
 			this.angle = 0;
-			this.va = Math.random() * 0.1 - 0.05;
+			this.va = Math.random() * 0.1 - 0.05; // angular velocity (wobble/drift)
 			this.range = Math.random() * 10;
 			this.gravity = Math.random() * GRAVITY;
-			this.vy = 0;
+			this.vy = Math.random() * GRAVITY; // Vertical acceleration - gravity influences this
 		}
 
 		update() {
 			if (this.x < this.radius || this.x > this.effect.width - this.radius) this.speedX *= -1;
 			if (this.y > this.effect.height + this.radius) this.reset();
-			if (this.y > this.radius) {
-				this.vy += this.gravity;
-				this.speedY += this.vy;
-				this.angle += this.va;
-			}
-			if (this.y > this.radius * 2) {
-				this.radius -= 0.15;
-			}
+			if (this.y < this.radius + HEADER_HEIGHT) this.y = this.radius + HEADER_HEIGHT; // never go above top
+			this.vy += this.gravity;
+			this.speedY += this.vy;
+			this.angle += this.va;
+
 			this.x += this.speedX * Math.cos(this.angle) * this.range;
-			this.y += this.speedY;
+			this.y += Math.max(this.speedY, MIN_SPEEDY);
 		}
 
-		draw(context: CanvasRenderingContext2D) {
-			// Draw the glow layer — larger and semi-transparent
-			context.beginPath();
-			context.fillStyle = SLIME_GLOW_COLOR;
-			context.arc(this.x, this.y, this.radius * 1.4, 0, Math.PI * 2); // glow is bigger
-			context.fill();
-		
-			// Draw the core layer — solid and centered
-			context.beginPath();
-			context.fillStyle = SLIME_CORE_COLOR;
-			context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-			context.fill();
+		draw(ctx: CanvasRenderingContext2D) {
+			ctx.beginPath();
+			ctx.fillStyle = SLIME_GLOW_COLOR;
+			ctx.arc(this.x, this.y, this.radius * glowRadiusFactor, 0, Math.PI * 2);
+			ctx.fill();
+
+			ctx.beginPath();
+			ctx.fillStyle = SLIME_CORE_COLOR;
+			ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+			ctx.fill();
 		}
 
 		reset() {
-			this.radius = Math.random() * 120 + 30;
-			this.x = this.radius * 2 + Math.random() * (this.effect.width - this.radius * 4);
-			this.y = -this.radius;
-			this.vy = 0;
-			this.speedY = Math.random() * SPEEDY;
+			console.log("Resetting drip...");
+
+			this.radius = Math.random() * 80 + 20;
+			console.log("New radius:", this.radius);
+		
+			this.x = 2 * this.radius + Math.random() * (this.effect.width - this.radius * 4);
+			this.y = this.radius + HEADER_HEIGHT;
+			console.log("New position -> x:", this.x, "y:", this.y);
+		
+			this.vy = this.gravity;
+			console.log("Initial vy (vertical acceleration):", this.vy);
+		
+			this.speedY = Math.max(Math.random() * MAX_SPEEDY, MIN_SPEEDY);
+			console.log("Initial speedY:", this.speedY);
+		
 			this.va = Math.random() * 0.1 - 0.05;
+			console.log("New angular velocity (va):", this.va);
+
+			// this.radius = Math.random() * 80 + 20;
+			// this.x = 2 * this.radius + Math.random() * (this.effect.width - this.radius * 4);
+			// this.y = this.radius + HEADER_HEIGHT;
+			// this.vy = Math.random() * GRAVITY;
+			// this.speedY = Math.max(Math.random() * MAX_SPEEDY, MIN_SPEEDY);
+			// this.va = Math.random() * 0.1 - 0.05;
 		}
 	}
 
@@ -105,75 +141,27 @@ export const startSlimeEffect = () => {
 			this.height = height;
 		}
 
-		init(numberOfDrops: number) {
-			for (let i = 0; i < numberOfDrops; i++) {
+		init(count: number) {
+			for (let i = 0; i < count; i++) {
 				this.drips.push(new Drip(this));
 			}
 		}
 
 		update() {
-			this.drips.forEach(drip => drip.update());
+			this.drips.forEach(d => d.update());
 		}
 
-		draw(context: CanvasRenderingContext2D) {
-			this.drips.forEach(drip => drip.draw(context));
-		}
-
-		connectParticles(context: CanvasRenderingContext2D) {
-			const maxDistance = 150;
-			for (let a = 0; a < this.drips.length; a++) {
-				for (let b = a; b < this.drips.length; b++) {
-					const dx = this.drips[a].x - this.drips[b].x;
-					const dy = this.drips[a].y - this.drips[b].y;
-					const distance = Math.hypot(dx, dy);
-					if (distance < maxDistance) {
-						context.beginPath();
-						context.moveTo(this.drips[a].x, this.drips[a].y);
-						context.lineTo(this.drips[b].x, this.drips[b].y);
-						context.stroke();
-					}
-				}
-				if (this.drips[a].radius < 20 && this.drips[a].y > this.height) {
-					this.drips[a] = new Drip(this);
-				}
-			}
-		}
-
-		reset(newWidth: number, newHeight: number) {
-			this.width = newWidth;
-			this.height = newHeight;
-			this.drips.forEach(drip => drip.reset());
+		draw(ctx: CanvasRenderingContext2D) {
+			this.drips.forEach(d => d.draw(ctx));
 		}
 	}
 
 	const effect = new DrippingEffect(canvas.width, canvas.height);
-	effect.init(40);
-
-	effect.update = function () {
-		this.drips.forEach(drip => drip.update());
-	
-		// Slowly reduce to 30 drips over time
-		if (this.drips.length > 20 && Math.random() < 0.2) {
-			this.drips.pop(); // remove one occasionally
-		}
-	};
+	effect.init(DRIP_COUNT_INITIAL);
 
 	let frameCount = 0;
 	let lastTimestamp = performance.now();
-
-	function restartSlime() {
-		// 🛑 Cancel current animation loop
-		cancelAnimationFrame(animationId);
-
-		// 🔁 Reset timing and state
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-		lastTimestamp = performance.now();
-		frameCount = 0;
-		effect.reset(canvas.width, canvas.height);
-
-		// ▶️ Start new loop
-		animate();
-	}
+	let animationId: number;
 
 	const animate = () => {
 		frameCount++;
@@ -181,14 +169,13 @@ export const startSlimeEffect = () => {
 		const delta = now - lastTimestamp;
 		lastTimestamp = now;
 
-		// ❄️ Detect a freeze (>1s between frames)
 		if (delta > 1000) {
-			console.warn("Slime effect frozen. Restarting...");
-			restartSlime();
-			return;
+			console.warn("Restarting due to freeze...");
+			effect.drips = [];
+			effect.init(DRIP_COUNT_INITIAL);
+			return animate();
 		}
 
-		// 🧼 Occasionally deep clear the canvas
 		if (frameCount % 600 === 0) {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 		}
@@ -196,34 +183,35 @@ export const startSlimeEffect = () => {
 		ctx.fillStyle = SLIME_TRAIL_FILL;
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-		ctx.fillStyle = SLIME_CORE_COLOR;
 		effect.update();
 		effect.draw(ctx);
-
-		if (frameCount % 4 === 0) {
-			effect.connectParticles(ctx);
-		}
 
 		animationId = requestAnimationFrame(animate);
 	};
 
 	animate();
 
-	// 🌊 Pulse gooiness with CSS variable
 	let t = 0;
-	function pulseLiquidFactor() {
+	const pulseLiquidFactor = () => {
 		t += LIQUID_PULSE_SPEED;
-		const value = LIQUID_PULSE_BASE + Math.sin(t) * LIQUID_PULSE_RANGE;
-		document.documentElement.style.setProperty("--liquid-factor", value.toFixed(2));
+		const val = LIQUID_PULSE_BASE + Math.sin(t) * LIQUID_PULSE_RANGE;
+		document.documentElement.style.setProperty("--liquid-factor", val.toFixed(2));
 		requestAnimationFrame(pulseLiquidFactor);
-	}
+	};
 	pulseLiquidFactor();
 
-	// 🪟 Reset on resize
+	let glowT = 0;
+	const pulseGlow = () => {
+		glowT += 0.02;
+		glowRadiusFactor = 1.6 + Math.sin(glowT) * 0.4;
+		requestAnimationFrame(pulseGlow);
+	};
+	pulseGlow();
+
 	window.addEventListener("resize", () => {
 		canvas.width = window.innerWidth;
-		canvas.height = window.innerHeight;
-		ctx.fillStyle = SLIME_CORE_COLOR;
-		effect.reset(canvas.width, canvas.height);
+		canvas.height = window.innerHeight - header.offsetHeight;
+		effect.width = canvas.width;
+		effect.height = canvas.height;
 	});
 };

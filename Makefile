@@ -1,5 +1,8 @@
 # Default target
-all: detect_os dockerbuild
+all: detect_os dockerstart
+
+# Build target
+build: detect_os dockerbuild
 
 # Detect the OS and set HOST_LAN_IP
 detect_os:
@@ -37,7 +40,6 @@ dockerbuild:
 		echo "Running on Linux"; \
 		HOST_LAN_IP=$(HOST_LAN_IP) docker compose -f docker-compose.linux.yml up --build; \
 	fi
-
 
 # clean dev
 devclean:
