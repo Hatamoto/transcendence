@@ -76,14 +76,8 @@ const deleteUser = async function (req, reply) {
   const {id} = req.params
 
   try {
-    const userId = req.server.db.prepare('SELECT user_id FROM refresh_tokens WHERE refresh_token = ?').get(token)
-    if (!userId) return reply.code(404).send({ error: "Refresh token not found"})
-    
-    const deleteTokenStatement = req.server.db.prepare('DELETE FROM refresh_tokens WHERE refresh_token = ?')
-    deleteTokenStatement.run(token)
-
-    const deleteUserStatement = req.server.db.prepare('DELETE FROM users WHERE id = ?')
-    deleteUserStatement.run(id)
+    const deleteStatement = req.server.db.prepare('DELETE FROM users WHERE id = ?')
+    deleteStatement.run(id)
     
     return reply.send({message: `User ${id} has been removed`})
   } catch (error) {

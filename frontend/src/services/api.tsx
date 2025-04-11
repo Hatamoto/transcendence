@@ -16,7 +16,7 @@ export interface LoginRequest {
 }
 
 export interface RegistrationRequest {
-	name: string;
+	username: string;
 	email: string;
 	password: string;
 }
@@ -48,7 +48,7 @@ async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
 		return { status: response.status, data: responseData }
 	
 	} catch (error) {
-		throw error; // idk what happens here :()()() saku mita helvettia
+		throw error; // idk what happens here :()()()
 	}
 }
 
@@ -69,7 +69,7 @@ export async function loginUser(user: LoginRequest): Promise<number> {
 export async function registerUser(user: RegistrationRequest): Promise<number> {
 	const options : ApiOptions = {
 		method: 'POST',
-		url: '/api/user',
+		url: '/api/users',
 		body: user,            
 		headers: {
 		'Content-Type': 'application/json',
@@ -94,7 +94,7 @@ export async function getAllUsers(): Promise<User[] | number> {
 
 export async function getUser(id: string): Promise<User | number> {
 	const options : ApiOptions = {
-		method: 'GET',
+		method: 'POST',
 		url: `/api/user/${id}`, 
 		headers: {
 		'Content-Type': 'application/json',
@@ -128,7 +128,7 @@ export async function updateUser(id: string, user: RegistrationRequest) {
 export async function updatePassword(id: string, password: string) {
 	const options : ApiOptions = {
 		method: 'PUT',
-		url: `/api/user/pwd/${id}`,
+		url: `/api/user/${id}`,
 		body: { password: password },
 		headers: {
 		'Content-Type': 'application/json',

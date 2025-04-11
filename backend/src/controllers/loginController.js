@@ -28,7 +28,7 @@ const loginUser = async function (req, reply) {
   try {
     const user = req.server.db.prepare('SELECT * FROM users WHERE name = ?').get(username)
     if (!user) return reply.code(401).send({ error: 'Incorrect username or password' })
-
+    
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) return reply.code(401).send({ error: 'Incorrect username or password' })
     
@@ -112,7 +112,7 @@ const googleAuthHandler = async function(req, reply) {
       return reply.code(400).send({ error: 'Email not verified by Google. Please verify your email.' })
     }
   
-    return reply.code(500).send({ error: error.message })
+    return reply.code(500).send({ error: 'Internal server error' })
   }
 }
 

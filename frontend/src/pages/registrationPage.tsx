@@ -37,23 +37,24 @@ const Registration: React.FC = () => {
 		}
 		setPasswordError(null); 
 
-		
 		const user: RegistrationRequest = {
-			name: formState.username,
+			username: formState.username,
 			email: formState.email,
 			password: formState.password
 		}
-		console.log("asdfghassd");
 
-		const success = await registerUser(user);
-		console.log("asdfghassd");
+		try {
+			const success = await registerUser(user);
 
-		console.log(success);
-		// if (success) {
-		// 	alert('Registration worked');
-		// } else {
-		// 	alert('Registration failed. Please check your credentials.');
-		// }
+			if (success) {
+				alert('Registration worked');
+			} else {
+				alert('Registration failed. Please check your credentials.');
+			}
+		} catch (error) {
+			console.error('Error registering: ', error);
+			alert('Something went wrong. Please try again later.');
+		}
 	};
 
 
@@ -70,7 +71,6 @@ const Registration: React.FC = () => {
 					</label>
 					<input
 						type="text"
-						id="username"
 						name="username"
 						value={formState.username}
 						onChange={handleInputChange}
@@ -85,7 +85,6 @@ const Registration: React.FC = () => {
 					</label>
 					<input
 						type="email"
-						id="email"
 						name="email"
 						value={formState.email}
 						onChange={handleInputChange}
@@ -100,7 +99,6 @@ const Registration: React.FC = () => {
 					</label>
 					<input
 						type="password"
-						id="password"
 						name="password"
 						value={formState.password}
 						onChange={handleInputChange}
@@ -110,12 +108,11 @@ const Registration: React.FC = () => {
 				</div>
 
 				<div className="w-64">
-					<label htmlFor="confirm password" className="block text-sm font-medium text-gray-700">
+					<label htmlFor="password" className="block text-sm font-medium text-gray-700">
 						Confirm password
 					</label>
 					<input
 						type="password"
-						id="confirm password"
 						name="confirm_password"
 						value={formState.confirm_password}
 						onChange={handleInputChange}

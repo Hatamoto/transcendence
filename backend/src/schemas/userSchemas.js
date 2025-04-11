@@ -27,10 +27,14 @@ const addUserOpts = {
   schema: {
     body: {
       type: 'object',
-      required: ['name', 'email', 'password'],
+      required: ['name', 'email', 'number', 'password'],
       properties: {
         name: { type: 'string' },
         email: { type: 'string', format: 'email' },
+        number: {
+          type: 'string',
+          pattern: "^\\+\\d{6,15}$",
+        },
         password: { 
           type: 'string',
           minLength: 8,

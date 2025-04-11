@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 
 const Header: React.FC = () => {
 
@@ -14,33 +13,33 @@ const Header: React.FC = () => {
 	
 		  {/* Navigation Menu */}
 		  <nav>
-		  <ul className="flex space-x-8">
-				<li>
-				<Link
-					to="/"
-					className="text-green-300 hover:text-green-500 transition duration-300"
+			<ul className="flex space-x-8">
+			  <li>
+				<a
+				  href="/"
+				  className="text-green-300 hover:text-green-500 transition duration-300"
 				>
-					Home
-				</Link>
-				</li>
-				<li>
-				<Link
-					to="/login"
-					className="text-green-300 hover:text-green-500 transition duration-300"
+				  Home
+				</a>
+			  </li>
+			  <li>
+				<a
+				  href="/login"
+				  className="text-green-300 hover:text-green-500 transition duration-300"
 				>
-					Login
-				</Link>
-				</li>
-				<li>
-				<Link
-					to="/register"
-					className="text-green-300 hover:text-green-500 transition duration-300"
+				  Login
+				</a>
+			  </li>
+			  <li>
+				<a
+				  href="/register"
+				  className="text-green-300 hover:text-green-500 transition duration-300"
 				>
-					Register
-				</Link>
-				</li>
+				  Register
+				</a>
+			  </li>
 			</ul>
-			</nav>
+		  </nav>
 		</header>
 	  );
 }

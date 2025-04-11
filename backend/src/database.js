@@ -6,7 +6,7 @@ const log = new Logger(LogLevel.INFO);
 
 async function dbInit(fastify, options) {
   log.info("Creating database");
-  const dbFile = process.env.DB_FILE || "../../database/database.db"
+  const dbFile = process.env.DB_FILE || "./database.db"
   const db = new Database(dbFile); //, { verbose: console.log })
 
 //   db.exec(`
@@ -37,6 +37,7 @@ async function dbInit(fastify, options) {
 //     CREATE UNIQUE INDEX IF NOT EXISTS unique_number_index ON users (number);
 //  `);
 
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY,
@@ -63,46 +64,10 @@ async function dbInit(fastify, options) {
   `)
 
   // db.exec(`
-  //   CREATE TABLE IF NOT EXISTS tournaments (
-  //     id INTEGER PRIMARY KEY AUTOINCREMENT,
-  //     name TEXT NOT NULL,
-  //     winner_id INTEGER,
-  //     created_by INTEGER,
-  //     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  //     is_active INTEGER NOT NULL DEFAULT 1 CHECK(status IN (0 ,1)),
-  //     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
-  //     FOREIGN KEY (winner_id) REFERENCES users(id) ON DELETE SET NULL
-  //   );
-  // `)
-
-  // db.exec(`
   //   CREATE TABLE IF NOT EXISTS match_history (
-      // id INTEGER PRIMARY KEY,
-      // player_one_id INTEGER,
-    //   player_two_id INTEGER,
-    //   score_player_one INTEGER,
-     //  score_player_two INTEGER,
-      // winner_id INTEGER,
-      // round INTEGER,
-       //tournament_id INTEGER,
-     //  match_type TEXT CHECK(match_type IN ('single', 'tournament')),
-  //     date DATETIME DEFAULT CURRENT_TIMESTAMP,
-      // FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE SET NULL,
-      // FOREIGN KEY (winner_id) REFERENCES users(id) ON DELETE SET NULL,
-      // FOREIGN KEY (player_one_id) REFERENCES users(id) ON DELETE SET NULL,
-      // FOREIGN KEY (player_two_id) REFERENCES users(id) ON DELETE SET NULL
+  //     opponent TEXT NOT NULL,
+  //     date DATETIME DEFAULT CURRENT_TIMESTAMP
   //   );
-  // `)
-
-  // db.exec(`
-  // CREATE TABLE IF NOT EXISTS tournament_players (
-  //   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  //   tournament_id INTEGER NOT NULL,
-  //   player_id INTEGER,
-  //   seed INTEGER,
-  //   FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
-  //   FOREIGN KEY (player_id) REFERENCES users(id) ON DELETE SET NULL
-  // );
   // `)
 
   db.exec(`
