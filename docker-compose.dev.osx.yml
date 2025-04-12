@@ -1,7 +1,40 @@
-
 name: tr-dev
 
 services:
+
+  auth-server:
+    build:
+      context: ./server_auth
+      dockerfile: Dockerfile.dev
+    env_file:
+      - .env
+      - ./server_auth/.env
+    volumes:
+      - ./server_auth:/app
+      - /app/node_modules
+      - db-data:/app/data
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=${NODE_ENV}
+
+  main-server:
+    build:
+      context: ./server_main
+      dockerfile: Dockerfile.dev
+    env_file:
+      - .env
+      - ./server_main/.env
+    volumes:
+      - ./server_main:/app
+      - /app/node_modules
+      - db-data:/app/data
+    ports:
+      - "5001:5001"
+    environment:
+      - NODE_ENV=${NODE_ENV}
+    depends_on:
+      - auth-server
   frontend:
     build:
       context: ./frontend
@@ -26,40 +59,6 @@ services:
       - auth-server
       - main-server
 
-  auth-server:
-    build:
-      context: ./server_auth
-      dockerfile: Dockerfile.dev
-    env_file:
-      - ./server_auth/.env
-    volumes:
-      - ./server_auth:/app
-      - /app/node_modules
-      - db-data:/app/data
-    ports:
-      - "4000:4000"
-    environment:
-      - NODE_ENV=${NODE_ENV}
-    depends_on:
-      - database
-
-  main-server:
-    build:
-      context: ./server_main
-      dockerfile: Dockerfile.dev
-    env_file:
-      - ./server_main/.env
-    volumes:
-      - ./server_main:/app
-      - /app/node_modules
-      - db-data:/app/data
-    ports:
-      - "5001:5001"
-    environment:
-      - NODE_ENV=${NODE_ENV}
-    depends_on:
-      - database
-
   turn:
     image: instrumentisto/coturn
     network_mode: host
@@ -72,11 +71,10 @@ services:
       --listening-port=3478
       --log-file=./turn.log
 
-  database:
-    image: busybox
-    volumes:
-      - db-data:/data
-    command: tail -f /dev/null  # Keeps container alive
-
 volumes:
   db-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/database/data/

@@ -52,12 +52,6 @@ export class frontEndGame {
 			log.warn("Could not get external IP.");
 		}
 
-		//log.info("EXT_IP:", EXT_IP);
-		//log.info("TURN_URL:", TURN_URL);
-		//log.info("TURN_USER:", TURN_USER);
-		//log.info("TURN_PASS:", TURN_PASS);
-		//log.info("STUN_URL:", STUN_URL);
-
 		this.configuration = {
 			iceServers: [
 				{
@@ -77,29 +71,33 @@ export class frontEndGame {
 		log.info("Peer connection created");
 		this.setupPeerConnectionEvents();
 		
-
 		socket.on('offer', async (offer) => {
 			try {
-                if (!this.peerConnection) {
-                    this.peerConnection = new RTCPeerConnection(this.configuration);
-                    log.info("Peer connection created");
-                    this.setupPeerConnectionEvents();
-                // Critical on LINUX!
-                } else if (this.peerConnection.signalingState !== 'stable') {
-                    log.warn("Frontend: Signaling state not stable, skipping offer");
-                    return;
-                }
+				if (!this.peerConnection || this.peerConnection.signalingState === 'closed') {
+					this.peerConnection = new RTCPeerConnection(this.configuration);
+					log.info("Peer connection (re)created");
+					this.setupPeerConnectionEvents();
+				}
 
 				log.info("Frontend received offer");
 				log.debug(offer);
+
+				// You want the backend to be in 'have-local-offer' and frontend in 'stable' when processing
+				if (this.peerConnection.signalingState !== 'stable') {
+					log.warn("Signaling state not stable — offer may be outdated, skipping");
+					return;
+				}
+
 				await this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
 				
 				const answer = await this.peerConnection.createAnswer();
 				await this.peerConnection.setLocalDescription(answer);
+				
 				socket.emit('answer', answer);
 				log.info("Frontend sent answer.");
 				log.debug(this.peerConnection.localDescription);
-				if (this.bufferedCandidates && this.bufferedCandidates.length > 0) {
+				
+				if (this.bufferedCandidates?.length > 0) {
 					log.info("Processing buffered ICE candidates");
 					for (const candidate of this.bufferedCandidates) {
 						await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
@@ -112,7 +110,20 @@ export class frontEndGame {
 		});
 		
 		socket.on('answer', async (answer) => {
-			await this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));		  
+			try {
+				if (!this.peerConnection) {
+					log.warn("No peerConnection when receiving answer");
+					return;
+				}
+				if (this.peerConnection.signalingState !== 'have-local-offer') {
+					log.warn("Cannot set remote answer — wrong signaling state:", this.peerConnection.signalingState);
+					return;
+				}
+				await this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+				log.info("Remote answer set successfully");
+			} catch (e) {
+				log.error("Error handling answer:", e);
+			}
 		});
 
 		socket.on('ice-candidate', async (candidate) => {
@@ -137,12 +148,6 @@ export class frontEndGame {
 			}
 		});
 	}
-
-	//private async loadIceConfig(): Promise<RTCConfiguration> {
-	//	const response = await fetch('/webrtc-config');
-	//	const data = await response.json();
-	//	return { iceServers: data.iceServers };
-	//}
 
 	private async getExternalIP(): Promise<string | null> {
 		try {

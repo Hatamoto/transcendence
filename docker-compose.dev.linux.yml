@@ -1,0 +1,93 @@
+name: tr-dev
+
+services:
+
+  auth-server:
+    build:
+      context: ./server_auth
+      dockerfile: Dockerfile.dev
+    env_file:
+      - .env
+      - ./server_auth/.env
+    volumes:
+      - ./server_auth:/app
+      - /app/node_modules
+      - db-data:/app/data
+    networks:
+      - appnet
+    ports:
+      - "4000:4000"
+    # environment:
+    #   - NODE_ENV=${NODE_ENV}
+
+  main-server:
+    build:
+      context: ./server_main
+      dockerfile: Dockerfile.dev
+    env_file:
+      - .env
+      - ./server_main/.env
+    volumes:
+      - ./server_main:/app
+      - /app/node_modules
+      - db-data:/app/data
+    networks:
+      - appnet
+    ports:
+      - "5001:5001"
+    # environment:
+    #   - NODE_ENV=${NODE_ENV}
+    depends_on:
+      - auth-server
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+      args:
+        VITE_STUN_URL: ${VITE_STUN_URL}
+        VITE_TURN_URL: ${VITE_TURN_URL}
+        VITE_TURN_USER: ${VITE_TURN_USER}
+        VITE_TURN_PASS: ${VITE_TURN_PASS}
+        VITE_EXT_IP: ${VITE_EXT_IP}
+    env_file:
+      - .env
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - appnet
+    ports:
+      - "5173:5173"
+    environment:
+      - HOST=0.0.0.0
+      # - NODE_ENV=${NODE_ENV}
+    depends_on:
+      - auth-server
+      - main-server
+
+  turn:
+    image: instrumentisto/coturn
+    command: >
+      --no-dtls --no-tls --verbose
+      --lt-cred-mech
+      --user=user:pass
+      --realm=turn
+      --listening-port=3478
+      --log-file=./turn.log
+    networks:
+    - appnet
+    ports:
+    - "3478:3478/udp"
+    - "3478:3478/tcp"
+
+volumes:
+  db-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/database/data/
+
+networks:
+  appnet:
+    driver: bridge

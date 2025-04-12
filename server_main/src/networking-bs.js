@@ -158,52 +158,61 @@ export function setupNetworking(server){
 		socket.on('answer', (answer) => {
 		log.info(`Backend received answer from ${socket.id}:`);
 		log.debug('Answer:', answer);
+
 		const playerRoom = [...socket.rooms][1];
 
-		if (playerRoom) {
-			const peerConnection = rooms[playerRoom].players[socket.id].peerConnection;
-			if (peerConnection) {
-				log.info(`Setting remote description for socket ${socket.id} in room ${playerRoom}`);
-				// Critical - LINUX
-				if (peerConnection.signalingState !== 'have-local-offer') {
-					log.warn(`Invalid signalingState (${peerConnection.signalingState}), skipping setRemoteDescription`);
+		if (!playerRoom || !rooms[playerRoom]) {
+			log.warn(`Player room not found for socket ${socket.id}`);
+			return;
+		}
+
+		const player = rooms[playerRoom].players[socket.id];
+		if (!player || !player.peerConnection) {
+			log.warn(`Peer connection not found for socket ${socket.id} in room ${playerRoom}`);
+			return;
+		}
+
+		const peerConnection = rooms[playerRoom].players[socket.id].peerConnection;
+
+		// Only set answer in correct state
+		if (peerConnection.signalingState === 'stable') {
+			log.warn(`Signaling state is 'stable' — answer might have already been processed, skipping`);
+			return;
+		}
+
+		log.info(`Setting remote description for socket ${socket.id} in room ${playerRoom}`);
+		
+		peerConnection.setRemoteDescription(new RTCSessionDescription(answer))
+			.then(() => {
+				log.info(`Remote description successfully set for socket ${socket.id}`);
+
+				// Process buffered ICE candidates if they exist
+				const bufferedCandidates = rooms[playerRoom].players[socket.id].bufferedCandidates || [];
+				
+				if (bufferedCandidates.length === 0) {
+					log.info(`No buffered ICE candidates for socket ${socket.id}`);
 					return;
 				}
-				peerConnection.setRemoteDescription(new RTCSessionDescription(answer))
-					.then(() => {
-						log.info(`Remote description successfully set for socket ${socket.id}`);
-		
-						// Process buffered ICE candidates if they exist
-						const bufferedCandidates = rooms[playerRoom].players[socket.id].bufferedCandidates || [];
-						if (bufferedCandidates.length > 0) {
-							log.info(`Found ${bufferedCandidates.length} buffered ICE candidates for socket ${socket.id}`);
-		
-							bufferedCandidates.forEach((candidate, index) => {
-								log.info(`Adding buffered ICE candidate #${index + 1} for socket ${socket.id}:`, candidate);
-								peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
-									.then(() => log.info(`Successfully added buffered candidate #${index + 1} for socket ${socket.id}`))
-									.catch(err => log.error(`Failed adding buffered candidate #${index + 1} for socket ${socket.id}:`, err));
-							});
-		
-							// Clear buffer
-							rooms[playerRoom].players[socket.id].bufferedCandidates = [];
-						} else {
-							log.info(`No buffered ICE candidates found for socket ${socket.id}`);
-						}
-					})
-					.catch(err => log.error(`Failed setting remote description for socket ${socket.id}:`, err));
-			} else {
-				log.warn(`Peer connection not found for socket ${socket.id} in room ${playerRoom}`);
-			}
-		} else {
-			log.warn(`Player room not found for socket ${socket.id}`);
-		}
+
+				log.info(`Found ${bufferedCandidates.length} buffered ICE candidates for socket ${socket.id}`);
+
+				bufferedCandidates.forEach((candidate, index) => {
+					log.info(`Adding buffered ICE candidate #${index + 1} for socket ${socket.id}:`, candidate);
+					peerConnection.addIceCandidate(new RTCIceCandidate(candidate))
+						.then(() => log.info(`Successfully added buffered candidate #${index + 1} for socket ${socket.id}`))
+						.catch(err => log.error(`Failed adding buffered candidate #${index + 1} for socket ${socket.id}:`, err));
+				});
+
+					// Clear buffer
+				rooms[playerRoom].players[socket.id].bufferedCandidates = [];
+
+			})
+			.catch(err => log.error(`Failed setting remote description for socket ${socket.id}:`, err));
 		});
 	});
 }
 
 function initializeWebRTC(roomId) {
-
 	const room = rooms[roomId];
 	if (!room || Object.keys(room.players).length < 2) return;
 	const playerIds = Object.keys(room.players);
@@ -235,10 +244,7 @@ function initializeWebRTC(roomId) {
 	// Create separate connections for each player
 	for (const playerId of playerIds) {
 		const peerConnection = new RTCPeerConnection({ iceServers });
-		peerConnection.onnegotiationneeded = () => {
-			log.debug("Negotiation needed event fired — this might be unexpected");
-		};
-		
+	
 		const dataChannel = peerConnection.createDataChannel("gameData");
 	
 		// ADD THIS LINE CLEARLY:

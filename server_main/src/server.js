@@ -2,7 +2,7 @@ import dotenv from "dotenv"
 import Fastify from 'fastify'
 import fastifyStatic from '@fastify/static'
 import { root, userRoutes, friendRoutes } from './routes/routes.js'
-import dbInit from './database.js'
+import dbInit from './db/database.js'
 import path from 'path'
 import cookie from '@fastify/cookie'
 import formbody from '@fastify/formbody'
