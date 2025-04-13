@@ -1,6 +1,7 @@
 import Header from "../components/headers";
 import { createNewGame } from "../game/frontEndGame";
 import { useEffect, useRef } from "react";
+import { startSlimeEffect } from "../effects/slimeEffect";
 
 
 export default function GameRoom() {
@@ -10,6 +11,7 @@ export default function GameRoom() {
 	useEffect(() => {
 	  if (!hasRun.current) {
 		createNewGame();
+		startSlimeEffect();
 		hasRun.current = true;
 	  }
 	}, []);
@@ -49,7 +51,7 @@ export default function GameRoom() {
 				</details>
 			</div>
 
-			<div id="game-container" className="bg-green-100 p-2 rounded-lg shadow-md mt-4 w-[820px] h-[620px]"></div>
+			<div id="game-container" className="flex justify-center items-center mx-auto bg-green-100 p-2 rounded-lg shadow-md mt-4 w-[820px] h-[620px]"></div>
 
 			{/*<div id="chat-container" className="bg-green-900 p-2 rounded-lg shadow-md mt-4 w-[400px] h-[620px] fixed top-4 right-4">
 				<input id="chat-box" type="text" placeholder="" className="block w-full p-2 border border-gray-300 rounded mt-2" maxLength="50"/>

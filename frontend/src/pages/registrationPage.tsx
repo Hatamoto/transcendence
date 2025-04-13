@@ -1,6 +1,7 @@
 import Header from "../components/headers";
 import { RegistrationRequest, registerUser } from "../services/api";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { startSlimeEffect } from "../effects/slimeEffect";
 
 interface RegistrationProps {
 	username: string;
@@ -10,6 +11,10 @@ interface RegistrationProps {
 }
 
 const Registration: React.FC = () => {
+
+	useEffect(() => {
+		startSlimeEffect();
+	}, []);
 
 	const [formState, setFormState] = useState<RegistrationProps>({
 		username: '',

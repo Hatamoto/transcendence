@@ -63,14 +63,12 @@ export class frontEndGame {
 
 		socket.on('offer', async (offer) => {
 			try {
-                //if (!this.peerConnection) {
-                //    this.initializeConnection();
-                // Critical on LINUX!
-                //} else  
-				if (this.peerConnection.signalingState !== 'stable') {
-                    log.warn("Frontend: Signaling state not stable, skipping offer");
-                    return;
-                }
+				if (!this.peerConnection) {
+					this.initializeConnection();
+				} else if (this.peerConnection.signalingState !== 'stable') {
+					log.warn("Frontend: Signaling state not stable, skipping offer");
+					return;
+				}
 
 				log.info("Frontend received offer");
 				log.debug(offer);
@@ -219,11 +217,11 @@ export class frontEndGame {
 		document.addEventListener('keydown', (e) => {
 			if (e.code === KeyBindings.UP || e.code === KeyBindings.DOWN) {
 				const data = { key: e.code, isPressed: true };
-				log.debug("Sending key down event:", JSON.stringify(data));
+				// log.debug("Sending key down event:", JSON.stringify(data));
 				if (dataChannel.readyState === 'open') {
 					dataChannel.send(JSON.stringify(data));
 				} else {
-					log.warn("DataChannel not open, cannot send:", data);
+					// log.warn("DataChannel not open, cannot send:", data);
 				}
 			}
 		});
@@ -317,7 +315,13 @@ let game : frontEndGame;
 
 export function createNewGame()
 {
-	game = new frontEndGame();
+    if (!game) {
+        log.info("Creating new game instance");
+        game = new frontEndGame();
+    } else {
+        log.info("Game instance already exists");
+    }
+    return game;
 }
 
 socket.on("playerJoined", (playerAmount) => {
@@ -327,6 +331,11 @@ socket.on("playerJoined", (playerAmount) => {
 });
 
 socket.on("roomFull", () => {
+
+	// if (!game) {
+    //     createNewGame();
+    // }
+
 	const strtBtn = document.getElementById("start-btn");
 	const gameEdit = document.getElementById("edit-game");
 

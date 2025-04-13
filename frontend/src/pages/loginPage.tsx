@@ -1,6 +1,7 @@
 import Header from "../components/headers";
 import { LoginRequest, loginUser } from "../services/api";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { startSlimeEffect } from "../effects/slimeEffect";
 
 import { useNavigate } from "react-router-dom";//for dev
 
@@ -10,6 +11,11 @@ interface LoginProps {
 }
 
 const Login: React.FC = () => {
+
+	useEffect(() => {
+		startSlimeEffect();
+	}, []);
+
 	const navigate = useNavigate();
 
 	const [formState, setFormState] = useState<LoginProps>({

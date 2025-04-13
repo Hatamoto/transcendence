@@ -1,8 +1,18 @@
+
+let isSlimeEffectRunning = false;
+
 export const startSlimeEffect = () => {
-	const canvas = document.getElementById("slime-bg") as HTMLCanvasElement;
-	const header = document.querySelector("header") as HTMLElement;
+
+	if (isSlimeEffectRunning) {
+		console.log("🟢 Slime effect already running, skipping initialization");
+		return;
+	}
+	isSlimeEffectRunning = true;
 
 	console.log("🟢 startSlimeEffect initialized");
+
+	const canvas = document.getElementById("slime-bg") as HTMLCanvasElement;
+	const header = document.querySelector("header") as HTMLElement;
 
 	if (!canvas || !header) return;
 

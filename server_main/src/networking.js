@@ -147,6 +147,9 @@ export function setupNetworking(server){
 				return;
 			}
 			if (Object.keys(rooms[playerRoom].players).length === 2 && !rooms[playerRoom].gameStarted) {
+				
+				resetRoomConnections(playerRoom);
+
 				const playerIds = Object.keys(rooms[playerRoom].players);
 				rooms[playerRoom].gameStarted = true;
 
@@ -268,7 +271,7 @@ function initializeWebRTC(roomId) {
 	dataChannel.onclose = () => log.info(`Data channel closed for player ${playerId}`);
 	
 	dataChannel.onmessage = (event) => {
-		log.debug("Received data channel message:", event.data);
+		// log.debug("Received data channel message:", event.data);
 		try {
 			const data = JSON.parse(event.data);
 			if (data.key) {
@@ -277,11 +280,11 @@ function initializeWebRTC(roomId) {
 				player.keysPressed[data.key] = data.isPressed;
 	
 				if (games[roomId]) {
-					log.debug(`Key event from ${playerId}: ${data.key}=${data.isPressed}`);
+					// log.debug(`Key event from ${playerId}: ${data.key}=${data.isPressed}`);
 					games[roomId].keyDown(player.keysPressed, playerId);
 				}
 			}
-			log.debug("Parsed data channel message:", data);
+			// log.debug("Parsed data channel message:", data);
 		} catch (e) {
 			log.error("Error parsing data channel message:", e);
 		}
@@ -333,16 +336,18 @@ function startGameLoop(roomId) {
 	if (game.getScores()[0] >= 5)
 	{
 		game.stop();
+		resetRoomConnections(roomId);
 		io.to(roomId).emit('gameOver', 1);
 		//if (!notTournament) check here for when a game isnt tournament so 
-			room.gameStarted = false; // you can rematch
+		room.gameStarted = false; // you can rematch
 		return ;
 	}
 	else if (game.getScores()[1] >= 5)
 	{
 		game.stop();
+		resetRoomConnections(roomId);
 		//if (!notTournament) check here for when a game isnt tournament so 
-			room.gameStarted = false; // you can rematch
+		room.gameStarted = false; // you can rematch
 		io.to(roomId).emit('gameOver', 2);
 		return ;
 	}
@@ -414,3 +419,28 @@ function joinRoom(roomId, socket)
 		io.sockets.sockets.get(playerIds[0]).emit("roomFull");
 	}
 }
+
+function resetRoomConnections(roomId) {
+	const room = rooms[roomId];
+	if (!room) return;
+	
+	log.info(`Resetting WebRTC connections for room ${roomId}`);
+	
+	// Clean up existing connections for all players
+	for (const playerId in room.players) {
+	  const player = room.players[playerId];
+	  
+	  if (player.dataChannel) {
+		player.dataChannel.close();
+		player.dataChannel = null;
+	  }
+	  
+	  if (player.peerConnection) {
+		player.peerConnection.close();
+		player.peerConnection = null;
+	  }
+	  
+	  // Reset any other connection-related state
+	  player.bufferedCandidates = [];
+	}
+  }
