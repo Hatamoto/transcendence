@@ -16,6 +16,9 @@ WORKDIR /app
 
 ENV NODE_ENV=development
 
+# For testing
+RUN apt-get update && apt-get install -y curl dnsutils
+
 COPY package*.json ./
 RUN npm install
 

@@ -225,21 +225,25 @@ function initializeWebRTC(roomId) {
 	log.debug("TURN server credentials:", process.env.TURN_USER, process.env.TURN_PASS);
 	log.debug("STUN server:", process.env.STUN_URL);
 
-	const iceServers = [
+	const configuration = {
+		iceServers: [
 		{
-			urls: process.env.TURN_URL,  // Use the service name "turn" from docker-compose
+			urls: process.env.TURN_URL,
 			username: process.env.TURN_USER,
 			credential: process.env.TURN_PASS
 		},
 		{
 			urls: process.env.STUN_URL
 		}
-		];
+		]
+	};
+
 	log.info("ICE config loaded:");
-	log.info(iceServers);
+	log.info(configuration);
+
 	// Create separate connections for each player
 	for (const playerId of playerIds) {
-		const peerConnection = new RTCPeerConnection({ iceServers });
+		const peerConnection = new RTCPeerConnection({ configuration });
 		peerConnection.onnegotiationneeded = () => {
 			log.debug("Negotiation needed event fired — this might be unexpected");
 		};

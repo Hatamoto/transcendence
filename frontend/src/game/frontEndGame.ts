@@ -6,13 +6,6 @@ import { TURN_URL, TURN_USER, TURN_PASS, EXT_IP, STUN_URL} from '../config/env-c
 
 const log = new Logger(LogLevel.WARN);
 
-log.info("UI ready")
-log.info("STUN_URL:", STUN_URL);
-log.info("TURN_URL:", TURN_URL);
-log.info("TURN_USER:", TURN_USER);
-log.info("TURN_PASS:", TURN_PASS);
-log.info("EXT_IP:", EXT_IP);
-
 enum KeyBindings{
 	UP = 'KeyW',
     DOWN = 'KeyS'
@@ -52,16 +45,10 @@ export class frontEndGame {
 			log.warn("Could not get external IP.");
 		}
 
-		//log.info("EXT_IP:", EXT_IP);
-		//log.info("TURN_URL:", TURN_URL);
-		//log.info("TURN_USER:", TURN_USER);
-		//log.info("TURN_PASS:", TURN_PASS);
-		//log.info("STUN_URL:", STUN_URL);
-
 		this.configuration = {
 			iceServers: [
 				{
-					urls: "turn:"+EXT_IP+":3478",
+					urls: TURN_URL,
 					username: TURN_USER,
 					credential: TURN_PASS
 				},
@@ -210,12 +197,12 @@ export class frontEndGame {
 					}
 					if (data.type === 'gameState') {
 						this.updateGameState(data.positions, data.scores);
-						log.debug("Game state updated");
+						// log.debug("Game state updated");
 					} else {
-						log.info("Unhandled message type:", data.type);
+						throw new Error(`Unhandled message type: ${data.type}`);
 					}
 				} catch (err) {
-					log.error("Error handling data channel message:", e.data, err);
+					log.error("Error handling data channel message:", err);
 				}
 			};
 		};

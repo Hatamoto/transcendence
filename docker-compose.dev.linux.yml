@@ -44,10 +44,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.dev
       args:
-        VITE_STUN_URL: ${VITE_STUN_URL}
-        VITE_TURN_URL: ${VITE_TURN_URL}
-        VITE_TURN_USER: ${VITE_TURN_USER}
-        VITE_TURN_PASS: ${VITE_TURN_PASS}
+        VITE_STUN_URL: ${STUN_URL}
+        VITE_TURN_URL: ${TURN_URL}
+        VITE_TURN_USER: ${TURN_USER}
+        VITE_TURN_PASS: ${TURN_PASS}
         VITE_EXT_IP: ${VITE_EXT_IP}
     env_file:
       - .env

@@ -17,6 +17,8 @@ services:
       - "4000:4000"
     environment:
       - NODE_ENV=${NODE_ENV}
+    networks:
+      - appnet
 
   main-server:
     build:
@@ -25,26 +27,29 @@ services:
     env_file:
       - .env
       - ./server_main/.env
+    environment:
+      - NODE_ENV=${NODE_ENV}
     volumes:
       - ./server_main:/app
       - /app/node_modules
       - db-data:/app/data
     ports:
       - "5001:5001"
-    environment:
-      - NODE_ENV=${NODE_ENV}
     depends_on:
       - auth-server
+    networks:
+      - appnet
+
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
       args:
-        VITE_STUN_URL: ${VITE_STUN_URL}
-        VITE_TURN_URL: ${VITE_TURN_URL}
-        VITE_TURN_USER: ${VITE_TURN_USER}
-        VITE_TURN_PASS: ${VITE_TURN_PASS}
-        VITE_EXT_IP: ${VITE_EXT_IP}
+        VITE_STUN_URL: ${STUN_URL}
+        VITE_TURN_URL: ${TURN_URL}
+        VITE_TURN_USER: ${TURN_USER}
+        VITE_TURN_PASS: ${TURN_PASS}
+        VITE_EXT_IP: ${EXT_IP}
     env_file:
       - .env
     volumes:
@@ -58,18 +63,24 @@ services:
     depends_on:
       - auth-server
       - main-server
+    networks:
+      - appnet
 
   turn:
     image: instrumentisto/coturn
-    network_mode: host
+    # network_mode: host
     command: >
       --no-dtls --no-tls --verbose
       --lt-cred-mech
-      --use-auth-secret
-      --static-auth-secret=pass
-      --realm=localhost
+      --realm=transcendence
+      --user=user:pass
       --listening-port=3478
       --log-file=./turn.log
+    ports:
+      - "3478:3478/udp"
+      - "3478:3478/tcp"
+    networks:
+      - appnet
 
 volumes:
   db-data:
@@ -78,3 +89,7 @@ volumes:
       type: none
       o: bind
       device: ${PWD}/database/data/
+
+networks:
+  appnet:
+    driver: bridge

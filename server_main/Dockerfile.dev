@@ -7,6 +7,9 @@ ENV NODE_ENV=development
 COPY package*.json ./
 RUN npm install
 
+# For testing
+RUN apt-get update && apt-get install -y curl dnsutils iputils-ping
+
 RUN npm install -g nodemon
 
 COPY . .

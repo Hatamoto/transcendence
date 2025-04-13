@@ -34,8 +34,8 @@ async function root (fastify, options) {
 
 	fastify.get('/api/external-ip', async (request, reply) => {
 		log.infor(`Requesting external IP...`);
-		if (cachedIP) return reply.send({ ip: cachedIP });
-		log.info(`Cached IP found: ${cachedIP}`);
+		//if (cachedIP) return reply.send({ ip: cachedIP });
+		//log.info(`Cached IP found: ${cachedIP}`);
 		try {
 			log.info(`Fetching external IP...`);
 			cachedIP = await getExternalIP();
