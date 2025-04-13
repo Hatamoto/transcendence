@@ -142,8 +142,10 @@ export function setupNetworking(server){
 
 		socket.on('hostStart', (settings) => {
 			const playerRoom = [...socket.rooms][1];
-			if (!playerRoom || !rooms[playerRoom]) return;
-
+			if (!playerRoom || !rooms[playerRoom]) {
+				log.warn(`Player room not found for socket ${socket.id}`);
+				return;
+			}
 			if (Object.keys(rooms[playerRoom].players).length === 2 && !rooms[playerRoom].gameStarted) {
 				const playerIds = Object.keys(rooms[playerRoom].players);
 				rooms[playerRoom].gameStarted = true;
@@ -165,10 +167,10 @@ export function setupNetworking(server){
 			if (peerConnection) {
 				log.info(`Setting remote description for socket ${socket.id} in room ${playerRoom}`);
 				// Critical - LINUX
-				if (peerConnection.signalingState !== 'have-local-offer') {
-					log.warn(`Invalid signalingState (${peerConnection.signalingState}), skipping setRemoteDescription`);
-					return;
-				}
+				// if (peerConnection.signalingState !== 'have-local-offer') {
+				// 	log.warn(`Invalid signalingState (${peerConnection.signalingState}), skipping setRemoteDescription`);
+				// 	return;
+				// }
 				peerConnection.setRemoteDescription(new RTCSessionDescription(answer))
 					.then(() => {
 						log.info(`Remote description successfully set for socket ${socket.id}`);
@@ -184,6 +186,9 @@ export function setupNetworking(server){
 									.then(() => log.info(`Successfully added buffered candidate #${index + 1} for socket ${socket.id}`))
 									.catch(err => log.error(`Failed adding buffered candidate #${index + 1} for socket ${socket.id}:`, err));
 							});
+							log.info(`All buffered ICE candidates added for socket ${socket.id}`);
+							log.info(`Buffered ICE candidates for socket ${socket.id}:`, bufferedCandidates);
+							log.info(`Peer connection state for socket ${socket.id}:`, peerConnection.iceConnectionState);
 		
 							// Clear buffer
 							rooms[playerRoom].players[socket.id].bufferedCandidates = [];
@@ -245,7 +250,9 @@ function initializeWebRTC(roomId) {
 		room.players[playerId].dataChannel = dataChannel;
 	
 		dataChannel.onopen = () => {
-			log.info(`Data channel open for player ${playerId}`);
+			log.info(`Data channel open for player ${playerId}, readyState: ${dataChannel.readyState}`);
+			room.players[playerId].dataChannel = dataChannel;
+			log.info(`Peer connection state for player ${playerId}:`, peerConnection.iceConnectionState);	
 	
 			if (Object.values(room.players).every(player => 
 				player.dataChannel && player.dataChannel.readyState === 'open')) {
@@ -281,7 +288,13 @@ function initializeWebRTC(roomId) {
 		if (event.candidate) {
 		log.info(`ICE candidate generated for ${playerId}`);
 		io.to(playerId).emit('ice-candidate', event.candidate);
+		log.debug(`Emitted ice-candidate to ${playerId}`);
 		}
+	};
+
+	// Log ICE connection state changes
+	peerConnection.oniceconnectionstatechange = () => {
+		log.info(`ICE connection state change for ${playerId}: ${peerConnection.iceConnectionState}`);
 	};
 	
 	room.players[playerId].peerConnection = peerConnection;

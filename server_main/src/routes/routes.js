@@ -17,6 +17,8 @@ import {
   blockRequestOpts,
   getFriendsOpts
 } from '../schemas/friendSchemas.js'
+import { get } from 'http';
+import { log } from 'console';
 
 let cachedIP = null;
 
@@ -31,10 +33,13 @@ async function root (fastify, options) {
 	});
 
 	fastify.get('/api/external-ip', async (request, reply) => {
+		log.infor(`Requesting external IP...`);
 		if (cachedIP) return reply.send({ ip: cachedIP });
-	
+		log.info(`Cached IP found: ${cachedIP}`);
 		try {
+			log.info(`Fetching external IP...`);
 			cachedIP = await getExternalIP();
+			log.info(`Fetched external IP: ${cachedIP}`);
 			reply.send({ ip: cachedIP });
 		} catch (err) {
 			reply.code(500).send({ error: 'Failed to get IP' });
