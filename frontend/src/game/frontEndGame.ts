@@ -60,19 +60,14 @@ export class frontEndGame {
 		
 		log.info("ICE config loaded:");
 		log.info(this.configuration);
-		this.peerConnection = new RTCPeerConnection(this.configuration);
-		log.info("Peer connection created");
-		this.setupPeerConnectionEvents();
-		
 
 		socket.on('offer', async (offer) => {
 			try {
-                if (!this.peerConnection) {
-                    this.peerConnection = new RTCPeerConnection(this.configuration);
-                    log.info("Peer connection created");
-                    this.setupPeerConnectionEvents();
+                //if (!this.peerConnection) {
+                //    this.initializeConnection();
                 // Critical on LINUX!
-                } else if (this.peerConnection.signalingState !== 'stable') {
+                //} else  
+				if (this.peerConnection.signalingState !== 'stable') {
                     log.warn("Frontend: Signaling state not stable, skipping offer");
                     return;
                 }
@@ -125,12 +120,6 @@ export class frontEndGame {
 		});
 	}
 
-	//private async loadIceConfig(): Promise<RTCConfiguration> {
-	//	const response = await fetch('/webrtc-config');
-	//	const data = await response.json();
-	//	return { iceServers: data.iceServers };
-	//}
-
 	private async getExternalIP(): Promise<string | null> {
 		try {
 			log.info("Fetching external IP");
@@ -160,6 +149,15 @@ export class frontEndGame {
 			socket.emit("joinRoomQue");
 		});
 
+	}
+	
+	initializeConnection() {
+		// Only create if it doesn't exist
+		if (!this.peerConnection) {
+		  this.peerConnection = new RTCPeerConnection(this.configuration);
+		  log.info("Peer connection created");
+		  this.setupPeerConnectionEvents();
+		}
 	}
 
 	setupPeerConnectionEvents() {
@@ -282,6 +280,33 @@ export class frontEndGame {
 		const {ballSettings, playerSettings} = settings;
 		this.ballSize = ballSettings.ballSize;
 	}
+
+	resetConnection() {
+		log.info("Resetting WebRTC connection");
+		
+		// Clean up data channel
+		if (this.dataChannel) {
+		  this.dataChannel.onopen = null;
+		  this.dataChannel.onclose = null;
+		  this.dataChannel.onmessage = null;
+		  this.dataChannel.onerror = null;
+		  this.dataChannel.close();
+		  this.dataChannel = null;
+		}
+		
+		// Clean up peer connection
+		if (this.peerConnection) {
+		  this.peerConnection.onicecandidate = null;
+		  this.peerConnection.ondatachannel = null;
+		  this.peerConnection.onconnectionstatechange = null;
+		  this.peerConnection.oniceconnectionstatechange = null;
+		  this.peerConnection.close();
+		  this.peerConnection = null;
+		}
+		
+		// Reset buffered candidates
+		this.bufferedCandidates = [];
+	}
 }
 
 socket.on("connect", () => {
@@ -342,9 +367,13 @@ socket.on("startGame", (roomId : string, settings) => {
 
 	document.getElementById("gameroom-page").hidden = true;
 	log.info("Game started in room:", roomId);
+
+	// Initialize connection before creating canvas
+	game.initializeConnection();
+
 	game.createCanvas();
 	game.settings(settings, color);
-	//game.updateGraphics();
+
 });
 
 socket.on("gameOver", (winner : number) => {
@@ -359,6 +388,9 @@ socket.on("gameOver", (winner : number) => {
 	canvas.remove();
 
 	container.prepend(winnerElement);
+
+	// Reset the connection when game is over
+	game.resetConnection();
 
 	startSlimeEffect();
 });
