@@ -136,7 +136,6 @@ export function setupNetworking(server){
 
 
 		socket.on("joinRoomQue", () => {
-			log.info("AAAAAAAAAAAAAAAAA");
 			const roomId = roomIds.allocate();
 			if (roomId == -1 || socket.rooms.size > 1)
 				return ;

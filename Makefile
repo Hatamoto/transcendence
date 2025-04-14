@@ -1,6 +1,6 @@
 include backend/.env
 
-.PHONY: dev
+.PHONY: dev detect_os devbuild dockerstart dockerbuild devclean dockerclean fclean all
 
 # Default target
 all: detect_os dockerbuild
