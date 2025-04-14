@@ -68,3 +68,5 @@ client_secret.json
 /frontend/dist/
 **/.env
 .env
+*.zip
+/envit/

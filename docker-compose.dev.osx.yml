@@ -70,7 +70,12 @@ services:
   turn:
     image: instrumentisto/coturn
     # network_mode: host
-    command: >
+    command:
+      --no-stun=false
+      --stun-only=false
+      --fingerprint
+      --no-multicast-peers
+      --no-loopback-peers
       --no-dtls --no-tls --verbose
       --lt-cred-mech
       --realm=transcendence

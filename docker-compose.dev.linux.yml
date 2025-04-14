@@ -69,10 +69,14 @@ services:
   turn:
     image: instrumentisto/coturn
     command: >
+      --no-stun=false
+      --stun-only=false
+      --fingerprint
+      --no-multicast-peers
       --no-dtls --no-tls --verbose
       --lt-cred-mech
       --user=user:pass
-      --realm=turn
+      --realm=transcendence
       --listening-port=3478
       --log-file=./turn.log
     networks:
