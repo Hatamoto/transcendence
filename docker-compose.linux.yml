@@ -19,7 +19,6 @@ services:
 
   turn:
     image: instrumentisto/coturn
-    # network_mode: host !!!THIS FOR MAC ONLY!!!
     command: >
       --no-dtls --no-tls --verbose
       --lt-cred-mech

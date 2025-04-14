@@ -32,7 +32,7 @@ async function root (fastify, options) {
 
 	fastify.get('/external-ip', async (request, reply) => {
 		if (cachedIP) return reply.send({ ip: cachedIP });
-	
+		
 		try {
 			cachedIP = await getExternalIP();
 			reply.send({ ip: cachedIP });

@@ -1,0 +1,150 @@
+ERROR: Cannot open log file for writing: /var/log/turn_2025-04-14.log
+0: (2113121): INFO: System cpu num is 6
+0: (2113121): INFO: log file opened: /var/tmp/turn_2113121_2025-04-14.log
+0: (2113121): INFO: System enable num is 6
+0: (2113121): INFO: Coturn Version Coturn-4.6.3 'Gorst'
+0: (2113121): INFO: Max number of open files/sockets allowed for this process: 1048576
+0: (2113121): INFO: Due to the open files/sockets limitation, max supported number of TURN Sessions possible is: 524000 (approximately)
+0: (2113121): INFO: 
+
+==== Show him the instruments, Practical Frost: ====
+
+0: (2113121): INFO: OpenSSL compile-time version: OpenSSL 3.4.0 22 Oct 2024 (0x30400000)
+0: (2113121): INFO: TLS 1.3 supported
+0: (2113121): INFO: DTLS 1.2 supported
+0: (2113121): INFO: TURN/STUN ALPN supported
+0: (2113121): INFO: Third-party authorization (oAuth) supported
+0: (2113121): INFO: GCM (AEAD) supported
+0: (2113121): INFO: SQLite is not supported
+0: (2113121): INFO: Redis supported
+0: (2113121): INFO: PostgreSQL supported
+0: (2113121): INFO: MySQL is not supported
+0: (2113121): INFO: MongoDB is not supported
+0: (2113121): INFO: Default Net Engine version: 3 (UDP thread per CPU core)
+0: (2113121): INFO: Domain name: 
+0: (2113121): INFO: Default realm: turn
+0: (2113121): ERROR: CONFIG: Empty cli-password, and so telnet cli interface is disabled! Please set a non empty cli-password!
+0: (2113121): INFO: Certificate file found: /home/ahamalai/transcendence/turn_server_cert.pem
+0: (2113121): INFO: Private key file found: /home/ahamalai/transcendence/turn_server_pkey.pem
+0: (2113121): WARNING: NO EXPLICIT LISTENER ADDRESS(ES) ARE CONFIGURED
+0: (2113121): INFO: ===========Discovering listener addresses: =========
+0: (2113121): INFO: Listener address to use: 127.0.0.1
+0: (2113121): INFO: Listener address to use: 10.12.5.9
+0: (2113121): INFO: Listener address to use: 192.168.122.1
+0: (2113121): INFO: Listener address to use: 172.17.0.1
+0: (2113121): INFO: Listener address to use: ::1
+0: (2113121): INFO: =====================================================
+0: (2113121): INFO: Total: 3 'real' addresses discovered
+0: (2113121): INFO: =====================================================
+0: (2113121): WARNING: NO EXPLICIT RELAY ADDRESS(ES) ARE CONFIGURED
+0: (2113121): INFO: ===========Discovering relay addresses: =============
+0: (2113121): INFO: Relay address to use: 10.12.5.9
+0: (2113121): INFO: Relay address to use: 192.168.122.1
+0: (2113121): INFO: Relay address to use: 172.17.0.1
+0: (2113121): INFO: Relay address to use: ::1
+0: (2113121): INFO: =====================================================
+0: (2113121): INFO: Total: 4 relay addresses discovered
+0: (2113121): INFO: =====================================================
+0: (2113121): WARNING: Cannot create pid file: /var/run/turnserver.pid
+0: (2113121): INFO: pid file created: /var/tmp/turnserver.pid
+0: (2113121): INFO: IO method: epoll (with changelist)
+0: (2113121): INFO: Wait for relay ports initialization...
+0: (2113121): INFO:   relay 10.12.5.9 initialization...
+0: (2113121): INFO:   relay 10.12.5.9 initialization done
+0: (2113121): INFO:   relay 192.168.122.1 initialization...
+0: (2113121): INFO:   relay 192.168.122.1 initialization done
+0: (2113121): INFO:   relay 172.17.0.1 initialization...
+0: (2113121): INFO:   relay 172.17.0.1 initialization done
+0: (2113121): INFO:   relay ::1 initialization...
+0: (2113121): INFO:   relay ::1 initialization done
+0: (2113121): INFO: Relay ports initialization done
+0: (2113121): INFO: Total General servers: 6
+0: (2113136): DEBUG: turn server id=0 created
+0: (2113137): DEBUG: turn server id=1 created
+0: (2113137): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (2113137): INFO: IPv4. TCP listener opened on : 127.0.0.1:3479
+0: (2113137): INFO: IPv4. TCP listener opened on : 10.12.5.9:3478
+0: (2113137): INFO: IPv4. TCP listener opened on : 10.12.5.9:3479
+0: (2113137): INFO: IPv4. TCP listener opened on : 192.168.122.1:3478
+0: (2113137): INFO: IPv4. TCP listener opened on : 192.168.122.1:3479
+0: (2113137): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (2113137): INFO: IPv4. TCP listener opened on : 172.17.0.1:3479
+0: (2113137): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (2113137): INFO: IPv6. TCP listener opened on : ::1:3479
+0: (2113136): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (2113136): INFO: IPv4. TCP listener opened on : 127.0.0.1:3479
+0: (2113136): INFO: IPv4. TCP listener opened on : 10.12.5.9:3478
+0: (2113136): INFO: IPv4. TCP listener opened on : 10.12.5.9:3479
+0: (2113140): DEBUG: turn server id=4 created
+0: (2113136): INFO: IPv4. TCP listener opened on : 192.168.122.1:3478
+0: (2113136): INFO: IPv4. TCP listener opened on : 192.168.122.1:3479
+0: (2113140): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (2113136): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (2113136): INFO: IPv4. TCP listener opened on : 172.17.0.1:3479
+0: (2113140): INFO: IPv4. TCP listener opened on : 127.0.0.1:3479
+0: (2113140): INFO: IPv4. TCP listener opened on : 10.12.5.9:3478
+0: (2113136): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (2113140): INFO: IPv4. TCP listener opened on : 10.12.5.9:3479
+0: (2113140): INFO: IPv4. TCP listener opened on : 192.168.122.1:3478
+0: (2113140): INFO: IPv4. TCP listener opened on : 192.168.122.1:3479
+0: (2113140): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (2113140): INFO: IPv4. TCP listener opened on : 172.17.0.1:3479
+0: (2113140): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (2113140): INFO: IPv6. TCP listener opened on : ::1:3479
+0: (2113136): INFO: IPv6. TCP listener opened on : ::1:3479
+0: (2113138): DEBUG: turn server id=2 created
+0: (2113138): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (2113139): DEBUG: turn server id=3 created
+0: (2113138): INFO: IPv4. TCP listener opened on : 127.0.0.1:3479
+0: (2113139): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (2113138): INFO: IPv4. TCP listener opened on : 10.12.5.9:3478
+0: (2113139): INFO: IPv4. TCP listener opened on : 127.0.0.1:3479
+0: (2113138): INFO: IPv4. TCP listener opened on : 10.12.5.9:3479
+0: (2113139): INFO: IPv4. TCP listener opened on : 10.12.5.9:3478
+0: (2113138): INFO: IPv4. TCP listener opened on : 192.168.122.1:3478
+0: (2113139): INFO: IPv4. TCP listener opened on : 10.12.5.9:3479
+0: (2113138): INFO: IPv4. TCP listener opened on : 192.168.122.1:3479
+0: (2113138): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (2113139): INFO: IPv4. TCP listener opened on : 192.168.122.1:3478
+0: (2113138): INFO: IPv4. TCP listener opened on : 172.17.0.1:3479
+0: (2113139): INFO: IPv4. TCP listener opened on : 192.168.122.1:3479
+0: (2113139): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (2113138): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (2113139): INFO: IPv4. TCP listener opened on : 172.17.0.1:3479
+0: (2113138): INFO: IPv6. TCP listener opened on : ::1:3479
+0: (2113139): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (2113139): INFO: IPv6. TCP listener opened on : ::1:3479
+0: (2113141): DEBUG: turn server id=5 created
+0: (2113141): INFO: IPv4. TCP listener opened on : 127.0.0.1:3478
+0: (2113121): INFO: IPv4. UDP listener opened on: 127.0.0.1:3478
+0: (2113141): INFO: IPv4. TCP listener opened on : 127.0.0.1:3479
+0: (2113141): INFO: IPv4. TCP listener opened on : 10.12.5.9:3478
+0: (2113141): INFO: IPv4. TCP listener opened on : 10.12.5.9:3479
+0: (2113141): INFO: IPv4. TCP listener opened on : 192.168.122.1:3478
+0: (2113141): INFO: IPv4. TCP listener opened on : 192.168.122.1:3479
+0: (2113141): INFO: IPv4. TCP listener opened on : 172.17.0.1:3478
+0: (2113141): INFO: IPv4. TCP listener opened on : 172.17.0.1:3479
+0: (2113141): INFO: IPv6. TCP listener opened on : ::1:3478
+0: (2113141): INFO: IPv6. TCP listener opened on : ::1:3479
+0: (2113121): INFO: IPv4. UDP listener opened on: 127.0.0.1:3479
+0: (2113121): INFO: IPv4. UDP listener opened on: 10.12.5.9:3478
+0: (2113121): INFO: IPv4. UDP listener opened on: 10.12.5.9:3479
+0: (2113121): INFO: IPv4. UDP listener opened on: 192.168.122.1:3478
+0: (2113121): INFO: IPv4. UDP listener opened on: 192.168.122.1:3479
+0: (2113121): INFO: IPv4. UDP listener opened on: 172.17.0.1:3478
+0: (2113121): INFO: IPv4. UDP listener opened on: 172.17.0.1:3479
+0: (2113121): INFO: IPv6. UDP listener opened on: ::1:3478
+0: (2113121): INFO: IPv6. UDP listener opened on: ::1:3479
+0: (2113121): INFO: Total auth threads: 4
+0: (2113121): INFO: turnserver compiled without prometheus support
+16: (2113137): INFO: session 001000000000000001: realm <turn> user <>: incoming packet message processed, error 401: Unauthorized
+16: (2113136): INFO: session 000000000000000001: realm <turn> user <>: incoming packet message processed, error 401: Unauthorized
+17: (2113136): DEBUG: Global turn allocation count incremented, now 1
+17: (2113137): DEBUG: Global turn allocation count incremented, now 2
+17: (2113136): INFO: IPv4. Local relay addr: 10.12.5.9:55920
+17: (2113137): INFO: IPv4. Local relay addr: 10.12.5.9:54927
+17: (2113136): INFO: session 000000000000000001: new, realm=<turn>, username=<user>, lifetime=600
+17: (2113137): INFO: session 001000000000000001: new, realm=<turn>, username=<user>, lifetime=600
+17: (2113136): INFO: session 000000000000000001: realm <turn> user <user>: incoming packet ALLOCATE processed, success
+17: (2113137): INFO: session 001000000000000001: realm <turn> user <user>: incoming packet ALLOCATE processed, success
+18: (2113121): INFO: Terminating on signal 2
