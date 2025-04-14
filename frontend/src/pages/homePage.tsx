@@ -27,6 +27,12 @@ const Home: React.FC = () => {
 					Debug Game
 			  	</Link>
 			</div>
+			<Link
+				to="http://localhost:4000/api/googleauth"
+				className="w-96 bg-blue-500 text-white py-2 rounded-md hover:bg-blue-900 text-center"
+			>
+					Sign in with Google
+			</Link>
 			</div>
 		</>
 	);

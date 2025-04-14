@@ -3,6 +3,7 @@ import Fastify from 'fastify'
 import loginRoutes from './routes/authRoutes.js'
 import dbInit from '../server/src/database.js'
 import jwt from '@fastify/jwt'
+import cors from '@fastify/cors'
 
 dotenv.config({ path: "../.env" });
 
@@ -12,6 +13,10 @@ const fastify = Fastify({
 
 await fastify.register(dbInit)
 await fastify.register(loginRoutes)
+await fastify.register(cors, {
+  origin: 'http://localhost:5001', // your frontend origin
+  credentials: true               // if you're using cookies or auth headers
+})
 fastify.register(jwt, {
   secret: process.env.ACCESS_TOKEN_SECRET,
 })
