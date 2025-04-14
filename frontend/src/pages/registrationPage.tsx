@@ -43,17 +43,15 @@ const Registration: React.FC = () => {
 			email: formState.email,
 			password: formState.password
 		}
-		console.log("asdfghassd");
 
+		console.log("Calling registerUser API");
 		const success = await registerUser(user);
-		console.log("asdfghassd");
-
-		console.log(success);
-		// if (success) {
-		// 	alert('Registration worked');
-		// } else {
-		// 	alert('Registration failed. Please check your credentials.');
-		// }
+		console.log("Returning from registerUser API call with status: ", success);
+		if (success) {
+			alert('Registration worked');
+		} else {
+			alert('Registration failed. Please check your credentials.');
+		}
 	};
 
 

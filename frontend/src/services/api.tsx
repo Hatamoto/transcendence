@@ -29,6 +29,8 @@ export interface User {
 	avatarPath: string;
 }
 
+const API_AUTH_URL = 'http://localhost:4000';
+
 async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
 	const { method, url, body, headers } = options;
   
@@ -55,7 +57,7 @@ async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
 export async function loginUser(user: LoginRequest): Promise<number> {
 	const options : ApiOptions = {
 		method: 'POST',
-		url: '/api/login', //this changed ?!?
+		url: `${API_AUTH_URL}/api/login`, //this changed ?!?
 		body: user,            
 		headers: {
 		'Content-Type': 'application/json',
@@ -63,7 +65,7 @@ export async function loginUser(user: LoginRequest): Promise<number> {
 	};
 //	document.cookie = `accessToken=${data.accessToken}; path=/; SameSite=Lax`;
 // needs to be changed to take data to save login tokens
-	return (await apiCall(options)).status;
+	return ((await apiCall(options)).status);
 }
 
 export async function registerUser(user: RegistrationRequest): Promise<number> {
