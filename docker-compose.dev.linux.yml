@@ -73,6 +73,7 @@ services:
       --stun-only=false
       --fingerprint
       --no-multicast-peers
+      --no-loopback-peers
       --no-dtls --no-tls --verbose
       --lt-cred-mech
       --user=user:pass
