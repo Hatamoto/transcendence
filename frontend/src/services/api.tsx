@@ -31,7 +31,7 @@ export interface User {
 
 async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
 	const { method, url, body, headers } = options;
-  
+
 	try {
 		const response = await fetch(url, {
 			method,

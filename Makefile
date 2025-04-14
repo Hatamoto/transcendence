@@ -19,7 +19,7 @@ dev:
 	@cd ./backend && npm run dev
 
 # run with docker
-dockerstart:
+dockerstart: detect_os
 	@if [ "$(OS)" == "Darwin" ]; then \
 		echo "Running on macOS"; \
 		HOST_LAN_IP=$(HOST_LAN_IP) docker compose -f docker-compose.osx.yml up; \
@@ -29,7 +29,7 @@ dockerstart:
 	fi
 
 # build docker
-dockerbuild:
+dockerbuild: detect_os
 	@if [ "$(OS)" == "Darwin" ]; then \
 		echo "Running on macOS"; \
 		HOST_LAN_IP=$(HOST_LAN_IP) docker compose -f docker-compose.osx.yml up --build; \
