@@ -33,7 +33,7 @@ const API_AUTH_URL = 'http://localhost:4000';
 
 async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
 	const { method, url, body, headers } = options;
-  
+
 	try {
 		const response = await fetch(url, {
 			method,
