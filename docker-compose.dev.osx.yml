@@ -50,6 +50,7 @@ services:
         VITE_TURN_USER: ${TURN_USER}
         VITE_TURN_PASS: ${TURN_PASS}
         VITE_EXT_IP: ${EXT_IP}
+        VITE_EFFECTS: ${EFFECTS}
     env_file:
       - .env
     volumes:

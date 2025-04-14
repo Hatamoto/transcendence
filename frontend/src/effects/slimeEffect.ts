@@ -1,8 +1,14 @@
+import { EFFECTS } from "../config/env-config";
 
 let isSlimeEffectRunning = false;
 
 export const startSlimeEffect = () => {
 
+	if (EFFECTS === false) {
+		console.log("🟢 Slime effect disabled via configuration");
+		return;
+	  }
+	
 	if (isSlimeEffectRunning) {
 		console.log("🟢 Slime effect already running, skipping initialization");
 		return;
@@ -206,6 +212,10 @@ export const startSlimeEffect = () => {
 
 // Add this export to slimeEffect.ts
 export const restartSlimeEffect = () => {
+	if (EFFECTS === false) {
+		console.log("🟢 Slime effect disabled via configuration");
+		return;
+	  }
 	// Only try to restart if it was previously running
 	if (isSlimeEffectRunning) {
 	  // Reset the flag so startSlimeEffect will run again
