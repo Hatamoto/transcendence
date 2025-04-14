@@ -69,18 +69,3 @@ dockerclean:
 # full clean
 fclean: dockerclean devclean
 	@echo "CLEANED EVERYTHING!!!!!"
-
-
-#dev: detect_os
-#@turnserver -c turnserver.conf > turn.out 2>&1 & \
-##export $(grep -v '^#' backend/.env | xargs)
-##@cp frontend/src/config/env-config.template.ts frontend/src/config/env-config.ts
-##@sed -i \
-##-e "s|__STUN_URL__|${STUN_URL}|g" \
-##-e "s|__TURN_URL__|${TURN_URL}|g" \
-##-e "s|__TURN_USER__|${TURN_USER}|g" \
-##-e "s|__TURN_PASS__|${TURN_PASS}|g" \
-##-e "s|__EXT_IP__|${HOST_LAN_IP}|g" \
-##frontend/src/config/env-config.ts
-##@cd ./frontend && npm run dev
-##@cd ./backend && npm run dev

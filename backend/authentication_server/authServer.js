@@ -14,7 +14,7 @@ const fastify = Fastify({
 await fastify.register(dbInit)
 await fastify.register(loginRoutes)
 await fastify.register(cors, {
-	origin: 'http://localhost:5001',
+	origin: [ 'http://localhost:5001', 'http://localhost:5173' ],
 	credentials: true
 })
 fastify.register(jwt, {
