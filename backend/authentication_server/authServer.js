@@ -14,8 +14,8 @@ const fastify = Fastify({
 await fastify.register(dbInit)
 await fastify.register(loginRoutes)
 await fastify.register(cors, {
-  origin: 'http://localhost:5001', // your frontend origin
-  credentials: true               // if you're using cookies or auth headers
+	origin: 'http://localhost:5001',
+	credentials: true
 })
 fastify.register(jwt, {
   secret: process.env.ACCESS_TOKEN_SECRET,

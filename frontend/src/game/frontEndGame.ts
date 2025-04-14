@@ -39,12 +39,12 @@ export class frontEndGame {
 		this.container = document.getElementById("game-container");
 		this.setupButtons();
 
-		const ip = this.getExternalIP();
-		if (ip) {
-			log.info("Your external IP is:", ip);
-		} else {
-			log.warn("Could not get external IP.");
-		}
+		//const ip = this.getExternalIP();
+		//if (ip) {
+		//	log.info("Your external IP is:", ip);
+		//} else {
+		//	log.warn("Could not get external IP.");
+		//}
 
 		//log.info("EXT_IP:", EXT_IP);
 		//log.info("TURN_URL:", TURN_URL);
@@ -139,7 +139,7 @@ export class frontEndGame {
 	private async getExternalIP(): Promise<string | null> {
 		try {
 			log.info("Fetching external IP");
-			const res = await fetch('/external-ip');
+			const res = await fetch("127.0.0.1:5001" + '/external-ip');
 			const data = await res.json();
 			return data.ip;
 		} catch (err) {
@@ -162,6 +162,7 @@ export class frontEndGame {
 		const testbtn = document.getElementById("test-btn");
 		
 		testbtn.addEventListener("click", () => {
+			log.info("HAISTA PASKAA");
 			socket.emit("joinRoomQue");
 		});
 
