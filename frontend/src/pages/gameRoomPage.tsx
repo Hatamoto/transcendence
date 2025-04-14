@@ -6,6 +6,7 @@ import { startSlimeEffect } from "../effects/slimeEffect";
 
 export default function GameRoom() {
 
+	// React strictmode runs things twice in dev?
 	const hasRun = useRef(false);
 
 	useEffect(() => {

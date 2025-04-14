@@ -17,8 +17,8 @@ services:
       - appnet
     ports:
       - "4000:4000"
-    # environment:
-    #   - NODE_ENV=${NODE_ENV}
+    environment:
+       - NODE_ENV=${NODE_ENV}
 
   main-server:
     build:
@@ -35,8 +35,8 @@ services:
       - appnet
     ports:
       - "5001:5001"
-    # environment:
-    #   - NODE_ENV=${NODE_ENV}
+    environment:
+       - NODE_ENV=${NODE_ENV}
     depends_on:
       - auth-server
   frontend:
@@ -48,7 +48,7 @@ services:
         VITE_TURN_URL: ${TURN_URL}
         VITE_TURN_USER: ${TURN_USER}
         VITE_TURN_PASS: ${TURN_PASS}
-        VITE_EXT_IP: ${VITE_EXT_IP}
+        VITE_EXT_IP: ${EXT_IP}
     env_file:
       - .env
     volumes:
@@ -60,7 +60,7 @@ services:
       - "5173:5173"
     environment:
       - HOST=0.0.0.0
-      # - NODE_ENV=${NODE_ENV}
+      - NODE_ENV=${NODE_ENV}
     depends_on:
       - auth-server
       - main-server

@@ -1,6 +1,6 @@
 // @ts-ignore
 import socket from '../utils/socket.js';
-import { startSlimeEffect } from '../effects/slimeEffect.js';	
+import { restartSlimeEffect } from '../effects/slimeEffect.js';	
 import { Logger, LogLevel } from '../utils/logger.js';
 import { TURN_URL, TURN_USER, TURN_PASS, EXT_IP, STUN_URL} from '../config/env-config.js';
 
@@ -401,5 +401,5 @@ socket.on("gameOver", (winner : number) => {
 	// Reset the connection when game is over
 	game.resetConnection();
 
-	startSlimeEffect();
+	restartSlimeEffect();
 });

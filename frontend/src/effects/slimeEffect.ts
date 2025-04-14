@@ -9,6 +9,7 @@ export const startSlimeEffect = () => {
 	}
 	isSlimeEffectRunning = true;
 
+
 	console.log("🟢 startSlimeEffect initialized");
 
 	const canvas = document.getElementById("slime-bg") as HTMLCanvasElement;
@@ -202,3 +203,16 @@ export const startSlimeEffect = () => {
 		effect.height = canvas.height;
 	});
 };
+
+// Add this export to slimeEffect.ts
+export const restartSlimeEffect = () => {
+	// Only try to restart if it was previously running
+	if (isSlimeEffectRunning) {
+	  // Reset the flag so startSlimeEffect will run again
+	  isSlimeEffectRunning = false;
+	  
+	  // Start it again
+	  startSlimeEffect();
+	  console.log("🟢 Slime effect restarted");
+	}
+  };

@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import Header from "../components/headers.js";
 import { startSlimeEffect } from "../effects/slimeEffect";
 
 const Home: React.FC = () => {
+	
 	useEffect(() => {
 		startSlimeEffect();
 	}, []);
