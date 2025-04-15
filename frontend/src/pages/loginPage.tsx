@@ -1,5 +1,5 @@
 import Header from "../components/headers";
-import { LoginRequest, loginUser } from "../services/api";
+import { LoginRequest, loginUser, LoginResponse } from "../services/api";
 import React, { useState } from 'react';
 
 import { useNavigate } from "react-router-dom";//for dev
@@ -34,11 +34,14 @@ const Login: React.FC = () => {
 		};
 
 		console.log("Calling loginUser API");
-		const success = await loginUser(user);
-		console.log("Returning from loginUser API with status:", success);
+		const response = await loginUser(user);
+		console.log("Returning from loginUser API with status:", response);
 
 
-		if (success) {
+		if (response.status == 200) {
+			const { userId, accessToken, refreshToken } = response;
+			sessionStorage.setItem('activeUserId', userId.toString());
+			sessionStorage.setItem(userId.toString(), JSON.stringify({accessToken, refreshToken}));
 			navigate("/user");
 		} else {
 			alert('Login failed. Please check your credentials.');

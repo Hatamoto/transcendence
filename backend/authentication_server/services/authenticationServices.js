@@ -31,7 +31,7 @@ const completeLogin = async function(req, reply, user) {
     const insertStatement = req.server.db.prepare('INSERT INTO refresh_tokens (user_id, refresh_token) VALUES (?, ?)')
     insertStatement.run(user.id, refreshToken)
   
-    return reply.send({ accessToken: accessToken, refreshToken: refreshToken })
+    return reply.send({ userId: user.id, accessToken: accessToken, refreshToken: refreshToken })
   } catch (error) {
     console.log(error)
     return reply.code(500).send({ error: error.message})
