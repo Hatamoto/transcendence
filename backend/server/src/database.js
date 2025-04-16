@@ -69,7 +69,7 @@ async function dbInit(fastify, options) {
   //     winner_id INTEGER,
   //     created_by INTEGER,
   //     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  //     is_active INTEGER NOT NULL DEFAULT 1 CHECK(status IN (0 ,1)),
+  //     is_active INTEGER NOT NULL DEFAULT 1 CHECK(is_active IN (0 ,1)),
   //     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
   //     FOREIGN KEY (winner_id) REFERENCES users(id) ON DELETE SET NULL
   //   );
@@ -96,10 +96,11 @@ async function dbInit(fastify, options) {
 
   // db.exec(`
   // CREATE TABLE IF NOT EXISTS tournament_players (
-  //   id INTEGER PRIMARY KEY AUTOINCREMENT,
+  //   id INTEGER PRIMARY KEY,
   //   tournament_id INTEGER NOT NULL,
-  //   player_id INTEGER,
+  //   user_id INTEGER,
   //   seed INTEGER,
+  //   is_ready INTEGER NOT NULL DEFAULT 0 CHECK(is_ready IN (0 ,1)),
   //   FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
   //   FOREIGN KEY (player_id) REFERENCES users(id) ON DELETE SET NULL
   // );

@@ -4,8 +4,8 @@ POST http://localhost:3000/api/user
 Content-Type: application/json
 
 {
-    "name": "testis",
-    "email": "testis@moi.com",
+    "name": "uusi",
+    "email": "uusi@moi.com",
     "password": "Test123!"
 }
 
@@ -15,7 +15,7 @@ POST http://localhost:4000/api/login
 Content-Type: application/json
 
 {
-    "username": "testis",
+    "username": "uusi",
     "password": "Test123!"
 }
 

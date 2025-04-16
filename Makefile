@@ -21,7 +21,7 @@ devbuild:
 dev: detect_os
 	@cp frontend/src/config/env-config.template.ts frontend/src/config/env-config.ts
 	echo "STUN_URL: ${STUN_URL}" && \
-  	sed -i \
+  	sed -i '' \
 	-e "s|__STUN_URL__|${STUN_URL}|g" \
 	-e "s|__TURN_URL__|${TURN_URL}|g" \
 	-e "s|__TURN_USER__|${TURN_USER}|g" \

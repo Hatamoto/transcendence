@@ -17,6 +17,7 @@ import {
   blockRequestOpts,
   getFriendsOpts
 } from '../schemas/friendSchemas.js'
+import { getTournamentsOpts, startTournamentOpts, joinTournamentOpts } from '../schemas/tournamentSchemas.js'
 
 let cachedIP = null;
 
@@ -60,4 +61,11 @@ async function friendRoutes (fastify, options) {
   fastify.post('/api/friend/accept', acceptRequestOpts)
   fastify.post('/api/friend/block', blockRequestOpts)
 }
-export { root, userRoutes, friendRoutes }
+
+async function tournamentRoutes (fastify, options) {
+  fastify.get('/api/tournaments', getTournamentsOpts)
+  fastify.post('/api/tournament/start', startTournamentOpts)
+  fastify.post('/api/tournament/join', joinTournamentOpts)
+}
+
+export { root, userRoutes, friendRoutes, tournamentRoutes }

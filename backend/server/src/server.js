@@ -1,7 +1,7 @@
 import dotenv from "dotenv"
 import Fastify from 'fastify'
 import fastifyStatic from '@fastify/static'
-import { root, userRoutes, friendRoutes } from './routes/routes.js'
+import { root, userRoutes, friendRoutes, tournamentRoutes } from './routes/routes.js'
 import dbInit from './database.js'
 import path from 'path'
 import cookie from '@fastify/cookie'
@@ -70,6 +70,7 @@ await fastify.register(multipart)
 await fastify.register(root)
 await fastify.register(userRoutes)
 await fastify.register(friendRoutes)
+await fastify.register(tournamentRoutes)
 
 fastify.listen({ port: process.env.PORT || 5001, host: process.env.HOST }, function (err, address) {
 	log.info('Listening on port', process.env.PORT);

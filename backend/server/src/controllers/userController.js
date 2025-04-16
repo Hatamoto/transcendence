@@ -1,5 +1,4 @@
 import bcrypt from 'bcrypt'
-import { v4 as uuidv4 } from 'uuid'
 import fs from 'fs'
 import util from 'util'
 import { pipeline } from 'stream'
@@ -7,7 +6,7 @@ import path from 'path'
 
 const getUsers = async function (req, reply) {
   try {
-    const users = req.server.db.prepare("SELECT * FROM users").all();
+    const users = req.server.db.prepare("SELECT * FROM users").all()
 
     if (users.length === 0) {
       return reply.code(404).send({ error: "No users found" })
@@ -33,16 +32,16 @@ const addUser = async function (req, reply) {
     hashedPassword = await bcrypt.hash(password, salt)
   }
 
-  const user = {
-   id: uuidv4(),
-   name,
-   email,
-   avatar
-  }
-
   try {
     const insertStatement = req.server.db.prepare('INSERT INTO users (name, email, password, avatar) VALUES (?, ?, ?, ?)')
-    insertStatement.run(name, email, hashedPassword, avatar)
+    const result = insertStatement.run(name, email, hashedPassword, avatar)
+
+    const user = {
+      id: result.lastInsertRowid,
+      name,
+      email,
+      avatar
+    }
 
     return reply.code(201).send(user)
   } catch (error) {
