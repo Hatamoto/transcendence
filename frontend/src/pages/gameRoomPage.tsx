@@ -3,7 +3,7 @@ import { createNewGame } from "../game/frontEndGame";
 import { useEffect, useRef } from "react";
 
 
-export default function GameRoom() {
+export default function GameRoom({matchType}) {
 
 	const hasRun = useRef(false);
 
@@ -14,16 +14,36 @@ export default function GameRoom() {
 	  }
 	}, []);
 
+
+	const matchTypeButtons = () => {
+		if (matchType == "tournament")
+			return(
+				<>
+				<h1 className="text-2xl font-bold text-center mb-4">Welcome to the Tournament!</h1>
+				<button id="ready-tour" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
+					Ready up!
+				</button>
+				</>
+			);
+		else if (matchType == "normal")
+			return(
+				<>
+				<h1 className="text-2xl font-bold text-center mb-4">Welcome to the Gameroom!</h1>
+				<button id="test-btn" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
+					Start Matchmaking
+				</button>
+				</>
+			);
+		return (<p>FUCK OFF</p>);
+	};
+
 	return (
 		<>
 			<Header />
 			<div id="gameroom-page" className="bg-green-100 p-8 rounded-lg shadow-md w-[820px]">
-				<h1 className="text-2xl font-bold text-center mb-4">Welcome to the Gameroom!</h1>
 				<p id="size-txt" className="text-center text-gray-600 mb-4">Lobby size: 0/2</p>
 				
-				<button id="test-btn" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
-					Start New Game
-				</button>
+				{matchTypeButtons()}
 
 				<label htmlFor="colorSelect">Choose ball color:</label>
 				<select id="colorSelect" name="mySelect" defaultValue="white">

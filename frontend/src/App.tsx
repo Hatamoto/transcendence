@@ -6,6 +6,7 @@ import Registration from './pages/registrationPage'
 import GameRoom from './pages/gameRoomPage'
 import UserPage from './pages/userPage'
 import NoPage from './pages/noPage'
+import TournamentsPage from './pages/tournamentPage.js'
 
 // //import "./index.css";
 
@@ -13,8 +14,9 @@ const router = createBrowserRouter([
   {path: "/", element:<Home />},
   {path: "/login", element:<Login/> },
   {path: "/register", element: <Registration />},
-  {path: "/game", element: <GameRoom />},
+  {path: "/game", element: <GameRoom matchType="normal" /> },
   {path: "/user", element: <UserPage />},
+  {path: "/tournaments", element: <TournamentsPage />},
   {path: "*", element: <NoPage />}
   // {path: "/user:username", element:}
 ]);

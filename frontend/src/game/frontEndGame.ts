@@ -2,6 +2,7 @@
 import socket from '../utils/socket.js';
 import { Logger, LogLevel } from '../utils/logger.js';
 import { TURN_URL, TURN_USER, TURN_PASS, EXT_IP, STUN_URL} from '../config/env-config.js';
+import { setupButtons  } from './matchmaking.js';
 
 const log = new Logger(LogLevel.INFO);
 
@@ -37,7 +38,7 @@ export class frontEndGame {
 
 	constructor() {
 		this.container = document.getElementById("game-container");
-		this.setupButtons();
+		setupButtons();
 
 		//const ip = this.getExternalIP();
 		//if (ip) {
@@ -155,17 +156,6 @@ export class frontEndGame {
 		this.ctx = this.gameCanvas.getContext("2d")!;
 		this.gameCanvas.width = 800;
 		this.gameCanvas.height = 600;
-	}
-
-	setupButtons()
-	{
-		const testbtn = document.getElementById("test-btn");
-		
-		testbtn.addEventListener("click", () => {
-			log.info("HAISTA PASKAA");
-			socket.emit("joinRoomQue");
-		});
-
 	}
 
 	setupPeerConnectionEvents() {

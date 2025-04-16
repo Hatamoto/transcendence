@@ -62,18 +62,18 @@ async function dbInit(fastify, options) {
     );
   `)
 
-  // db.exec(`
-  //   CREATE TABLE IF NOT EXISTS tournaments (
-  //     id INTEGER PRIMARY KEY AUTOINCREMENT,
-  //     name TEXT NOT NULL,
-  //     winner_id INTEGER,
-  //     created_by INTEGER,
-  //     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  //     is_active INTEGER NOT NULL DEFAULT 1 CHECK(status IN (0 ,1)),
-  //     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
-  //     FOREIGN KEY (winner_id) REFERENCES users(id) ON DELETE SET NULL
-  //   );
-  // `)
+   db.exec(`
+     CREATE TABLE IF NOT EXISTS tournaments (
+       id INTEGER PRIMARY KEY AUTOINCREMENT,
+       name TEXT NOT NULL,
+       winner_id INTEGER,
+       created_by INTEGER,
+       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+       is_active INTEGER NOT NULL DEFAULT 1 CHECK(is_active IN (0 ,1)),
+       FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+       FOREIGN KEY (winner_id) REFERENCES users(id) ON DELETE SET NULL
+     );
+   `)
 
   // db.exec(`
   //   CREATE TABLE IF NOT EXISTS match_history (
