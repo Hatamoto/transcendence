@@ -6,12 +6,15 @@ const log = new Logger(LogLevel.INFO);
 export function setupButtons()
 {
 	// Normal matchmaking
-	const testbtn = document.getElementById("test-btn");
+	const testBtn = document.getElementById("test-btn");
 	
-	testbtn.addEventListener("click", () => {
+	testBtn.addEventListener("click", () => {
 		socket.emit("joinRoomQue");
 	});
 
 	// Tournament matchmaking
-	
+	const readyBtn = document.getElementById("ready-tour");
+	readyBtn.addEventListener("click", () => {
+		socket.emit("readyTour");
+	});
 }

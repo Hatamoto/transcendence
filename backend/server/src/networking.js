@@ -134,6 +134,9 @@ export function setupNetworking(server){
 		//	joinRoom(roomId, socket);
 		//});
 
+		socket.on("readyTour", () => {
+			// allocate a room when both players are ready in the database
+		});
 
 		socket.on("joinRoomQue", () => {
 			const roomId = roomIds.allocate();
