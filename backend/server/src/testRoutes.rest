@@ -38,12 +38,12 @@ GET http://localhost:5001/api/users
 
 ### Delete user
 
-DELETE http://localhost:5001/api/user/5
+DELETE http://localhost:5001/api/user/8
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwibmFtZSI6IlBhdHJpayBMw6VuZyIsImlhdCI6MTc0NDcxNzExNSwiZXhwIjoxNzQ0NzIwNzE1fQ.__e_4r_I4D6NpP_HZM6B6J_uo37u0T1uu7PjxH_MbgY
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OCwibmFtZSI6IlBhdHJpayBMw6VuZyIsImlhdCI6MTc0NDg4MTI3NywiZXhwIjoxNzQ0ODg0ODc3fQ.xVdGAKpBWim4_dR5ZOL7bkj5rC_0AhefSNJofiUUe30
 
 {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwibmFtZSI6IlBhdHJpayBMw6VuZyIsImlhdCI6MTc0NDcxNzExNX0.okXwVgHdBNF56w7wpIzeRXtTUnlvYSiItj5buph9i50"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OCwibmFtZSI6IlBhdHJpayBMw6VuZyIsImlhdCI6MTc0NDg4MTI3N30.tKbZnDorDPn-l13nhp_L7O_H1-L3fl_McwLkt1-0sow"
 }
 
 ### Get new refresh token

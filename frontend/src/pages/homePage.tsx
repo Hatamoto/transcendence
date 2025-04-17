@@ -1,8 +1,44 @@
 import { Link } from 'react-router-dom';
 import Header from "../components/headers.js";
+import { useNavigate } from "react-router-dom";
+// import { useEffect } from 'react';
 
 const Home: React.FC = () => {
 
+	const navigate = useNavigate();
+
+	const handleGoogleLogin = () => {
+
+		const popup = window.open(
+		  'http://localhost:4000/api/googleauth',
+		  'GoogleLogin',
+		  'width=500,height=600'
+		);
+	  
+		window.addEventListener('message', (event) => {
+
+		if (event.origin !== "http://localhost:4000")
+			return;
+	
+		const { userId, accessToken, refreshToken } = event.data;
+	
+			if (userId && accessToken) {
+				sessionStorage.setItem("activeUserId", userId);
+				sessionStorage.setItem(
+					userId,
+					JSON.stringify({
+						accessToken,
+						refreshToken,
+						error: "Google signin successful",
+					})
+				);
+				navigate("/user");
+			}
+		console.log('User is now logged in');
+
+		});
+	}
+	
 	return (
 		<>
 		<Header />
@@ -26,13 +62,13 @@ const Home: React.FC = () => {
 			  	>
 					Register
 			  	</Link>
-				<p>Or</p>
-				<Link
-					to="http://localhost:4000/api/googleauth"
+				  <p className="text-gray-700">Or</p>
+				<button 
+					onClick={handleGoogleLogin}
 					className="w-64 bg-blue-500 text-white py-2 rounded-md hover:bg-blue-900 text-center"
 				>
 					Sign in with Google
-				</Link>
+				</button>
 			</div>
 			</div>
 		</>

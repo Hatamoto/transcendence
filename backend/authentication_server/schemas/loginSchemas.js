@@ -18,10 +18,11 @@ const loginOpts = {
   schema: {
     body: {
       type: 'object',
-      required: ['username', 'password'],
+      required: ['username', 'password', 'token'],
       properties: {
         username: { type: 'string' },
         password: { type: 'string' },
+        captchaToken: { type: 'string' },
       },
     },
   },

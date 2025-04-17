@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import axios from 'axios'
-import { verifyIdToken, completeLogin } from '../services/authenticationServices.js'
+import { verifyIdToken, completeLogin, completeGoogleLogin } from '../services/authenticationServices.js'
 
 const logoutUser = async function(req, reply) {
   const { token } = req.body
@@ -22,8 +22,10 @@ const logoutUser = async function(req, reply) {
   }
 }
 
+const secretKey = '6LfN3xsrAAAAAH7jw7TW7o3wclCQPw0HMoz1PrEB';
+
 const loginUser = async function (req, reply) {
-  const { username, password } = req.body
+  const { username, password, captchaToken } = req.body
 
   try {
     const user = req.server.db.prepare('SELECT * FROM users WHERE name = ?').get(username)
@@ -32,6 +34,23 @@ const loginUser = async function (req, reply) {
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) return reply.code(401).send({ error: 'Incorrect username or password' })
     
+	if (!captchaToken) return reply.code(400).send({ error: 'Token is required' })
+
+	const res = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+	method: 'POST',
+	headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+	body: new URLSearchParams({
+		secret: secretKey,
+		response: captchaToken,
+	}),
+	});
+
+	const data = await res.json();
+
+	if (!data.success) {
+	return reply.code(400).send({ error: 'Invalid CAPTCHA' });
+	}
+
     return completeLogin(req, reply, user)
   } catch (error) {
     console.log(error)
@@ -89,14 +108,14 @@ const googleAuthHandler = async function(req, reply) {
     
         const newUser = await req.server.db.prepare('SELECT id, name FROM users WHERE google_id = ?').get(profile.sub)
 
-        return completeLogin(req, reply, newUser)
+        return completeGoogleLogin(req, reply, newUser)
       } 
     } catch (dbError) {
       console.error('Error with database', dbError)
       return reply.code(500).send({ error: dbError.message })
     }
 
-    return completeLogin(req, reply, user)
+    return completeGoogleLogin(req, reply, user)
   } catch (error) {
     console.error("Google Auth Error:", error.response?.data || error.message)
     if (error.response) {

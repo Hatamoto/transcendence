@@ -1,3 +1,162 @@
+export interface LoginRequest {
+	username: string;
+	password: string;
+	captchaToken: string;
+}
+
+export interface LoginResponse {
+	userId: number;
+	accessToken: string;
+	refreshToken: string;
+	status: number;
+	error: string;
+}
+
+const API_AUTH_URL = 'http://localhost:4000'; //add to .env
+
+export async function loginUser(user: LoginRequest, token: string): Promise<LoginResponse> {
+
+	try {
+		const response = await fetch(`${API_AUTH_URL}/api/login`, {
+			method: 'POST',
+			body: JSON.stringify({ ...user, token }), // Include token in the request body
+			headers: {
+			'Content-Type': 'application/json',
+			}
+		});
+
+		const responseData = await response.json();
+
+		if (!response.ok)
+			return { userId: 0,
+				accessToken: '',
+				refreshToken: '',
+				status: response.status,
+				error: responseData.error || 'Login failed'
+			}
+		return {
+			userId: responseData.userId,
+			accessToken: responseData.accessToken,
+			refreshToken: responseData.refreshToken,
+			status: response.status,
+			error: responseData.error || 'Login successful'
+		};
+
+	} catch (error) {
+		console.error("Login error:", error);
+		return {
+			userId: 0,
+			accessToken: '',
+			refreshToken: '',
+			status: 500,
+			error: 'Something went wrong. Please try again.'
+		};
+	}
+}
+
+export interface LogoutRequest {
+	token: string;
+}
+
+export async function logoutUser(user: LogoutRequest) {
+
+	try {
+		const response = await fetch(`${API_AUTH_URL}/api/logout`, {
+			method: 'DELETE',
+			body: JSON.stringify(user),            
+			headers: {
+			'Content-Type': 'application/json',
+			}
+		});
+
+		if (!response.ok)
+			return {
+				status: response.status,
+				error: 'Logout failed'
+			}
+		return {
+			status: response.status,
+			error: 'Logout successful'
+		};
+
+	} catch (error) {
+		console.error("Logout error:", error);
+		return {
+			status: 500,
+			error: 'Something went wrong. Please try again.'
+		};
+	}
+}
+
+
+export interface RegistrationRequest {
+	name: string;
+	email: string;
+	password: string;
+}
+
+export interface RegistrationResponse {
+	userId: number;
+	email: string;
+	avatarPath: string;
+	status: number;
+	error: string;
+}
+
+export async function registerUser(user: RegistrationRequest): Promise<RegistrationResponse> {
+	
+	try {
+		const response = await fetch('/api/user', {
+			method: 'POST',
+			body: JSON.stringify(user),
+			headers: {
+			'Content-Type': 'application/json',
+			}
+		});
+
+		const responseData = await response.json();
+
+		if (!response.ok)
+			return { userId: 0,
+				email: '',
+				avatarPath: '',
+				status: response.status,
+				error: responseData.error
+		}
+		return { userId: responseData.userId,
+			email: responseData.email,
+			avatarPath: responseData.avatarPath,
+			status: response.status,
+			error: 'Registration successfull'
+		}
+		
+	} catch (error) {
+		console.error("Login error:", error);
+		return {
+			userId: 0,
+			email: '',
+			avatarPath: '',
+			status: 500,
+			error: 'Something went wrong. Please try again.'
+		};
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 interface ApiOptions {
 	method: string;
 	url: string;
@@ -5,34 +164,15 @@ interface ApiOptions {
 	headers?: Record<string, string>;
 }
 
-// interface ApiReturn<T> {
+interface ApiReturn<T> {
+	status: number;
+	data?: T;
+}
+
+// interface ApiReturn {
 // 	status: number;
-// 	data?: T;
+// 	data?: string;
 // }
-
-interface ApiReturn {
-	status: number;
-	data?: string;
-}
-
-
-export interface LoginResponse {
-	userId: number;
-	accessToken: string;
-	refreshToken: string;
-	status: number;
-}
-
-export interface LoginRequest {
-	username: string;
-	password: string;
-}
-
-export interface RegistrationRequest {
-	name: string;
-	email: string;
-	password: string;
-}
 
 export interface User {
 	name: string;
@@ -42,32 +182,7 @@ export interface User {
 	avatarPath: string;
 }
 
-const API_AUTH_URL = 'http://localhost:4000'; // ei kannata hardcodea
-
-// async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
-// 	const { method, url, body, headers } = options;
-
-// 	try {
-// 		const response = await fetch(url, {
-// 			method,
-// 			headers,
-// 			body: body ? JSON.stringify(body) : undefined,
-// 			credentials: 'include',
-// 		});
-  
-// 		const responseData = await response.json();
-  
-// 		if (!response.ok)
-// 			return { status: response.status, data: undefined };
-
-// 		return { status: response.status, data: responseData }
-	
-// 	} catch (error) {
-// 		throw error; // idk what happens here :()()() saku mita helvettia
-// 	}
-// }
-
-async function apiCall(options: ApiOptions): Promise<ApiReturn> {
+async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
 	const { method, url, body, headers } = options;
 
 	try {
@@ -90,35 +205,6 @@ async function apiCall(options: ApiOptions): Promise<ApiReturn> {
 	}
 }
 
-export async function loginUser(user: LoginRequest): Promise<LoginResponse> {
-	const options : ApiOptions = {
-		method: 'POST',
-		url: `${API_AUTH_URL}/api/login`, //this changed ?!?
-		body: user,            
-		headers: {
-		'Content-Type': 'application/json',
-		},
-	};
-	// document.cookie = `accessToken=${data.accessToken}; path=/; SameSite=Lax`;
-// needs to be changed to take data to save login tokens
-	//return ((await apiCall(options)));
-	const ret = await apiCall(options);
-	const parsed = JSON.parse(ret.data);
-
-	return ({ userId: parsed.userId, accessToken: parsed.accessToken, refreshToken: parsed.refreshToken, status: 200 });
-}
-
-export async function registerUser(user: RegistrationRequest): Promise<number> {
-	const options : ApiOptions = {
-		method: 'POST',
-		url: '/api/user',
-		body: user,            
-		headers: {
-		'Content-Type': 'application/json',
-		},
-	};
-	return ((await apiCall(options)).status);
-}
 
 export async function getAllUsers(): Promise<User[] | number> {
 	const options : ApiOptions = {
@@ -148,8 +234,8 @@ export async function getUser(id: string): Promise<User | number> {
 	return (response.data as User);
 }
 
-export async function getDashboard() {
-}
+// export async function getDashboard() {
+// }
 
 export async function uploadAvatar() {
 }
