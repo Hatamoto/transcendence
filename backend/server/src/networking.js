@@ -82,29 +82,30 @@ export function setupNetworking(server){
 		});
 
 		socket.on("disconnect", () => {
-		log.info("User disconnected:", socket.id);
-
-		// Clean up rooms and connections when a player disconnects
-		for (const roomId in rooms) {
-			if (rooms[roomId].players[socket.id]) {
-				delete rooms[roomId].players[socket.id];
-				log.info(`Player ${socket.id} removed from room ${roomId}`);
-				
-				//socket.to(roomId).emit("playerDisconnected", Object.keys(rooms[roomId].players).length);
-				
-				// deleting room when its empty
-				if (Object.keys(rooms[roomId].players).length === 0) {
-					delete rooms[roomId];
-					if (games[roomId]) {
-						games[roomId].stop();
-						delete games[roomId];
+			log.info("User disconnected:", socket.id);
+		
+			// Clean up rooms and connections when a player disconnects
+			const playerRoom = socket.room;
+				if (playerRoom && rooms[playerRoom]?.players[socket.id]) {
+					delete rooms[playerRoom].players[socket.id];
+					log.info(`Player ${socket.id} removed from room ${playerRoom}`);
+					
+					if (Object.keys(rooms[playerRoom].players).length === 0) {
+						// Room cleanup
+						delete rooms[playerRoom];
+						if (games[playerRoom]) {
+							games[playerRoom].stop();
+							delete games[playerRoom];
+						}
+						roomIds.freeRoom(playerRoom);
+						log.info(`Room ${playerRoom} deleted`);
+					} else if (rooms[playerRoom].type == "normal") {
+						roomIds.openRoomDoors(playerRoom);
 					}
-					roomIds.freeRoom(roomId);
-					log.info(`Room ${roomId} deleted`);
-				} else if (rooms[roomId].type == "normal")
-					roomIds.openRoomDoors(roomId)
+					
+					// Notify remaining players
+					io.to(playerRoom).emit("playerDisconnected", Object.keys(rooms[playerRoom].players).length);
 			}
-		}
 		});
 
 		socket.on('ice-candidate', (candidate) => {
@@ -396,16 +397,6 @@ function joinRoom(roomId, socket)
 
 		socket.room = roomId;
 		socket.join(roomId);
-		const room = io.sockets.adapter.rooms.get(roomId);
-		if (room) {
-			log.info(`Room ${roomId} has ${room.size} socket(s):`);
-			for (const socketId of room) {
-				log.info(`- ${socketId}`);
-			}
-		} else {
-			log.info(`Room ${roomId} does not exist or has no sockets.`);
-		}
-		log.info("MYYYYYYYYY socket: " + socket.id);
 
 		io.to(roomId).emit("playerJoined", Object.keys(rooms[roomId].players).length);
 		log.info(`${socket.id} joined room ${roomId}`);

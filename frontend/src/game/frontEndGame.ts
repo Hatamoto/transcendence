@@ -295,12 +295,12 @@ socket.on("playerJoined", (playerAmount) => {
 	sizeTxt.textContent = "Lobby size: " + playerAmount + "/2";
 });
 
-//socket.on("playerDisconnected", (playerAmount) => {
-//	log.info("Player disconnected");
-//	const sizeTxt = document.getElementById("size-txt");
+socket.on("playerDisconnected", (playerAmount) => {
+	log.info("Player disconnected");
+	const sizeTxt = document.getElementById("size-txt");
 
-//	sizeTxt.textContent = "Lobby size: " + playerAmount + "/2";
-//});
+	sizeTxt.textContent = "Lobby size: " + playerAmount + "/2";
+});
 
 socket.on("roomFull", () => {
 	const strtBtn = document.getElementById("start-btn");
