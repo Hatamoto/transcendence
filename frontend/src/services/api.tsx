@@ -1,3 +1,57 @@
+
+export interface RegistrationRequest {
+	name: string;
+	email: string;
+	password: string;
+}
+
+export interface RegistrationResponse {
+	userId: number;
+	email: string;
+	avatarPath: string;
+	status: number;
+	error: string;
+}
+
+export async function registerUser(userData: RegistrationRequest): Promise<RegistrationResponse> {
+	
+	try {
+		const response = await fetch('/api/user', {
+			method: 'POST',
+			body: JSON.stringify(userData),
+			headers: {
+			'Content-Type': 'application/json',
+			}
+		});
+
+		const responseData = await response.json();
+
+		if (!response.ok)
+			return { userId: 0,
+				email: '',
+				avatarPath: '',
+				status: response.status,
+				error: responseData.error
+		}
+		return { userId: responseData.userId,
+			email: responseData.email,
+			avatarPath: responseData.avatarPath,
+			status: response.status,
+			error: 'Registration successfull'
+		}
+		
+	} catch (error) {
+		console.error("Login error:", error);
+		return {
+			userId: 0,
+			email: '',
+			avatarPath: '',
+			status: 500,
+			error: 'Something went wrong. Please try again.'
+		};
+	}
+}
+
 export interface LoginRequest {
 	username: string;
 	password: string;
@@ -13,12 +67,12 @@ export interface LoginResponse {
 
 const API_AUTH_URL = 'http://localhost:4000'; //add to .env
 
-export async function loginUser(user: LoginRequest): Promise<LoginResponse> {
+export async function loginUser(userData: LoginRequest): Promise<LoginResponse> {
 
 	try {
 		const response = await fetch(`${API_AUTH_URL}/api/login`, {
 			method: 'POST',
-			body: JSON.stringify(user),            
+			body: JSON.stringify(userData),            
 			headers: {
 			'Content-Type': 'application/json',
 			}
@@ -57,12 +111,17 @@ export interface LogoutRequest {
 	token: string;
 }
 
-export async function logoutUser(user: LogoutRequest) {
+interface LogoutResponse {
+	status: number;
+	error: string;
+}
+
+export async function logoutUser(userData: LogoutRequest): Promise<LogoutResponse> {
 
 	try {
 		const response = await fetch(`${API_AUTH_URL}/api/logout`, {
 			method: 'DELETE',
-			body: JSON.stringify(user),            
+			body: JSON.stringify(userData),            
 			headers: {
 			'Content-Type': 'application/json',
 			}
@@ -87,60 +146,52 @@ export async function logoutUser(user: LogoutRequest) {
 	}
 }
 
-
-export interface RegistrationRequest {
-	name: string;
-	email: string;
-	password: string;
+export interface DeleteUserRequest {
+	id: number;
+	accToken: string;
+	token: string;
 }
 
-export interface RegistrationResponse {
-	userId: number;
-	email: string;
-	avatarPath: string;
+interface DeleteUserResponse {
 	status: number;
 	error: string;
 }
 
-export async function registerUser(user: RegistrationRequest): Promise<RegistrationResponse> {
-	
+
+export async function deleteUser(userData: DeleteUserRequest): Promise<DeleteUserResponse> {
+
 	try {
-		const response = await fetch('/api/user', {
-			method: 'POST',
-			body: JSON.stringify(user),
+		const response = await fetch(`/api/user/delete`, {
+			method: 'DELETE',
+			body: JSON.stringify({id: userData.id, token: userData.token}),
 			headers: {
 			'Content-Type': 'application/json',
+			'Authorization': `Bearer ${userData.accToken}`
 			}
 		});
 
+		
 		const responseData = await response.json();
+		console.log(response);
 
 		if (!response.ok)
-			return { userId: 0,
-				email: '',
-				avatarPath: '',
+			return {
 				status: response.status,
-				error: responseData.error
-		}
-		return { userId: responseData.userId,
-			email: responseData.email,
-			avatarPath: responseData.avatarPath,
-			status: response.status,
-			error: 'Registration successfull'
-		}
-		
-	} catch (error) {
-		console.error("Login error:", error);
+				error: responseData.error || 'User delete failed'
+			}
 		return {
-			userId: 0,
-			email: '',
-			avatarPath: '',
+			status: response.status,
+			error: responseData.error || 'User delete successful'
+		};
+
+	} catch (error) {
+		console.error("Delete user:", error);
+		return {
 			status: 500,
 			error: 'Something went wrong. Please try again.'
 		};
 	}
 }
-
 
 
 
@@ -264,16 +315,16 @@ export async function updatePassword(id: string, password: string) {
 	return ((await apiCall(options)).status);
 }
 
-export async function deleteUser(id: string) {
-	const options : ApiOptions = {
-		method: 'DELETE',
-		url: `/api/user/${id}`,
-		headers: {
-		'Content-Type': 'application/json',
-		},
-	};
-	return ((await apiCall(options)).status);
-} //i guess we doublecheck in front 
+// export async function deleteUser(id: string) {
+// 	const options : ApiOptions = {
+// 		method: 'DELETE',
+// 		url: `/api/user/${id}`,
+// 		headers: {
+// 		'Content-Type': 'application/json',
+// 		},
+// 	};
+// 	return ((await apiCall(options)).status);
+// } //i guess we doublecheck in front 
 
 export async function friendRequest(id: string) {
 	const options : ApiOptions = {

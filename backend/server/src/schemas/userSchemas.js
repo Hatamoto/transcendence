@@ -61,10 +61,12 @@ const getUserOpts = {
 
 const deleteUserOpts = {
   schema: {
-    params: {
+    body: {
       type: 'object',
+      required: ['id', 'token'],
       properties: {
-        id: { type: 'integer', minimum: 1 }
+        id: { type: 'integer', minimum: 1 },
+        token: { type: 'string' }
       },
     },
     response: {

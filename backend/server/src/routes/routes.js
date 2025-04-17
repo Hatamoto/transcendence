@@ -49,7 +49,7 @@ async function userRoutes (fastify, options) {
   fastify.put('/api/upload', uploadOpts) //Avatarin uploadaamiseen, ottaa kuva tiedoston ja tallentaa kuvan avatars kansioon ja pathin databaseen
   fastify.put('/api/user/:id', updateUserOpts) //Vaatii parametrina ID:n ja request bodyssa: name, email, number, password 
   fastify.put('/api/user/pwd/:id', updatePasswordOpts) //Vaatii Parametrina ID:n ja request bodyssa password
-  fastify.delete('/api/user/:id', deleteUserOpts) //Vaatii parametrina ID:n ja poistaa kyseisen Userin
+  fastify.delete('/api/user/delete', deleteUserOpts) //Vaatii parametrina ID:n ja poistaa kyseisen Userin
   fastify.post('/api/user', addUserOpts) //Vaatii request bodyssa: name, email, number, password
 }
 
