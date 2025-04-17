@@ -273,6 +273,13 @@ export class frontEndGame {
 
 socket.on("connect", () => {
 	log.info("Connected to server");
+	const strtBtn = document.getElementById("start-btn");
+	const gameEdit = document.getElementById("edit-game");
+
+	if (strtBtn)
+		strtBtn.hidden = true;
+	if (gameEdit)
+		gameEdit.hidden = true;
 });
 
 let game : frontEndGame;
@@ -288,6 +295,13 @@ socket.on("playerJoined", (playerAmount) => {
 	sizeTxt.textContent = "Lobby size: " + playerAmount + "/2";
 });
 
+//socket.on("playerDisconnected", (playerAmount) => {
+//	log.info("Player disconnected");
+//	const sizeTxt = document.getElementById("size-txt");
+
+//	sizeTxt.textContent = "Lobby size: " + playerAmount + "/2";
+//});
+
 socket.on("roomFull", () => {
 	const strtBtn = document.getElementById("start-btn");
 	const gameEdit = document.getElementById("edit-game");
@@ -295,11 +309,7 @@ socket.on("roomFull", () => {
 	const ballSize  = (document.getElementById("ball-size") as HTMLInputElement)
 	const ballSpeed = (document.getElementById("ball-speed") as HTMLInputElement)
 
-	strtBtn.classList.remove("bg-red-500");
-    strtBtn.classList.add("bg-green-500");
-
 	strtBtn.hidden = false
-
 	gameEdit.hidden = false;
 
 	strtBtn.addEventListener("click", () => {

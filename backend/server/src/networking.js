@@ -21,7 +21,8 @@ class IDAllocator {
 		}
     }
 
-    allocate() {
+
+    allocate() {	// Finds available ids
 		if (this.openRooms.size > 0) {
 			return (this.openRooms.values().next().value);
     	}
@@ -34,17 +35,17 @@ class IDAllocator {
 			return (-1);
 	}
 
-    freeRoom(id) {
+    freeRoom(id) { 	// Completely deletes the rooms id
 		this.freeIDs.add(Number(id));
 		if (this.openRooms.has(id))
 			this.openRooms.delete(id);
     }
 
-	openRoomDoors(id) {
+	openRoomDoors(id) { 	// Lets players join again
 		this.openRooms.add(id);
 	}
 
-	closeRoomDoors(id) {
+	closeRoomDoors(id) {	// Closes the room so players cant join
 		this.openRooms.delete(id);
 	}
 }
@@ -89,7 +90,7 @@ export function setupNetworking(server){
 				delete rooms[roomId].players[socket.id];
 				log.info(`Player ${socket.id} removed from room ${roomId}`);
 				
-				socket.to(roomId).emit("playerDisconnected", socket.id);
+				//socket.to(roomId).emit("playerDisconnected", Object.keys(rooms[roomId].players).length);
 				
 				// deleting room when its empty
 				if (Object.keys(rooms[roomId].players).length === 0) {
@@ -100,7 +101,8 @@ export function setupNetworking(server){
 					}
 					roomIds.freeRoom(roomId);
 					log.info(`Room ${roomId} deleted`);
-				}
+				} else if (rooms[roomId].type == "normal")
+					roomIds.openRoomDoors(roomId)
 			}
 		}
 		});
@@ -108,7 +110,7 @@ export function setupNetworking(server){
 		socket.on('ice-candidate', (candidate) => {
 			log.info(`Received ICE candidate from frontend socket ${socket.id}`);
 			log.debug('Candidate:', candidate);
-			const playerRoom = [...socket.rooms][1];
+			const playerRoom = socket.room;
 			if (playerRoom) {
 				const peerConnection = rooms[playerRoom].players[socket.id].peerConnection;
 				if (peerConnection) {
@@ -139,15 +141,18 @@ export function setupNetworking(server){
 		});
 
 		socket.on("joinRoomQue", () => {
+			if (socket.rooms.size > 1)
+				return ;
 			const roomId = roomIds.allocate();
-			if (roomId == -1 || socket.rooms.size > 1)
+			if (roomId == -1)
 				return ;
 			if (!rooms[roomId]) {
 				roomIds.openRoomDoors(roomId);
 				rooms[roomId] = {
 				players: {},
 				gameStarted: false,
-				hostId: null
+				hostId: null,
+				type: "normal" // Games matchmaking type
 				};
 			}
 			else
@@ -156,8 +161,8 @@ export function setupNetworking(server){
 		});
 
 		socket.on('hostStart', (settings) => {
-			const playerRoom = [...socket.rooms][1];
-			if (!playerRoom || !rooms[playerRoom]) return;
+			const playerRoom = socket.room;
+			if (!playerRoom || !rooms[playerRoom] || rooms[playerRoom].hostId != socket.id) return;
 
 			if (Object.keys(rooms[playerRoom].players).length === 2 && !rooms[playerRoom].gameStarted) {
 				const playerIds = Object.keys(rooms[playerRoom].players);
@@ -166,6 +171,10 @@ export function setupNetworking(server){
 				games[playerRoom] = new Game(playerIds[0], playerIds[1]);
 				games[playerRoom].settings(settings);		
 				initializeWebRTC(playerRoom);
+				log.info("HOSTSROOM: " + playerRoom);
+				const socketsInRoomAdapter = io.sockets.adapter.rooms.get(playerRoom);
+				log.info(`Adapter state for room ${playerRoom} right before emit: Size=${socketsInRoomAdapter?.size}, IDs=${[...socketsInRoomAdapter || []]}`);
+				
 				io.to(playerRoom).emit("startGame", playerRoom, settings);
 			}
 		});
@@ -173,7 +182,7 @@ export function setupNetworking(server){
 		socket.on('answer', (answer) => {
 		log.info(`Backend received answer from ${socket.id}:`);
 		log.debug('Answer:', answer);
-		const playerRoom = [...socket.rooms][1];
+		const playerRoom = socket.room;
 
 		if (playerRoom) {
 			const peerConnection = rooms[playerRoom].players[socket.id].peerConnection;
@@ -385,12 +394,21 @@ function joinRoom(roomId, socket)
 		keysPressed: {}
 		};
 
+		socket.room = roomId;
 		socket.join(roomId);
+		const room = io.sockets.adapter.rooms.get(roomId);
+		if (room) {
+			log.info(`Room ${roomId} has ${room.size} socket(s):`);
+			for (const socketId of room) {
+				log.info(`- ${socketId}`);
+			}
+		} else {
+			log.info(`Room ${roomId} does not exist or has no sockets.`);
+		}
+		log.info("MYYYYYYYYY socket: " + socket.id);
+
 		io.to(roomId).emit("playerJoined", Object.keys(rooms[roomId].players).length);
 		log.info(`${socket.id} joined room ${roomId}`);
-	} else {
-		socket.emit("roomFull", roomId);
-		return;
 	}
 
 	const numPlayers = Object.keys(rooms[roomId].players).length;

@@ -28,7 +28,7 @@ dev: detect_os
 	-e "s|__TURN_PASS__|${TURN_PASS}|g" \
 	-e "s|__EXT_IP__|${HOST_LAN_IP}|g" \
 	frontend/src/config/env-config.ts
-	@trap 'cp frontend/src/config/env-config.template.ts frontend/src/config/env-config.ts' INT; \
+	@trap 'cp frontend/src/config/env-config.template.ts frontend/src/config/env-config.ts && rm turn.out' INT; \
 	turnserver -c turnserver.conf > turn.out 2>&1 & \
 	cd ./frontend && npm run dev & \
 	cd ./backend && npm run dev & \

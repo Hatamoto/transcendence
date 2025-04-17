@@ -8,13 +8,19 @@ export function setupButtons()
 	// Normal matchmaking
 	const testBtn = document.getElementById("test-btn");
 	
-	testBtn.addEventListener("click", () => {
-		socket.emit("joinRoomQue");
-	});
+	if (testBtn)
+	{
+		testBtn.addEventListener("click", () => {
+			socket.emit("joinRoomQue");
+		});
+	}
 
 	// Tournament matchmaking
 	const readyBtn = document.getElementById("ready-tour");
-	readyBtn.addEventListener("click", () => {
-		socket.emit("readyTour");
-	});
+	if (readyBtn)
+	{
+		readyBtn.addEventListener("click", () => {
+			socket.emit("readyTour");
+		});
+	}
 }
