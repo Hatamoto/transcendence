@@ -12,6 +12,7 @@ import TournamentsPage from './pages/tournamentPage.js'
 
 const router = createBrowserRouter([
   {path: "/", element:<Home />},
+  {path: "/home", element:<Home />},
   {path: "/login", element:<Login/> },
   {path: "/register", element: <Registration />},
   {path: "/game", element: <GameRoom matchType="normal" /> },

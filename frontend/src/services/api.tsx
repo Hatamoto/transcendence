@@ -5,9 +5,22 @@ interface ApiOptions {
 	headers?: Record<string, string>;
 }
 
-interface ApiReturn<T> {
-	status: number,
-	data?: T;
+// interface ApiReturn<T> {
+// 	status: number;
+// 	data?: T;
+// }
+
+interface ApiReturn {
+	status: number;
+	data?: string;
+}
+
+
+export interface LoginResponse {
+	userId: number;
+	accessToken: string;
+	refreshToken: string;
+	status: number;
 }
 
 export interface LoginRequest {
@@ -29,7 +42,32 @@ export interface User {
 	avatarPath: string;
 }
 
-async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
+const API_AUTH_URL = 'http://localhost:4000'; // ei kannata hardcodea
+
+// async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
+// 	const { method, url, body, headers } = options;
+
+// 	try {
+// 		const response = await fetch(url, {
+// 			method,
+// 			headers,
+// 			body: body ? JSON.stringify(body) : undefined,
+// 			credentials: 'include',
+// 		});
+  
+// 		const responseData = await response.json();
+  
+// 		if (!response.ok)
+// 			return { status: response.status, data: undefined };
+
+// 		return { status: response.status, data: responseData }
+	
+// 	} catch (error) {
+// 		throw error; // idk what happens here :()()() saku mita helvettia
+// 	}
+// }
+
+async function apiCall(options: ApiOptions): Promise<ApiReturn> {
 	const { method, url, body, headers } = options;
 
 	try {
@@ -52,18 +90,22 @@ async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
 	}
 }
 
-export async function loginUser(user: LoginRequest): Promise<number> {
+export async function loginUser(user: LoginRequest): Promise<LoginResponse> {
 	const options : ApiOptions = {
 		method: 'POST',
-		url: '/api/login', //this changed ?!?
+		url: `${API_AUTH_URL}/api/login`, //this changed ?!?
 		body: user,            
 		headers: {
 		'Content-Type': 'application/json',
 		},
 	};
-//	document.cookie = `accessToken=${data.accessToken}; path=/; SameSite=Lax`;
+	// document.cookie = `accessToken=${data.accessToken}; path=/; SameSite=Lax`;
 // needs to be changed to take data to save login tokens
-	return (await apiCall(options)).status;
+	//return ((await apiCall(options)));
+	const ret = await apiCall(options);
+	const parsed = JSON.parse(ret.data);
+
+	return ({ userId: parsed.userId, accessToken: parsed.accessToken, refreshToken: parsed.refreshToken, status: 200 });
 }
 
 export async function registerUser(user: RegistrationRequest): Promise<number> {

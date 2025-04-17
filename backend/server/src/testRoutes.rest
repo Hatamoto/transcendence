@@ -1,6 +1,6 @@
 ### Add user
 
-POST http://localhost:3000/api/user
+POST http://localhost:5001/api/user
 Content-Type: application/json
 
 {
@@ -15,7 +15,7 @@ POST http://localhost:4000/api/login
 Content-Type: application/json
 
 {
-    "username": "testis",
+    "username": "patrik",
     "password": "Test123!"
 }
 
@@ -25,7 +25,7 @@ DELETE http://localhost:4000/api/logout
 Content-Type: application/json
 
 {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6InRlc3RpIiwiaWF0IjoxNzQ0Mjg0OTc4fQ.QVkNEZHfwyEIX5iftddQX6xoZUcLDjeKP81vDDXa1XA"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwibmFtZSI6IlBhdHJpayBMw6VuZyIsImlhdCI6MTc0NDcxNDY4MX0.1X99fxMTIhxhmEU-xXm63U9joj5n9Mmu-sN1m4gzhp0"
 }
 
 ### Google sign in
@@ -34,16 +34,16 @@ GET http://localhost:4000/api/googleauth
 
 ### Get users
 
-GET http://localhost:3000/api/users
+GET http://localhost:5001/api/users
 
 ### Delete user
 
-DELETE http://localhost:3000/api/user/2
+DELETE http://localhost:5001/api/user/5
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywibmFtZSI6InRlc3RpcyIsImlhdCI6MTc0NDI4NTQ5MSwiZXhwIjoxNzQ0Mjg5MDkxfQ.TaRTX_v5Qc2k5NOdLDa8p7-OJk_U9vuW8xX1yw-kH9Q
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwibmFtZSI6IlBhdHJpayBMw6VuZyIsImlhdCI6MTc0NDcxNzExNSwiZXhwIjoxNzQ0NzIwNzE1fQ.__e_4r_I4D6NpP_HZM6B6J_uo37u0T1uu7PjxH_MbgY
 
 {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywibmFtZSI6InRlc3RpcyIsImlhdCI6MTc0NDI4NTQ5MX0.MfZjBYq7CZZ623Z4-yWDWaCXwOXOlVWf3j1Y-y51U0Y"
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwibmFtZSI6IlBhdHJpayBMw6VuZyIsImlhdCI6MTc0NDcxNzExNX0.okXwVgHdBNF56w7wpIzeRXtTUnlvYSiItj5buph9i50"
 }
 
 ### Get new refresh token

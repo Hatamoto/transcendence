@@ -1,17 +1,17 @@
 {
-    "name": "backend_auth",
-    "version": "1.0.0",
-    "main": "authServer.js",
-    "type": "module",
-    "scripts": {
-        "start": "node authServer",
-        "devAuth": "nodemon authServer.js"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "description": "",
-    "dependencies": {
+  "name": "backend_auth",
+  "version": "1.0.0",
+  "main": "authServer.js",
+  "type": "module",
+  "scripts": {
+      "start": "node authServer",
+      "devAuth": "nodemon authServer.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
       "@fastify/cookie": "^11.0.2",
       "@fastify/cors": "^11.0.1",
       "@fastify/env": "^5.0.2",
@@ -33,8 +33,8 @@
       "sqlite": "^5.1.1",
       "sqlite3": "^5.1.7",
       "uuid": "^11.1.0"
-    },
-    "devDependencies": {
-        "nodemon": "^3.1.9"
-    }
+  },
+  "devDependencies": {
+      "nodemon": "^3.1.9"
+  }
 }
