@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import axios from 'axios'
-import { verifyIdToken, completeLogin } from '../services/authenticationServices.js'
+import { verifyIdToken, completeLogin, completeGoogleLogin } from '../services/authenticationServices.js'
 
 const logoutUser = async function(req, reply) {
   const { token } = req.body
@@ -89,14 +89,14 @@ const googleAuthHandler = async function(req, reply) {
     
         const newUser = await req.server.db.prepare('SELECT id, name FROM users WHERE google_id = ?').get(profile.sub)
 
-        return completeLogin(req, reply, newUser)
+        return completeGoogleLogin(req, reply, newUser)
       } 
     } catch (dbError) {
       console.error('Error with database', dbError)
       return reply.code(500).send({ error: dbError.message })
     }
 
-    return completeLogin(req, reply, user)
+    return completeGoogleLogin(req, reply, user)
   } catch (error) {
     console.error("Google Auth Error:", error.response?.data || error.message)
     if (error.response) {

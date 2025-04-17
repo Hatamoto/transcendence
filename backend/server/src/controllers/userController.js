@@ -73,8 +73,7 @@ const getUser = async function (req, reply) {
 }
 
 const deleteUser = async function (req, reply) {
-  const {id} = req.params
-  const { token } = req.body
+  const { id, token } = req.body
 
   try {
     const userId = req.server.db.prepare('SELECT user_id FROM refresh_tokens WHERE refresh_token = ?').get(token)

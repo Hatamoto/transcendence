@@ -1,6 +1,7 @@
 import Header from "../components/headers";
 import { RegistrationRequest, registerUser } from "../services/api";
 import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 
 interface RegistrationProps {
 	username: string;
@@ -10,6 +11,8 @@ interface RegistrationProps {
 }
 
 const Registration: React.FC = () => {
+
+	const navigate = useNavigate();
 
 	const [formState, setFormState] = useState<RegistrationProps>({
 		username: '',
@@ -45,12 +48,20 @@ const Registration: React.FC = () => {
 		}
 
 		console.log("Calling registerUser API");
-		const success = await registerUser(user);
-		console.log("Returning from registerUser API call with status: ", success);
-		if (success) {
-			alert('Registration worked');
+		const response = await registerUser(user);
+		console.log("Returning from registerUser API call with status: ", response);
+
+
+		if (response.status == 201) {
+			console.log(response.error);
+			navigate("/login");
 		} else {
-			alert('Registration failed. Please check your credentials.');
+			console.log(response.error);
+			setFormState(prev => ({
+				...prev,
+				username: '',
+				email: ''
+			}));
 		}
 	};
 

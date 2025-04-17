@@ -63,13 +63,15 @@ fastify.setNotFoundHandler((req, reply) => {
     reply.sendFile('index.html', { root: FRONTEND_DIST });
 });
 
-await fastify.register(dbInit)
-await fastify.register(formbody)
-await fastify.register(cookie)
-await fastify.register(multipart)
-await fastify.register(root)
-await fastify.register(userRoutes)
-await fastify.register(friendRoutes)
+await Promise.all([
+  fastify.register(dbInit),
+  fastify.register(formbody),
+  fastify.register(cookie),
+  fastify.register(multipart),
+  fastify.register(root),
+  fastify.register(userRoutes),
+  fastify.register(friendRoutes),
+])
 
 fastify.listen({ port: process.env.PORT || 5001, host: process.env.HOST }, function (err, address) {
 	log.info('Listening on port', process.env.PORT);

@@ -1,8 +1,7 @@
 import Header from "../components/headers";
-import { LoginRequest, loginUser, LoginResponse } from "../services/api";
+import { LoginRequest, loginUser } from "../services/api";
 import React, { useState } from 'react';
-
-import { useNavigate } from "react-router-dom";//for dev
+import { useNavigate } from "react-router-dom";
 
 interface LoginProps {
 	username: string;
@@ -37,15 +36,15 @@ const Login: React.FC = () => {
 		const response = await loginUser(user);
 		console.log("Returning from loginUser API with status:", response);
 
+		const { userId, accessToken, refreshToken, error} = response;
+		sessionStorage.setItem('activeUserId', userId.toString());
 
 		if (response.status == 200) {
-			const { userId, accessToken, refreshToken } = response;
-			sessionStorage.setItem('activeUserId', userId.toString());
-			sessionStorage.setItem(userId.toString(), JSON.stringify({accessToken, refreshToken}));
-			navigate("/user");
+			sessionStorage.setItem(userId.toString(), JSON.stringify({accessToken, refreshToken, error}));
 		} else {
-			alert('Login failed. Please check your credentials.');
+			sessionStorage.setItem(userId.toString(), JSON.stringify({accessToken, refreshToken, error}));
 		}
+		navigate("/user");
 
 	};
 	return (

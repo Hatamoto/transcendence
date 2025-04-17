@@ -13,7 +13,7 @@ async function loginRoutes (fastify, options) {
   fastify.get('/api/googleauth', async (req, reply) => {
     const CLIENT_ID = process.env.CLIENT_ID
     const REDIRECT_URI = process.env.REDIRECT_URI
-    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=profile%20email`
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=profile%20email&prompt=select_account`
 
     return reply.redirect(url)
   })
