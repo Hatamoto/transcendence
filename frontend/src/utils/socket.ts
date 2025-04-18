@@ -1,4 +1,4 @@
-import { EXT_IP } from "../config/env-config";
+import { io } from 'socket.io-client';
 
 // @ts-ignore
 const socket = io();

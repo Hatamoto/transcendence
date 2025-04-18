@@ -101,10 +101,10 @@ export function setupNetworking(server){
 						log.info(`Room ${playerRoom} deleted`);
 					} else if (rooms[playerRoom].type == "normal") {
 						roomIds.openRoomDoors(playerRoom);
+						// Notify remaining players
+						io.to(playerRoom).emit("playerDisconnected", Object.keys(rooms[playerRoom].players).length);
 					}
 					
-					// Notify remaining players
-					io.to(playerRoom).emit("playerDisconnected", Object.keys(rooms[playerRoom].players).length);
 			}
 		});
 

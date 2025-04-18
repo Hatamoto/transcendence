@@ -1,7 +1,8 @@
-import Header from "../components/headers";
+import Header, { siteKey } from "../components/headers";
 import { LoginRequest, loginUser } from "../services/api";
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import ReCAPTCHA from "react-google-recaptcha";
 
 interface LoginProps {
 	username: string;
@@ -12,6 +13,7 @@ interface LoginProps {
 const Login: React.FC = () => {
 	const navigate = useNavigate();
 	const [captchaError, setcaptchaError] = useState<string | null>(null);
+	const [captchaToken, setCaptchaToken] = useState("");
 
 	const [formState, setFormState] = useState<LoginProps>({
 		username: '',
@@ -27,27 +29,21 @@ const Login: React.FC = () => {
 	};
 
 	const handleSubmit = async (event: React.FormEvent) => {
-		const token = grecaptcha.getResponse();
+		event.preventDefault();
 
-		console.log("Token from grecaptcha:", token);
-
-		if (!token) {
+		if (!captchaToken) {
 		  setcaptchaError("Please complete the CAPTCHA");
 		  return ;
 		}
 		setcaptchaError(null);
-
-		event.preventDefault();
 	
 		const user: LoginRequest = {
 		  username: formState.username,
 		  password: formState.password,
-		  captchaToken: token
+		  captchaToken: captchaToken
 		};
 
-		console.log("Calling loginUser API");
-		const response = await loginUser(user, token);
-		console.log("Returning from loginUser API with status:", response);
+		const response = await loginUser(user, captchaToken);
 
 		const { userId, accessToken, refreshToken, error} = response;
 		sessionStorage.setItem('activeUserId', userId.toString());
@@ -61,7 +57,6 @@ const Login: React.FC = () => {
 	};
 	return (
 		<>
-		<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 		  	<Header />
 		 	 <div className="flex flex-col items-center justify-center min-h-screen">
 				<div className="bg-white p-6 rounded-lg w-96 flex flex-col gap-4 items-center shadow-md">
@@ -95,8 +90,13 @@ const Login: React.FC = () => {
 							required
 						/>
 					</div>
-		
-					<div className="g-recaptcha" data-sitekey="6LfN3xsrAAAAAOrqWYZhK-NmkYg7HbUr5X_83b59"></div>
+					<ReCAPTCHA
+						sitekey={siteKey}
+						onChange={(token) => {
+							setcaptchaError(null);
+							setCaptchaToken(token || "");
+						}}
+					/>
 					{captchaError && <p style={{ color: 'red' }}>{captchaError}</p>}
 					<button
 					type="submit"

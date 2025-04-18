@@ -22,8 +22,6 @@ const logoutUser = async function(req, reply) {
   }
 }
 
-const secretKey = '6LfN3xsrAAAAAH7jw7TW7o3wclCQPw0HMoz1PrEB';
-
 const loginUser = async function (req, reply) {
   const { username, password, captchaToken } = req.body
 
@@ -40,7 +38,7 @@ const loginUser = async function (req, reply) {
 	method: 'POST',
 	headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 	body: new URLSearchParams({
-		secret: secretKey,
+		secret: process.env.CAPTCHA_SECRET,
 		response: captchaToken,
 	}),
 	});

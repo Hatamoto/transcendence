@@ -19,7 +19,7 @@ const getUsers = async function (req, reply) {
 }
 
 const addUser = async function (req, reply) {
-  const { name, email, password } = req.body
+  const { name, email, password, captchaToken } = req.body
   const avatar = process.env.DEFAULT_AVATAR
   let hashedPassword = password
   const passwordPattern = /^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:'",.<>?])/
@@ -32,6 +32,23 @@ const addUser = async function (req, reply) {
     const salt = await bcrypt.genSalt(10)
     hashedPassword = await bcrypt.hash(password, salt)
   }
+
+	if (!captchaToken) return reply.code(400).send({ error: 'Token is required' })
+
+	const res = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+	method: 'POST',
+	headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+	body: new URLSearchParams({
+		secret: process.env.CAPTCHA_SECRET,
+		response: captchaToken,
+	}),
+	});
+
+	const data = await res.json();
+
+	if (!data.success) {
+	return reply.code(400).send({ error: 'Invalid CAPTCHA' });
+	}
 
   const user = {
    id: uuidv4(),
