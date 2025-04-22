@@ -9,8 +9,8 @@ async function dbInit(fastify, options) {
   const dbFile = process.env.DB_FILE || "../../database/database.db"
   const db = new Database(dbFile); //, { verbose: console.log })
 
-//   db.exec(`
-//     DROP TABLE IF EXISTS otp_codes;
+//  db.exec(`
+//    DROP TABLE IF EXISTS otp_codes;
 //  `)
 
 //  db.exec(`
@@ -62,49 +62,47 @@ async function dbInit(fastify, options) {
     );
   `)
 
-  // db.exec(`
-  //   CREATE TABLE IF NOT EXISTS tournaments (
-  //     id INTEGER PRIMARY KEY AUTOINCREMENT,
-  //     name TEXT NOT NULL,
-  //     winner_id INTEGER,
-  //     created_by INTEGER,
-  //     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  //     is_active INTEGER NOT NULL DEFAULT 1 CHECK(is_active IN (0 ,1)),
-  //     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
-  //     FOREIGN KEY (winner_id) REFERENCES users(id) ON DELETE SET NULL
-  //   );
-  // `)
+  //db.exec(`
+  //  CREATE TABLE IF NOT EXISTS tournaments (
+  //    id INTEGER PRIMARY KEY,
+  //    name TEXT NOT NULL,
+  //    size INTEGER,
+  //    created_by INTEGER,
+  //    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  //    status TEXT NOT NULL CHECK(status IN ('created', 'in_progress', 'completed')),
+  //    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+  //  );
+  //`)
 
-  // db.exec(`
-  //   CREATE TABLE IF NOT EXISTS match_history (
-      // id INTEGER PRIMARY KEY,
-      // player_one_id INTEGER,
-    //   player_two_id INTEGER,
-    //   score_player_one INTEGER,
-     //  score_player_two INTEGER,
-      // winner_id INTEGER,
-      // round INTEGER,
-       //tournament_id INTEGER,
-     //  match_type TEXT CHECK(match_type IN ('single', 'tournament')),
-  //     date DATETIME DEFAULT CURRENT_TIMESTAMP,
-      // FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE SET NULL,
-      // FOREIGN KEY (winner_id) REFERENCES users(id) ON DELETE SET NULL,
-      // FOREIGN KEY (player_one_id) REFERENCES users(id) ON DELETE SET NULL,
-      // FOREIGN KEY (player_two_id) REFERENCES users(id) ON DELETE SET NULL
-  //   );
-  // `)
+  //db.exec(`
+  //  CREATE TABLE IF NOT EXISTS match_history (
+     // id INTEGER PRIMARY KEY,
+    //  player_one_id INTEGER,
+    //  player_two_id INTEGER,
+    //  score_player_one INTEGER,
+     // score_player_two INTEGER,
+      //winner_id INTEGER,
+      //round INTEGER,
+      //tournament_id INTEGER,
+     // match_type TEXT CHECK(match_type IN ('single', 'tournament')),
+  //    date DATETIME DEFAULT CURRENT_TIMESTAMP,
+      //FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE SET NULL,
+      //FOREIGN KEY (winner_id) REFERENCES users(id) ON DELETE SET NULL,
+      //FOREIGN KEY (player_one_id) REFERENCES users(id) ON DELETE SET NULL,
+      //FOREIGN KEY (player_two_id) REFERENCES users(id) ON DELETE SET NULL
+  //  );
+  //`)
 
-  // db.exec(`
-  // CREATE TABLE IF NOT EXISTS tournament_players (
-  //   id INTEGER PRIMARY KEY,
-  //   tournament_id INTEGER NOT NULL,
-  //   user_id INTEGER,
-  //   seed INTEGER,
-  //   is_ready INTEGER NOT NULL DEFAULT 0 CHECK(is_ready IN (0 ,1)),
-  //   FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
-  //   FOREIGN KEY (player_id) REFERENCES users(id) ON DELETE SET NULL
-  // );
-  // `)
+  //db.exec(`
+    //CREATE TABLE IF NOT EXISTS tournament_players (
+    //  id INTEGER PRIMARY KEY,
+    //  tournament_id INTEGER NOT NULL,
+    //  user_id INTEGER UNIQUE,
+    //  is_ready INTEGER NOT NULL DEFAULT 0 CHECK(is_ready IN (0 ,1)),
+    //  FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
+    //  FOREIGN KEY (player_id) REFERENCES users(id) ON DELETE SET NULL
+    //);
+  //`)
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS friends (

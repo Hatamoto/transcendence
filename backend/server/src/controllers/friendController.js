@@ -54,6 +54,7 @@ const acceptRequest = async function(req, reply) {
     const request = req.server.db
       .prepare('SELECT * FROM friends WHERE user_id = ? AND friend_id = ?')
       .get(friendId, userId)
+
     if (!request) return reply.code(404).send({ error: `No friend requests found from user: ${friendId}` })
 
     const putStatement = req.server.db.prepare('UPDATE friends SET status = ? WHERE user_id = ? AND friend_id = ?')
@@ -76,6 +77,7 @@ const blockRequest = async function(req, reply) {
     const request = req.server.db
       .prepare('SELECT * FROM friends WHERE user_id = ? AND friend_id = ?')
       .get(friendId, userId)
+  
     if (!request) return reply.code(404).send({ error: `No friend requests found from user: ${friendId}` })
 
     const putStatement = req.server.db.prepare('UPDATE friends SET status = ? WHERE user_id = ? AND friend_id = ?')

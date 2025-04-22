@@ -1,12 +1,15 @@
 import bcrypt from 'bcrypt'
 import axios from 'axios'
-import { verifyIdToken, completeLogin } from '../services/authenticationServices.js'
+import { verifyIdToken, completeLogin, generateAccessToken } from '../services/authenticationServices.js'
+import { nameGenerator, isNameTaken } from '../services/nameGenerator.js'
 
 const logoutUser = async function(req, reply) {
   const { token } = req.body
 
   try{
-    const userId = req.server.db.prepare('SELECT user_id FROM refresh_tokens WHERE refresh_token = ?').get(token)
+    const userId = req.server.db
+      .prepare('SELECT user_id FROM refresh_tokens WHERE refresh_token = ?')
+      .get(token)
 
     if (!userId) return reply.code(404).send({ error: "Refresh token not found"})
     const deleteStatement = req.server.db.prepare('DELETE FROM refresh_tokens WHERE refresh_token = ?')
@@ -23,14 +26,17 @@ const logoutUser = async function(req, reply) {
 }
 
 const loginUser = async function (req, reply) {
-  const { username, password } = req.body
+  const { email, password } = req.body
 
   try {
-    const user = req.server.db.prepare('SELECT * FROM users WHERE name = ?').get(username)
-    if (!user) return reply.code(401).send({ error: 'Incorrect username or password' })
+    const user = req.server.db
+      .prepare('SELECT * FROM users WHERE email = ?')
+      .get(email)
+
+    if (!user) return reply.code(401).send({ error: 'Incorrect email or password' })
 
     const isMatch = await bcrypt.compare(password, user.password)
-    if (!isMatch) return reply.code(401).send({ error: 'Incorrect username or password' })
+    if (!isMatch) return reply.code(401).send({ error: 'Incorrect email or password' })
     
     return completeLogin(req, reply, user)
   } catch (error) {
@@ -44,8 +50,9 @@ const getToken = async function(req, reply) {
 
   if (!refreshToken) return reply.code(401).send({ error: "No refresh token provided "})
   
-  const getStatement = req.server.db.prepare('SELECT * FROM refresh_tokens WHERE refresh_token = ? AND user_id = ?')
-  const token = getStatement.get(refreshToken, req.user.id)
+  const token = req.server.db
+    .prepare('SELECT * FROM refresh_tokens WHERE refresh_token = ?')
+    .get(refreshToken)
 
   if (!token) return reply.code(403).send({ error: "Invalid refresh token" })
 
@@ -79,15 +86,24 @@ const googleAuthHandler = async function(req, reply) {
     let user
 
     try {
-      user = await req.server.db.prepare('SELECT id, name FROM users WHERE google_id = ?').get(profile.sub)
+      user = await req.server.db
+        .prepare('SELECT id, name FROM users WHERE google_id = ?')
+        .get(profile.sub)
 
       if(!user) {
         const avatar = process.env.DEFAULT_AVATAR
-        
+        let name = nameGenerator()
+
+        while (await isNameTaken(req, name)) {
+          name = nameGenerator()
+        }
+
         const insertStatement = req.server.db.prepare('INSERT INTO users (email, name, google_id, avatar) VALUES (?, ?, ?, ?)')
-        insertStatement.run(profile.email, profile.name, profile.sub, avatar)
+        insertStatement.run(profile.email, name, profile.sub, avatar)
     
-        const newUser = await req.server.db.prepare('SELECT id, name FROM users WHERE google_id = ?').get(profile.sub)
+        const newUser = await req.server.db
+          .prepare('SELECT id, name FROM users WHERE google_id = ?')
+          .get(profile.sub)
 
         return completeLogin(req, reply, newUser)
       } 

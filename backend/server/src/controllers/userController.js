@@ -72,11 +72,13 @@ const getUser = async function (req, reply) {
 }
 
 const deleteUser = async function (req, reply) {
-  const {id} = req.params
-  const { token } = req.body
+  const { id, token } = req.body
 
   try {
-    const userId = req.server.db.prepare('SELECT user_id FROM refresh_tokens WHERE refresh_token = ?').get(token)
+    const userId = req.server.db
+      .prepare('SELECT user_id FROM refresh_tokens WHERE refresh_token = ?')
+      .get(token)
+    
     if (!userId) return reply.code(404).send({ error: "Refresh token not found"})
     
     const deleteTokenStatement = req.server.db.prepare('DELETE FROM refresh_tokens WHERE refresh_token = ?')
@@ -85,7 +87,7 @@ const deleteUser = async function (req, reply) {
     const deleteUserStatement = req.server.db.prepare('DELETE FROM users WHERE id = ?')
     deleteUserStatement.run(id)
     
-    return reply.send({message: `User ${id} has been removed`})
+    return reply.send({ message: `User ${id} has been removed` })
   } catch (error) {
     return reply.code(500).send({ error: error.message })
   }
@@ -124,11 +126,11 @@ const updatePassword = async function (req, reply) {
   }
 
   try {
-    const getStatement = req.server.db.prepare('SELECT * FROM users WHERE id = ?')
-    const user = getStatement.get(id)
-    if (!user) {
-      return reply.code(404).send({ error: 'User not found' })
-    }
+    const user = req.server.db
+      .prepare('SELECT * FROM users WHERE id = ?')
+      .get(id)
+
+    if (!user) return reply.code(404).send({ error: 'User not found' })
 
     let hashedPassword = password
 

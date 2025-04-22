@@ -2,7 +2,7 @@ import { OAuth2Client } from 'google-auth-library'
 const client = new OAuth2Client(process.env.CLIENT_ID);
 
 function generateAccessToken(req, user) {
-  return req.server.jwt.sign(user, { expiresIn: '1h' })
+  return req.server.jwt.sign(user, { expiresIn: '15m' })
 }
 
 async function verifyIdToken(idToken) {
@@ -23,8 +23,8 @@ async function verifyIdToken(idToken) {
 const completeLogin = async function(req, reply, user) {
   try {
     const accessToken = generateAccessToken(req, { id: user.id, name: user.name })
-    const refreshToken = req.server.jwt.sign({ id: user.id, name: user.name }, process.env.REFRESH_TOKEN_SECRET)
-  
+    const refreshToken = req.server.jwt.sign({ id: user.id, name: user.name }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' })
+    console.log("refresh token ", refreshToken)
     const updateStatement = req.server.db.prepare('UPDATE users SET status = 1 WHERE name = ?')
     updateStatement.run(user.name)
   
@@ -38,4 +38,4 @@ const completeLogin = async function(req, reply, user) {
   }
 }
 
-export { completeLogin, verifyIdToken }
+export { completeLogin, verifyIdToken, generateAccessToken }

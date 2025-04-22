@@ -1,18 +1,25 @@
-import { startTournament, getTournaments, joinTournament } from '../controllers/tournamentController.js'
+import { 
+  createTournament,
+  getTournaments,
+  joinTournament,
+  setReady
+} from '../controllers/tournamentController.js'
 import Tournament from '../models/tournamentModel.js'
+import authenticateToken from '../middleware/authentication.js'
 
-const startTournamentOpts = {
+const createTournamentOpts = {
   schema: {
     body: {
       type: 'object',
       properties: {
         id: { type: 'integer' },
-        name: { type: 'string' }
+        name: { type: 'string' },
+        size: {type: 'integer' },
       },
     },
   },
   preHandler: authenticateToken,
-  handler: startTournament,
+  handler: createTournament,
 }
 
 const getTournamentsOpts = {
@@ -42,4 +49,30 @@ const joinTournamentOpts = {
   handler: joinTournament,
 }
 
-export { startTournamentOpts, getTournamentsOpts, joinTournamentOpts }
+const setReadyOpts = {
+  schema: {
+    params: {
+      type: 'object',
+      properties: {
+        tournamentId: { type: 'integer', minimum: 1 },
+      },
+    },
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          message: { type: 'string' },
+        },
+      },
+    },
+  },
+  preHandler: authenticateToken,
+  handler: setReady,
+}
+
+export { 
+  createTournamentOpts,
+  getTournamentsOpts,
+  joinTournamentOpts,
+  setReadyOpts
+}
