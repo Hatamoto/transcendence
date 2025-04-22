@@ -93,6 +93,28 @@ async function dbInit(fastify, options) {
   //  );
   //`)
 
+    //db.exec(`
+  //  CREATE TABLE IF NOT EXISTS matches (
+     // id INTEGER PRIMARY KEY,
+     // tournament_id INTEGER NOT NULL,
+     // round INTEGER NOT NULL
+     // match_number INTEGER NOT NULL,
+    //  player_one_id INTEGER,
+    //  player_two_id INTEGER,
+    //  player_one_prev_match INTEGER,
+     // player_two_prev_match INTEGER,
+      //winner_id INTEGER,
+      //round INTEGER,
+      //status TEXT NOT NULL DEFAULT 'waiting' CHECK(status IN ('waiting', 'pending', 'in_progress', 'completed', 'bye'))
+    //  FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
+    //  FOREIGN KEY (player_one_id) REFERENCES users(id),
+      //FOREIGN KEY (player_two_id) REFERENCES users(id),
+      //FOREIGN KEY (winner_id) REFERENCES users(id),
+      //FOREIGN KEY (player_one_prev_match) REFERENCES matches(id),
+      //FOREIGN KEY (player_two_prev_match) REFERENCES matches(id)
+  //  );
+  //`)
+
   //db.exec(`
     //CREATE TABLE IF NOT EXISTS tournament_players (
     //  id INTEGER PRIMARY KEY,

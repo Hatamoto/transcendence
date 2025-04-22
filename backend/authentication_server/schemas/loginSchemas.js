@@ -20,7 +20,7 @@ const loginOpts = {
       type: 'object',
       required: ['email', 'password'],
       properties: {
-        email: { type: 'string' },
+        email: { type: 'string', format: 'email' },
         password: { type: 'string' },
       },
     },

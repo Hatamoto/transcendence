@@ -69,8 +69,6 @@ const joinTournament = async function(req, reply) {
     if (players.length == tournament.size) {
       const updateStatement = req.server.db.prepare('UPDATE tournaments SET status = ? WHERE id = ?')
       updateStatement.run('in_progress', tournament.id)
-      
-      
     }
     return reply.send({ message: `User ${user.name} successfully joined tournament ${tournament.name}` })
   } catch (error) {
@@ -95,7 +93,74 @@ const setReady = async function(req, reply) {
     const updateStatement = req.server.db.prepare('UPDATE tournament_players SET is_ready = 1 WHERE tournament_id = ? AND user_id = ?')
     updateStatement.run(tournamentId, player.id)
 
+    const readyPlayers = req.server.db
+      .prepare('SELECT user_id FROM tournament_players WHERE tournament_id = ? AND is_ready = 1')
+      .get(tournamentId)
+    
+    if (readyPlayers.length == tournament.size) {
+      return createTournamentBrackets(req, reply, tournament, readyPlayers)
+    }
     return reply.send({ message: `User ${player.id} is now ready` })
+  } catch (error) {
+    return reply.code(500).send({ error: error.message })
+  }
+}
+
+function shuffle(players) {
+  for (let i = players.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [players[i], players[j]] = [players[j], players[i]];
+  }
+}
+
+const createTournamentBrackets = async function(req, reply, tournament, players) {
+  try {
+    const bracketTransaction = req.server.db.transaction(() => {
+      const numberOfRounds = Math.log2(tournament.size)
+      const allMatchIds = new Map()
+      let matchesInRound = Math.floor(tournament.size / 2)
+      let playerOne
+      let playerTwo
+  
+      shuffle(players)
+  
+      for (let round = 1; round <= numberOfRounds; round++) {
+        let playerOnePrevMatch = null
+        let playerTwoPrevMatch = null
+        const roundMatchIds = []
+  
+        for (let match = 0; match < matchesInRound; match++) {
+          if (round > 1) {
+            playerOne = null
+            playerTwo = null
+            
+            const prevRound = allMatchIds.get(round - 1)
+            playerOnePrevMatch = prevRound[match * 2] || null
+            playerTwoPrevMatch = prevRound[match * 2 + 1] || null
+          } else {
+              playerOne = players[match * 2] || null
+              playerTwo = players[match * 2 + 1] || null
+          }
+          const insertStatement = req.server.db
+            .prepare('INSERT INTO matches (tournament_id, round, match_number, player_one_id, player_two_id, player_one_prev_match, player_two_prev_match) VALUES (?, ?, ?, ?, ?, ?, ?)')
+          const result = insertStatement.run(
+            tournament.id, 
+            round, 
+            match + 1, 
+            playerOne, 
+            playerTwo, 
+            playerOnePrevMatch, 
+            playerTwoPrevMatch
+          )
+          roundMatchIds.push(result.lastInsertRowid)
+        }
+        allMatchIds.set(round, roundMatchIds)
+        matchesInRound = Math.floor(matchesInRound / 2)
+      }
+    })
+    bracketTransaction()
+
+    return reply.send(players)
   } catch (error) {
     return reply.code(500).send({ error: error.message })
   }
