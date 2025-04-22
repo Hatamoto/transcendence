@@ -1,7 +1,7 @@
 import UserHeader from "../components/userHeader";
 import React, { useEffect, useState } from 'react'; // useState, add the check
 import FriendsList from "../components/friendsList";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { LogoutRequest, logoutUser } from "../services/api";
 import { deleteUser, DeleteUserRequest } from "../services/api";
 import { useToast } from "../components/toastBar/toastContext";
@@ -30,7 +30,7 @@ const UserPage: React.FC = () => {
 			}
 			// console.log(sessionData.accessToken);
 			// console.log(sessionData.refreshToken);// information print
-			toast.open(sessionData.error, "success");
+			// toast.open(sessionData.error, "success");
 		}
 		checkAccess();
 	}, [navigate]);
@@ -113,6 +113,16 @@ const UserPage: React.FC = () => {
 				Delete User
 			</button>
 			</div>
+
+			<div className="bg-black p-6 rounded-lg w-96 flex flex-col gap-4 items-center shadow-md">
+				<Link
+					to="/user/profile"
+					className="w-64 bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center"
+				>
+					Profile page
+				</Link>
+			</div>
+
 		</div>
 		</>
 	);

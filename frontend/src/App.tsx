@@ -1,11 +1,12 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
-import Home from './pages/homePage.js'
+import Home from './pages/homePage'
 import Login from './pages/loginPage'
 import Registration from './pages/registrationPage'
 import GameRoom from './pages/gameRoomPage'
 import UserPage from './pages/userPage'
 import NoPage from './pages/noPage'
+import ProfilePage from './pages/profilePage'
 
 // //import "./index.css";
 
@@ -16,8 +17,8 @@ const router = createBrowserRouter([
   {path: "/register", element: <Registration />},
   {path: "/game", element: <GameRoom />},
   {path: "/user", element: <UserPage />},
-  {path: "*", element: <NoPage />}
-  // {path: "/user:username", element:}
+  {path: "*", element: <NoPage />},
+  {path: "/user/profile", element: <ProfilePage />}
 ]);
 
 const App: React.FC = () => {
