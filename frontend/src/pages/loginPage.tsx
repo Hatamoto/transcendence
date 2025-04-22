@@ -2,33 +2,32 @@ import Header from "../components/headers";
 import { LoginRequest, loginUser } from "../services/api";
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../components/toastBar/toastContext";
 
 interface LoginProps {
-	username: string;
+	email: string;
 	password: string;
 }
 
 const Login: React.FC = () => {
 	const navigate = useNavigate();
+	const toast = useToast();
 
 	const [formState, setFormState] = useState<LoginProps>({
-		username: '',
+		email: '',
 		password: ''
 	});
 
 	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = event.target;
-		setFormState(prevState => ({
-		  ...prevState,
-		  [name]: value
-		}));
+		setFormState(prevState => ({...prevState, [name]: value}));
 	};
 
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
 	
 		const user: LoginRequest = {
-		  username: formState.username,
+		  email: formState.email,
 		  password: formState.password
 		};
 
@@ -41,10 +40,17 @@ const Login: React.FC = () => {
 
 		if (response.status == 200) {
 			sessionStorage.setItem(userId.toString(), JSON.stringify({accessToken, refreshToken, error}));
+			navigate("/user");
 		} else {
-			sessionStorage.setItem(userId.toString(), JSON.stringify({accessToken, refreshToken, error}));
+			toast.open(response.error, "error");
+			// console.log(response.error);
+			// sessionStorage.setItem(userId.toString(), JSON.stringify({accessToken, refreshToken, error}));
+			setFormState(prevState => ({
+				...prevState,
+				email: '',
+				password: ''
+			}));
 		}
-		navigate("/user");
 
 	};
 	return (
@@ -56,13 +62,13 @@ const Login: React.FC = () => {
 			 	<form onSubmit={handleSubmit} className="w-full flex flex-col gap-4 items-center">
 
 					<div className="w-64">
-						<label htmlFor="username" className="block text-sm font-medium text-gray-700">
-							Username
+						<label htmlFor="email" className="block text-sm font-medium text-gray-700">
+							Email
 						</label>
 						<input
-							type="text"
-							name="username"
-							value={formState.username}
+							type="email"
+							name="email"
+							value={formState.email}
 							onChange={handleInputChange}
 							className="w-full border border-black rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
 							required

@@ -53,7 +53,7 @@ export async function registerUser(userData: RegistrationRequest): Promise<Regis
 }
 
 export interface LoginRequest {
-	username: string;
+	email: string;
 	password: string;
 }
 
@@ -149,7 +149,7 @@ export async function logoutUser(userData: LogoutRequest): Promise<LogoutRespons
 export interface DeleteUserRequest {
 	id: number;
 	accToken: string;
-	token: string;
+	token: string; // refreshtoken, name: token to match backend
 }
 
 interface DeleteUserResponse {

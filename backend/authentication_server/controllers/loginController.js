@@ -23,14 +23,14 @@ const logoutUser = async function(req, reply) {
 }
 
 const loginUser = async function (req, reply) {
-  const { username, password } = req.body
+  const { email, password } = req.body
 
   try {
-    const user = req.server.db.prepare('SELECT * FROM users WHERE name = ?').get(username)
-    if (!user) return reply.code(401).send({ error: 'Incorrect username or password' })
+    const user = req.server.db.prepare('SELECT * FROM users WHERE email = ?').get(email)
+    if (!user) return reply.code(401).send({ error: 'Incorrect email or password' })
 
     const isMatch = await bcrypt.compare(password, user.password)
-    if (!isMatch) return reply.code(401).send({ error: 'Incorrect username or password' })
+    if (!isMatch) return reply.code(401).send({ error: 'Incorrect email or password' })
     
     return completeLogin(req, reply, user)
   } catch (error) {

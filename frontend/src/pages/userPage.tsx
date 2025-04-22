@@ -4,15 +4,18 @@ import FriendsList from "../components/friendsList";
 import { useNavigate } from "react-router-dom";
 import { LogoutRequest, logoutUser } from "../services/api";
 import { deleteUser, DeleteUserRequest } from "../services/api";
+import { useToast } from "../components/toastBar/toastContext";
 
 const UserPage: React.FC = () => {
 
-	console.log("arriving at user Page");
 	const navigate = useNavigate();
+	const toast = useToast();
+
 	useEffect(() => {
 		const checkAccess = async () => {
 			const userId = sessionStorage.getItem('activeUserId');
 			if (!userId) {
+				toast.open("Unauthorized", "error");
 				navigate('/login'); //if we try to go to /user page without trying to log in.
 				return ;
 			}
@@ -20,12 +23,14 @@ const UserPage: React.FC = () => {
 			const token = sessionData.accessToken;
 			
 			if (!token) {
+				toast.open(sessionData.error, "error");
 				navigate('/login');
-				console.log(sessionData.error); // is the dev environment the cause of dubble logs? // change this to popup bar (component)
+				// console.log(sessionData.error); // is the dev environment the cause of dubble logs? // change this to popup bar (component)
 				// sessionStorage.clear(); // check after you have logged in if this is effing things up
 			}
-			console.log(sessionData.accessToken);
-			console.log(sessionData.refreshToken);
+			// console.log(sessionData.accessToken);
+			// console.log(sessionData.refreshToken);// information print
+			toast.open(sessionData.error, "success");
 		}
 		checkAccess();
 	}, [navigate]);
@@ -48,10 +53,12 @@ const UserPage: React.FC = () => {
 	
 			if (response.status == 204) {
 				sessionStorage.clear();
-				console.log(response.error)
+				toast.open(response.error, "success");
+				// console.log(response.error)
 				navigate("/home");
 			} else {
-				console.log(response.error)
+				toast.open(response.error, "error");
+				// console.log(response.error)
 			}
 			
 	};
@@ -76,10 +83,12 @@ const UserPage: React.FC = () => {
 	
 		if (response.status == 200) {
 			sessionStorage.clear();
-			console.log(response.error)
+			toast.open(response.error, "success");
+			// console.log(response.error)
 			navigate("/home");
 		} else {
-			console.log(response.error)
+			toast.open(response.error, "error");
+			// console.log(response.error)
 		}			
 	};
 	

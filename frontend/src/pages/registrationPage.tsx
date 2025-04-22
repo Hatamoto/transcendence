@@ -1,4 +1,5 @@
 import Header from "../components/headers";
+import { useToast } from "../components/toastBar/toastContext";
 import { RegistrationRequest, registerUser } from "../services/api";
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
@@ -13,6 +14,7 @@ interface RegistrationProps {
 const Registration: React.FC = () => {
 
 	const navigate = useNavigate();
+	const toast = useToast();
 
 	const [formState, setFormState] = useState<RegistrationProps>({
 		username: '',
@@ -51,12 +53,15 @@ const Registration: React.FC = () => {
 		const response = await registerUser(user);
 		console.log("Returning from registerUser API call with status: ", response);
 
+		console.log("Toast Context: ", toast);
 
 		if (response.status == 201) {
-			console.log(response.error);
+			toast.open(response.error, "success");
+			// console.log(response.error);
 			navigate("/login");
 		} else {
-			console.log(response.error);
+			toast.open(response.error, "error");
+			// console.log(response.error);
 			setFormState(prev => ({
 				...prev,
 				username: '',
@@ -105,7 +110,7 @@ const Registration: React.FC = () => {
 
 				<div className="w-64">
 					<label htmlFor="password" className="block text-sm font-medium text-gray-700">
-						Password
+						Password <span className="text-xs text-gray-500">(minimum 8 characters)</span>
 					</label>
 					<input
 						type="password"
