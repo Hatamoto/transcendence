@@ -73,28 +73,22 @@ const completeGoogleLogin = async function(req, reply, user) {
     // );
   } catch (error) {
     console.log(error)
-    return reply.code(500).send({ error: error.message})
+
+    const html = `
+    <html>
+      <body>
+        <script>
+          window.opener.postMessage({
+            error: "Google login failed. Please try again."
+          }, 'http://localhost:5173');
+          window.close();
+        </script>
+      </body>
+    </html>
+    `;
+    return reply.header('Content-Type', 'text/html').send(html);
+    // return reply.code(500).send({ error: error.message})
   }
 }
 
 export { completeLogin, completeGoogleLogin, verifyIdToken }
-
-
-// const html = 
-//     <html>
-//       <body>
-//         <script>
-//           window.opener.postMessage({
-//             accessToken: ${JSON.stringify(accessToken)},
-//             refreshToken: ${JSON.stringify(refreshToken)}
-//           }, 'https://your-frontend.com');
-//           window.close();
-//         </script>
-//       </body>
-//     </html>
-//   ;
-
-//   reply
-//     .header('Content-Type', 'text/html')
-//     .send(html);
-// })
