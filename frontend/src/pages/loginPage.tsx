@@ -1,6 +1,6 @@
 import Header, { siteKey } from "../components/headers";
 import { LoginRequest, loginUser } from "../services/api";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 
@@ -9,12 +9,16 @@ interface LoginProps {
 	password: string;
 }
 
-
 const Login: React.FC = () => {
 	const navigate = useNavigate();
 	const [captchaError, setcaptchaError] = useState<string | null>(null);
 	const [captchaToken, setCaptchaToken] = useState("");
+	const [showCaptcha, setCaptcha] = useState(false);
 
+	useEffect(() => {
+		setCaptcha(false);
+	}, []);
+	
 	const [formState, setFormState] = useState<LoginProps>({
 		username: '',
 		password: ''
@@ -30,6 +34,12 @@ const Login: React.FC = () => {
 
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
+
+		if (!captchaToken && !showCaptcha)
+		{
+			setCaptcha(true);
+			return;
+		}
 
 		if (!captchaToken) {
 		  setcaptchaError("Please complete the CAPTCHA");
@@ -90,13 +100,14 @@ const Login: React.FC = () => {
 							required
 						/>
 					</div>
+					{showCaptcha && 
 					<ReCAPTCHA
 						sitekey={siteKey}
 						onChange={(token) => {
 							setcaptchaError(null);
 							setCaptchaToken(token || "");
 						}}
-					/>
+					/> }
 					{captchaError && <p style={{ color: 'red' }}>{captchaError}</p>}
 					<button
 					type="submit"

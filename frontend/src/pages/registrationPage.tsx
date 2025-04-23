@@ -1,6 +1,6 @@
 import Header, { siteKey } from "../components/headers";
 import { RegistrationRequest, registerUser } from "../services/api";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 
@@ -15,7 +15,11 @@ const Registration: React.FC = () => {
 	const navigate = useNavigate();
 	const [captchaError, setcaptchaError] = useState<string | null>(null);
 	const [captchaToken, setCaptchaToken] = useState("");
+	const [showCaptcha, setCaptcha] = useState(false);
 	
+	useEffect(() => {
+		setCaptcha(false);
+	}, []);
 
 	const [formState, setFormState] = useState<RegistrationProps>({
 		username: '',
@@ -36,6 +40,12 @@ const Registration: React.FC = () => {
 
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
+
+		if (!captchaToken && !showCaptcha)
+		{
+			setCaptcha(true);
+			return;
+		}
 
 		if (!captchaToken) {
 		  setcaptchaError("Please complete the CAPTCHA");
@@ -60,7 +70,6 @@ const Registration: React.FC = () => {
 		console.log("Calling registerUser API");
 		const response = await registerUser(user);
 		console.log("Returning from registerUser API call with status: ", response);
-
 
 		if (response.status == 201) {
 			console.log(response.error);
@@ -143,14 +152,14 @@ const Registration: React.FC = () => {
 					/>
 				</div>
 				{passwordError && <p style={{ color: 'red' }}>{passwordError}</p>}
-
+				{showCaptcha && 
 				<ReCAPTCHA
 					sitekey={siteKey}
 					onChange={(token) => {
 						setcaptchaError(null);
 						setCaptchaToken(token || "");
 					}}
-				/>
+				/> }
 				{captchaError && <p style={{ color: 'red' }}>{captchaError}</p>}
 				<button
 					type="submit"
