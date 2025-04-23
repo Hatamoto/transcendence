@@ -10,11 +10,13 @@ log.info("UI ready")
 
 enum KeyBindings{
 	UP = 'KeyW',
-    DOWN = 'KeyS'
+    DOWN = 'KeyS',
+	SUP = 'ArrowUp',
+	SDOWN = 'ArrowDown'
 }
 
 export class frontEndGame {
-	private static keysPressed: { [key: string]: boolean } = {};
+	private keysPressed: { [key: string]: boolean } = {};
 	private gameCanvas : HTMLCanvasElement;
 	private container : HTMLElement;
 	private ctx : CanvasRenderingContext2D;
@@ -226,6 +228,27 @@ export class frontEndGame {
 		});
 	}
 
+	setupSoloKeyListeners() {
+
+		document.addEventListener('keydown', (e) => {
+			if (e.code === KeyBindings.UP)
+			{
+				this.player1PosY -= 10;
+			}
+			else if (e.code === KeyBindings.DOWN)
+			{
+				this.player1PosY += 10;
+			}
+			else if (e.code === KeyBindings.SUP)
+			{
+				this.player2PosY -= 10;
+			} else if (e.code === KeyBindings.SDOWN)
+			{
+				this.player2PosY += 10;
+			}			
+		});
+	}
+
 	updateGameState(positions, scores) {
 		this.player1Score = scores[0];
 		this.player2Score = scores[1];
@@ -271,6 +294,31 @@ export class frontEndGame {
 	}
 }
 
+
+let game : frontEndGame;
+
+export function createNewGame()
+{
+	game = new frontEndGame();
+}
+
+export function startSoloGame()
+{
+	const select = document.getElementById("colorSelect") as HTMLSelectElement;
+	const color = select.options[select.selectedIndex].value;
+
+
+	document.getElementById("gameroom-page").hidden = true;
+	game.setupSoloKeyListeners();
+	game.createCanvas();
+	//game.settings(settings, color);
+	function loopSolo() {
+		game.updateGraphics();
+		requestAnimationFrame(loopSolo);
+	}
+	loopSolo();
+}
+
 socket.on("connect", () => {
 	log.info("Connected to server");
 	const strtBtn = document.getElementById("start-btn");
@@ -281,13 +329,6 @@ socket.on("connect", () => {
 	if (gameEdit)
 		gameEdit.hidden = true;
 });
-
-let game : frontEndGame;
-
-export function createNewGame()
-{
-	game = new frontEndGame();
-}
 
 socket.on("playerJoined", (playerAmount) => {
 	const sizeTxt = document.getElementById("size-txt");

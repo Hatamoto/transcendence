@@ -1,6 +1,6 @@
 import Header, { siteKey } from "../components/headers";
 import { RegistrationRequest, registerUser } from "../services/api";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 
@@ -17,10 +17,6 @@ const Registration: React.FC = () => {
 	const [captchaToken, setCaptchaToken] = useState("");
 	const [showCaptcha, setCaptcha] = useState(false);
 	
-	useEffect(() => {
-		setCaptcha(false);
-	}, []);
-
 	const [formState, setFormState] = useState<RegistrationProps>({
 		username: '',
 		email: '',

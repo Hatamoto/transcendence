@@ -1,6 +1,6 @@
 import Header, { siteKey } from "../components/headers";
 import { LoginRequest, loginUser } from "../services/api";
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 
@@ -15,10 +15,6 @@ const Login: React.FC = () => {
 	const [captchaToken, setCaptchaToken] = useState("");
 	const [showCaptcha, setCaptcha] = useState(false);
 
-	useEffect(() => {
-		setCaptcha(false);
-	}, []);
-	
 	const [formState, setFormState] = useState<LoginProps>({
 		username: '',
 		password: ''

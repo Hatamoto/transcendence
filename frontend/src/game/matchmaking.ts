@@ -1,16 +1,27 @@
 import socket from '../utils/socket.js';
 import { Logger, LogLevel } from '../utils/logger.js';
+import { startSoloGame } from './frontEndGame.js';
 
 const log = new Logger(LogLevel.INFO);
 
 export function setupButtons()
 {
-	// Normal matchmaking
-	const testBtn = document.getElementById("test-btn");
+	// Solo game
+	const soloBtn = document.getElementById("ready-solo");
 	
-	if (testBtn)
+	if (soloBtn)
 	{
-		testBtn.addEventListener("click", () => {
+		soloBtn.addEventListener("click", () => {
+			startSoloGame();
+		});
+	}
+
+	// Normal matchmaking
+	const matchBtn = document.getElementById("ready-match");
+	
+	if (matchBtn)
+	{
+		matchBtn.addEventListener("click", () => {
 			socket.emit("joinRoomQue");
 		});
 	}

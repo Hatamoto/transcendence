@@ -16,6 +16,7 @@ const router = createBrowserRouter([
   {path: "/login", element:<Login/> },
   {path: "/register", element: <Registration />},
   {path: "/game", element: <GameRoom matchType="normal" /> },
+  {path: "/solo-game", element: <GameRoom matchType="solo" /> },
   {path: "/user", element: <UserPage />},
   {path: "/tournaments", element: <TournamentsPage />},
   {path: "*", element: <NoPage />}

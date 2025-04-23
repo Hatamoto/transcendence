@@ -16,33 +16,46 @@ export default function GameRoom({matchType}) {
 
 
 	const matchTypeButtons = () => {
-		if (matchType == "tournament")
-			return(
-				<>
-				<h1 className="text-2xl font-bold text-center mb-4">Welcome to the Tournament!</h1>
-				<button id="ready-tour" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
-					Ready up!
-				</button>
-				</>
-			);
-		else if (matchType == "normal")
-			return(
-				<>
-				<h1 className="text-2xl font-bold text-center mb-4">Welcome to the Gameroom!</h1>
-				<button id="test-btn" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
-					Start Matchmaking
-				</button>
-				</>
-			);
-		return (<p>FUCK OFF</p>);
+		switch (matchType) {
+			case "solo":
+				return(
+					<>
+					<p id="size-txt" className="text-center text-gray-600 mb-4">Lobby size: 1/1</p>
+					<h1 className="text-2xl font-bold text-center mb-4">Welcome to the Solo Game!</h1>
+					<button id="ready-solo" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
+						Start!
+					</button>
+					</>
+				);
+			case "tournament":
+				return(
+					<>
+					<p id="size-txt" className="text-center text-gray-600 mb-4">Lobby size: 0/2</p>
+					<h1 className="text-2xl font-bold text-center mb-4">Welcome to the Tournament!</h1>
+					<button id="ready-tour" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
+						Ready up!
+					</button>
+					</>
+				);
+			case "normal":
+				return(
+					<>
+					<p id="size-txt" className="text-center text-gray-600 mb-4">Lobby size: 0/2</p>
+					<h1 className="text-2xl font-bold text-center mb-4">Welcome to the Gameroom!</h1>
+					<button id="ready-match" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
+						Start Matchmaking!
+					</button>
+					</>
+				);
+			default:
+			return (<p>FUCK OFF</p>);
+		}
 	};
 
 	return (
 		<>
 			<Header />
-			<div id="gameroom-page" className="bg-green-100 p-8 rounded-lg shadow-md w-[820px]">
-				<p id="size-txt" className="text-center text-gray-600 mb-4">Lobby size: 0/2</p>
-				
+			<div id="gameroom-page" className="bg-green-100 p-8 rounded-lg shadow-md w-[820px]">				
 				{matchTypeButtons()}
 
 				<label htmlFor="colorSelect">Choose ball color:</label>
