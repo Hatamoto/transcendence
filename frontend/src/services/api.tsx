@@ -193,68 +193,59 @@ export async function deleteUser(userData: DeleteUserRequest): Promise<DeleteUse
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-interface ApiOptions {
-	method: string;
-	url: string;
-	body?: Record<string, any>;
-	headers?: Record<string, string>;
-}
-
-interface ApiReturn<T> {
-	status: number;
-	data?: T;
-}
-
-// interface ApiReturn {
-// 	status: number;
-// 	data?: string;
-// }
-
 export interface User {
 	name: string;
 	onlineStatus: boolean;
 	wins: number;
 	losses: number;
 	avatarPath: string;
+	email: string;
+	error: string;
 }
 
-async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
-	const { method, url, body, headers } = options;
+export async function getUser(id: string): Promise<User> {
 
 	try {
-		const response = await fetch(url, {
-			method,
-			headers,
-			body: body ? JSON.stringify(body) : undefined,
-			credentials: 'include',
+		const response = await fetch(`/api/user/${id}`, {
+			method: 'GET',
+			headers: {
+			'Content-Type': 'application/json',
+			}
 		});
-  
-		const responseData = await response.json();
-  
-		if (!response.ok)
-			return { status: response.status, data: undefined };
 
-		return { status: response.status, data: responseData }
-	
+		const responseData = await response.json();
+
+		if (!response.ok)
+			return { name: '',
+				onlineStatus: false,
+				wins: 0,
+				losses: 0,
+				avatarPath: '',
+				email: '',
+				error: responseData.error
+		}
+		return { name: responseData.name,
+			onlineStatus: responseData.status,
+			wins: responseData.wins,
+			losses: responseData.losses,
+			avatarPath: responseData.avatarPath,
+			email: responseData.email,
+			error: responseData.error
+		}
+		
 	} catch (error) {
-		throw error; // idk what happens here :()()() saku mita helvettia
+		error.console.log();
+		console.error("Login error:", error);
+		return { name: '',
+			onlineStatus: false,
+			wins: 0,
+			losses: 0,
+			avatarPath: '',
+			email: '',
+			error: 'Something went wrong. Please try again.'
+		};
 	}
 }
-
 
 export async function getAllUsers(): Promise<User[] | number> {
 	const options : ApiOptions = {
@@ -270,22 +261,6 @@ export async function getAllUsers(): Promise<User[] | number> {
 	return (response.data as User[]);
 }
 
-export async function getUser(id: string): Promise<User | number> {
-	const options : ApiOptions = {
-		method: 'GET',
-		url: `/api/user/${id}`, 
-		headers: {
-		'Content-Type': 'application/json',
-		},
-	};
-	const response = await apiCall<User>(options);
-	if (response.status !== 200)
-		return (response.status); //maybe we could return the whole api struct or the json message also
-	return (response.data as User);
-}
-
-// export async function getDashboard() {
-// }
 
 export async function uploadAvatar() {
 }
