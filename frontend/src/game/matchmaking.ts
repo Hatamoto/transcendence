@@ -11,6 +11,9 @@ export function setupButtons()
 	
 	if (soloBtn)
 	{
+		const gameEdit = document.getElementById("edit-game");
+
+		gameEdit.hidden = false;
 		soloBtn.addEventListener("click", () => {
 			startSoloGame();
 		});

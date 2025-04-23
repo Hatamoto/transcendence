@@ -231,21 +231,11 @@ export class frontEndGame {
 	setupSoloKeyListeners() {
 
 		document.addEventListener('keydown', (e) => {
-			if (e.code === KeyBindings.UP)
-			{
-				this.player1PosY -= 10;
-			}
-			else if (e.code === KeyBindings.DOWN)
-			{
-				this.player1PosY += 10;
-			}
-			else if (e.code === KeyBindings.SUP)
-			{
-				this.player2PosY -= 10;
-			} else if (e.code === KeyBindings.SDOWN)
-			{
-				this.player2PosY += 10;
-			}			
+			this.keysPressed[e.code] = true;
+		});
+		
+		document.addEventListener('keyup', (e) => {
+			this.keysPressed[e.code] = false;
 		});
 	}
 
@@ -271,6 +261,22 @@ export class frontEndGame {
 
 	updateGraphics() 
 	{
+		// this is for solo game it might have a better place to put but for now
+		// it should be fine as this shouldnt affect the multiplayer game
+		if (this.keysPressed[KeyBindings.UP]) {
+			this.player1PosY -= 5;
+		}
+		if (this.keysPressed[KeyBindings.DOWN]) {
+			this.player1PosY += 5;
+		}
+		if (this.keysPressed[KeyBindings.SUP]) {
+			this.player2PosY -= 5;
+		}
+		if (this.keysPressed[KeyBindings.SDOWN]) {
+			this.player2PosY += 5;
+		}
+
+
 		this.ctx.fillStyle = "#000";
 		this.ctx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
 		for (var i = 0; i <= this.gameCanvas.height; i += 30) {
@@ -306,12 +312,23 @@ export function startSoloGame()
 {
 	const select = document.getElementById("colorSelect") as HTMLSelectElement;
 	const color = select.options[select.selectedIndex].value;
-
+	const ballSize  = (document.getElementById("ball-size") as HTMLInputElement)
+	const ballSpeed = (document.getElementById("ball-speed") as HTMLInputElement)
+	const ballSizeValue = ballSize.value.trim() === "" ? ballSize.placeholder : ballSize.value;
+	const ballSpeedValue = ballSpeed.value.trim() === "" ? ballSpeed.placeholder : ballSpeed.value;
 
 	document.getElementById("gameroom-page").hidden = true;
 	game.setupSoloKeyListeners();
 	game.createCanvas();
-	//game.settings(settings, color);
+	game.settings({
+		ballSettings: {
+			ballSize: ballSizeValue,
+			ballSpeed: ballSpeedValue
+		},
+		playerSettings: {
+
+		}
+	}, color);
 	function loopSolo() {
 		game.updateGraphics();
 		requestAnimationFrame(loopSolo);
