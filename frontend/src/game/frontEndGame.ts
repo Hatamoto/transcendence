@@ -8,6 +8,113 @@ const log = new Logger(LogLevel.INFO);
 
 log.info("UI ready")
 
+class Entity {
+	protected yVel: number;
+	protected xVel: number;
+	protected height: number;
+	protected width: number;
+	protected yPos: number;
+	protected xPos: number;
+	protected speed: number;
+
+	constructor(h, w, y, x) {
+		this.yVel = 0;
+		this.xVel = 0;
+		this.height = h;
+		this.width = w;
+		this.yPos = y;
+		this.xPos = x;
+	}
+
+	draw(ctx) {
+		ctx.fillStyle = "red";
+		ctx.fillRect(this.xPos, this.yPos, this.width, this.height);
+	}
+
+	getpos() {
+		return [this.yPos, this.xPos];
+	}
+}
+
+class Ball extends Entity {
+	constructor(h, w, y, x) {
+		super(h, w, y, x);
+		this.speed = 5;
+
+		this.xVel = Math.random() < 0.5 ? 1 : -1;
+		this.yVel = Math.random() < 0.5 ? 1 : -1;
+	}
+
+	update(player, player2, deltaTime) {
+		const nextX = this.xPos + this.xVel * this.speed * deltaTime;
+		const nextY = this.yPos + this.yVel * this.speed * deltaTime;
+
+		if (nextY + this.height >= 600) this.yVel = -1;
+		else if (nextY <= 0) this.yVel = 1;
+
+		if (
+			nextX <= player.xPos + player.width &&
+			nextY + this.height >= player.yPos &&
+			nextY <= player.yPos + player.height
+		) {
+			this.xVel = 1;
+		}
+		if (
+			nextX + this.width >= player2.xPos &&
+			nextY + this.height >= player2.yPos &&
+			nextY <= player2.yPos + player2.height
+		) {
+			this.xVel = -1;
+		}
+
+		if (nextX <= 0) {
+			player.points++;
+			this.xPos = 400 - this.width / 2;
+			this.yVel = Math.random() < 0.5 ? 1 : -1;
+			return; // skip position update this frame
+		} else if (nextX + this.width >= 800) {
+			player2.points++;
+			this.xPos = 400 - this.width / 2;
+			this.yVel = Math.random() < 0.5 ? 1 : -1;
+			return; // skip position update this frame
+		}
+	
+		this.xPos = nextX;
+		this.yPos = nextY;
+	}
+
+	set(value)
+	{
+		this.height = Number(value.ballSize);
+		this.width = Number(value.ballSize);
+		this.speed = Number(value.ballSpeed);
+	}
+}
+
+class Player extends Entity {
+	constructor(h, w, y, x) {
+		super(h, w, y, x);
+		this.speed = 4;
+	}
+
+	setvel(velocityY) {
+		this.yVel = velocityY;
+	}
+
+	move(keysPressed: { [key: string]: boolean }, deltaTime) {
+		const nextY = this.yPos + this.yVel * this.speed * deltaTime;
+		
+		if (nextY + this.height >= 600) return;
+		else if (nextY + this.yVel <= 0) return;
+
+		this.yPos += this.yVel * this.speed * deltaTime;
+	}
+
+	setpos(value) {
+		this.yPos = value;
+	}
+}
+
 enum KeyBindings{
 	UP = 'KeyW',
     DOWN = 'KeyS',
@@ -23,11 +130,13 @@ export class frontEndGame {
 	private color : string;
 	private player1Score : number = 0;
 	private player2Score : number = 0;
-	private player1PosY : number = 0;
-	private player2PosY : number = 0;
+	private player1 : Player | null = null;
+	private player2 : Player | null = null;
 	private ballY : number;
 	private ballX : number;
 	private ballSize : number;
+	private ball: Ball | null = null;
+	private lastUpdateTime: number;
 
 	private dataChannel: RTCDataChannel | null = null;
 
@@ -41,6 +150,8 @@ export class frontEndGame {
 	constructor() {
 		this.container = document.getElementById("game-container");
 		setupButtons();
+		this.player1 = new Player(50, 10, 300, 10);
+		this.player2 = new Player(50, 10, 300, 780);
 
 		//const ip = this.getExternalIP();
 		//if (ip) {
@@ -245,10 +356,10 @@ export class frontEndGame {
 
 		if (positions && positions.length >= 3) {
 		  // Update player 1 position
-		  this.player1PosY = positions[0][0];
+		  this.player1.setpos(positions[0][0]);
 		  
 		  // Update player 2 position
-		  this.player2PosY = positions[1][0];
+		  this.player2.setpos(positions[1][0]);
 		  
 		  // Update ball position
 		  this.ballY = positions[2][0];
@@ -259,24 +370,34 @@ export class frontEndGame {
 		}
 	}
 
+	updateSoloGameState()
+	{
+		const now = Date.now();
+		const deltaTime = (now - this.lastUpdateTime) / 16.67; // Normalize to ~60 FPS
+		this.lastUpdateTime = now;
+
+		if (this.keysPressed[KeyBindings.UP])
+			this.player1.setvel(-1);
+		else if (this.keysPressed[KeyBindings.DOWN])
+			this.player1.setvel(1);
+		else
+			this.player1.setvel(0);
+
+		if (this.keysPressed[KeyBindings.SUP]) 
+			this.player2.setvel(-1);
+		else if (this.keysPressed[KeyBindings.SDOWN])
+			this.player2.setvel(1);
+		else
+			this.player2.setvel(0);
+
+		this.player1.move(this.keysPressed, deltaTime);
+		this.player2.move(this.keysPressed, deltaTime);
+		this.ball.update(this.player1, this.player2, deltaTime);
+		this.updateGraphics();
+	}
+
 	updateGraphics() 
 	{
-		// this is for solo game it might have a better place to put but for now
-		// it should be fine as this shouldnt affect the multiplayer game
-		if (this.keysPressed[KeyBindings.UP]) {
-			this.player1PosY -= 5;
-		}
-		if (this.keysPressed[KeyBindings.DOWN]) {
-			this.player1PosY += 5;
-		}
-		if (this.keysPressed[KeyBindings.SUP]) {
-			this.player2PosY -= 5;
-		}
-		if (this.keysPressed[KeyBindings.SDOWN]) {
-			this.player2PosY += 5;
-		}
-
-
 		this.ctx.fillStyle = "#000";
 		this.ctx.fillRect(0, 0, this.gameCanvas.width, this.gameCanvas.height);
 		for (var i = 0; i <= this.gameCanvas.height; i += 30) {
@@ -288,8 +409,13 @@ export class frontEndGame {
 		this.ctx.fillText(this.player1Score.toString(), this.gameCanvas.width / 2 + 48, 50);
 		this.ctx.fillStyle = this.color;
 		this.ctx.fillRect(this.ballX, this.ballY, this.ballSize, this.ballSize);
-		this.ctx.fillRect(10, this.player1PosY, 10, 50);
-		this.ctx.fillRect(780, this.player2PosY, 10, 50);
+		this.ctx.fillRect(10, this.player1.getpos()[0], 10, 50);
+		this.ctx.fillRect(780, this.player2.getpos()[0], 10, 50);
+
+		if (this.ball)
+		{
+			this.ball.draw(this.ctx);
+		}
 	}
 
 	settings(settings, color)
@@ -297,6 +423,8 @@ export class frontEndGame {
 		this.color = color;
 		const {ballSettings, playerSettings} = settings;
 		this.ballSize = ballSettings.ballSize;
+		this.ball = ballSettings.ball;
+		this.lastUpdateTime = Date.now();
 	}
 }
 
@@ -322,6 +450,7 @@ export function startSoloGame()
 	game.createCanvas();
 	game.settings({
 		ballSettings: {
+			ball: new Ball(20, 20, 400, 300),
 			ballSize: ballSizeValue,
 			ballSpeed: ballSpeedValue
 		},
@@ -330,7 +459,7 @@ export function startSoloGame()
 		}
 	}, color);
 	function loopSolo() {
-		game.updateGraphics();
+		game.updateSoloGameState();
 		requestAnimationFrame(loopSolo);
 	}
 	loopSolo();
