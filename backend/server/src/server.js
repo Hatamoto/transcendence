@@ -72,7 +72,7 @@ fastify.register(userRoutes)
 fastify.register(friendRoutes)
 fastify.register(tournamentRoutes)
 
-fastify.listen({ port: process.env.PORT || 5001, host: process.env.HOST }, function (err, address) {
+await fastify.listen({ port: process.env.PORT || 5001, host: process.env.HOST }, function (err, address) {
 	log.info('Listening on port', process.env.PORT);
 	if (err) {
 		log.info('Error: ', err)
