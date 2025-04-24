@@ -21,15 +21,17 @@ async function verifyIdToken(idToken) {
 }
 
 const completeLogin = async function(req, reply, user) {
+  const db = req.server.db
+
   try {
     const accessToken = generateAccessToken(req, { id: user.id, name: user.name })
     const refreshToken = req.server.jwt.sign({ id: user.id, name: user.name }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' })
-    console.log("refresh token ", refreshToken)
-    const updateStatement = req.server.db.prepare('UPDATE users SET status = 1 WHERE name = ?')
-    updateStatement.run(user.name)
+
+    db.prepare('UPDATE users SET status = 1 WHERE name = ?')
+      .run(user.name)
   
-    const insertStatement = req.server.db.prepare('INSERT INTO refresh_tokens (user_id, refresh_token) VALUES (?, ?)')
-    insertStatement.run(user.id, refreshToken)
+    db.prepare('INSERT INTO refresh_tokens (user_id, refresh_token) VALUES (?, ?)')
+      .run(user.id, refreshToken)
   
     return reply.send({ userId: user.id, accessToken: accessToken, refreshToken: refreshToken })
   } catch (error) {

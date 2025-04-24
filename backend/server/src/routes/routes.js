@@ -21,7 +21,8 @@ import {
   getTournamentsOpts,
   createTournamentOpts,
   joinTournamentOpts,
-  setReadyOpts
+  setReadyOpts,
+  startTournamentOpts
 } from '../schemas/tournamentSchemas.js'
 
 let cachedIP = null;
@@ -70,8 +71,9 @@ async function friendRoutes (fastify, options) {
 async function tournamentRoutes (fastify, options) {
   fastify.get('/api/tournaments', getTournamentsOpts)
   fastify.post('/api/tournament/create', createTournamentOpts)
-  fastify.post('/api/tournament/join', joinTournamentOpts)
-  fastify.patch('/api/tournaments/:tournamentId/ready', setReadyOpts)
+  fastify.post('/api/tournament/:tournamentId/join', joinTournamentOpts)
+  fastify.post('/api/tournament/:tournamentId/start', startTournamentOpts)
+  fastify.patch('/api/tournament/:tournamentId/ready', setReadyOpts)
 }
 
 export { root, userRoutes, friendRoutes, tournamentRoutes }

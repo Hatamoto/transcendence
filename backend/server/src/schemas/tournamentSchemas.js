@@ -2,9 +2,11 @@ import {
   createTournament,
   getTournaments,
   joinTournament,
-  setReady
+  setReady,
+  startTournament
 } from '../controllers/tournamentController.js'
 import Tournament from '../models/tournamentModel.js'
+import Match from '../models/matchModel.js'
 import authenticateToken from '../middleware/authentication.js'
 
 const createTournamentOpts = {
@@ -12,7 +14,6 @@ const createTournamentOpts = {
     body: {
       type: 'object',
       properties: {
-        id: { type: 'integer' },
         name: { type: 'string' },
         size: {type: 'integer' },
       },
@@ -36,11 +37,10 @@ const getTournamentsOpts = {
 
 const joinTournamentOpts = {
   schema: {
-    body: {
+    params: {
       type: 'object',
-      required: ['userId', 'tournamentId'],
+      required: ['tournamentId'],
       properties: {
-        userId: { type: 'integer' },
         tournamentId: { type: 'integer' }
       },
     },
@@ -61,7 +61,11 @@ const setReadyOpts = {
       200: {
         type: 'object',
         properties: {
-          message: { type: 'string' },
+          players: { 
+            type: 'array',
+            items: { type: 'integer' },
+          },
+          tournament: Tournament
         },
       },
     },
@@ -70,9 +74,35 @@ const setReadyOpts = {
   handler: setReady,
 }
 
+const startTournamentOpts = {
+  schema: {
+    params: {
+      type: 'object',
+      properties: {
+        tournamentId: { type: 'integer', minimum: 1 },
+      },
+      required: ['tournamentId'],
+    },
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          bracket: {
+            type: 'array',
+            items: Match,
+          },
+        },
+      },
+    },
+  },
+  preHandler: authenticateToken,
+  handler: startTournament,
+}
+
 export { 
   createTournamentOpts,
   getTournamentsOpts,
   joinTournamentOpts,
-  setReadyOpts
+  setReadyOpts,
+  startTournamentOpts
 }

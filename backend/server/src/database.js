@@ -14,16 +14,16 @@ async function dbInit(fastify, options) {
 //  `)
 
 //  db.exec(`
-//     DROP TABLE IF EXISTS refresh_tokens;
+//     DROP TABLE IF EXISTS tournament_players;
 //  `)
 
 //  db.exec(`
-//     DROP TABLE IF EXISTS friends;
+//     DROP TABLE IF EXISTS matches;
 //  `)
 
-  // db.exec(`
-  //    DROP TABLE IF EXISTS pending_logins;
-  // `)
+//   db.exec(`
+//      DROP TABLE IF EXISTS tournaments;
+//   `)
 
 // db.exec(`
 //    DROP TABLE IF EXISTS users;
@@ -62,17 +62,17 @@ async function dbInit(fastify, options) {
     );
   `)
 
-  //db.exec(`
-  //  CREATE TABLE IF NOT EXISTS tournaments (
-  //    id INTEGER PRIMARY KEY,
-  //    name TEXT NOT NULL,
-  //    size INTEGER,
-  //    created_by INTEGER,
-  //    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  //    status TEXT NOT NULL CHECK(status IN ('created', 'in_progress', 'completed')),
-  //    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
-  //  );
-  //`)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS tournaments (
+      id INTEGER PRIMARY KEY,
+      name TEXT NOT NULL,
+      size INTEGER,
+      created_by INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      status TEXT NOT NULL CHECK(status IN ('created', 'waiting', 'ready', 'in_progress', 'completed')),
+      FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+    );
+  `)
 
   //db.exec(`
   //  CREATE TABLE IF NOT EXISTS match_history (
@@ -93,38 +93,38 @@ async function dbInit(fastify, options) {
   //  );
   //`)
 
-    //db.exec(`
-  //  CREATE TABLE IF NOT EXISTS matches (
-     // id INTEGER PRIMARY KEY,
-     // tournament_id INTEGER NOT NULL,
-     // round INTEGER NOT NULL
-     // match_number INTEGER NOT NULL,
-    //  player_one_id INTEGER,
-    //  player_two_id INTEGER,
-    //  player_one_prev_match INTEGER,
-     // player_two_prev_match INTEGER,
-      //winner_id INTEGER,
-      //round INTEGER,
-      //status TEXT NOT NULL DEFAULT 'waiting' CHECK(status IN ('waiting', 'pending', 'in_progress', 'completed', 'bye'))
-    //  FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
-    //  FOREIGN KEY (player_one_id) REFERENCES users(id),
-      //FOREIGN KEY (player_two_id) REFERENCES users(id),
-      //FOREIGN KEY (winner_id) REFERENCES users(id),
-      //FOREIGN KEY (player_one_prev_match) REFERENCES matches(id),
-      //FOREIGN KEY (player_two_prev_match) REFERENCES matches(id)
-  //  );
-  //`)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS matches (
+      id INTEGER PRIMARY KEY,
+      tournament_id INTEGER NOT NULL,
+      round INTEGER NOT NULL,
+      match_number INTEGER NOT NULL,
+      player_one_id INTEGER,
+      player_two_id INTEGER,
+      player_one_prev_match INTEGER,
+      player_two_prev_match INTEGER,
+      winner_id INTEGER,
+      status TEXT NOT NULL DEFAULT 'waiting' CHECK(status IN ('waiting', 'pending', 'in_progress', 'completed', 'bye')),
+      FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
+      FOREIGN KEY (player_one_id) REFERENCES users(id),
+      FOREIGN KEY (player_two_id) REFERENCES users(id),
+      FOREIGN KEY (winner_id) REFERENCES users(id),
+      FOREIGN KEY (player_one_prev_match) REFERENCES matches(id),
+      FOREIGN KEY (player_two_prev_match) REFERENCES matches(id)
+    );
+  `)
 
-  //db.exec(`
-    //CREATE TABLE IF NOT EXISTS tournament_players (
-    //  id INTEGER PRIMARY KEY,
-    //  tournament_id INTEGER NOT NULL,
-    //  user_id INTEGER UNIQUE,
-    //  is_ready INTEGER NOT NULL DEFAULT 0 CHECK(is_ready IN (0 ,1)),
-    //  FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
-    //  FOREIGN KEY (player_id) REFERENCES users(id) ON DELETE SET NULL
-    //);
-  //`)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS tournament_players (
+      id INTEGER PRIMARY KEY,
+      tournament_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      is_ready INTEGER NOT NULL DEFAULT 0 CHECK(is_ready IN (0 ,1)),
+      FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+      UNIQUE(tournament_id, user_id)
+    );
+  `)
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS friends (

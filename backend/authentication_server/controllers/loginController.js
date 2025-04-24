@@ -5,18 +5,19 @@ import { nameGenerator, isNameTaken } from '../services/nameGenerator.js'
 
 const logoutUser = async function(req, reply) {
   const { token } = req.body
+  const db = req.server.db
 
   try{
-    const userId = req.server.db
-      .prepare('SELECT user_id FROM refresh_tokens WHERE refresh_token = ?')
+    const userId = db.prepare('SELECT user_id FROM refresh_tokens WHERE refresh_token = ?')
       .get(token)
 
     if (!userId) return reply.code(404).send({ error: "Refresh token not found"})
-    const deleteStatement = req.server.db.prepare('DELETE FROM refresh_tokens WHERE refresh_token = ?')
-    deleteStatement.run(token)
+    
+    db.prepare('DELETE FROM refresh_tokens WHERE refresh_token = ?')
+      .run(token)
 
-    const updateStatement = req.server.db.prepare('UPDATE users SET status = 0 WHERE id = ?')
-    updateStatement.run(userId.user_id)
+    db.prepare('UPDATE users SET status = 0 WHERE id = ?')
+      .run(userId.user_id)
   
     return reply.code(204).redirect('/')
   } catch (error) {
@@ -27,10 +28,10 @@ const logoutUser = async function(req, reply) {
 
 const loginUser = async function (req, reply) {
   const { email, password } = req.body
+  const db = req.server.db
 
   try {
-    const user = req.server.db
-      .prepare('SELECT * FROM users WHERE email = ?')
+    const user = db.prepare('SELECT * FROM users WHERE email = ?')
       .get(email)
 
     if (!user) return reply.code(401).send({ error: 'Incorrect email or password' })
@@ -47,11 +48,11 @@ const loginUser = async function (req, reply) {
 
 const getToken = async function(req, reply) {
   const refreshToken = req.body.token
+  const db = req.server.db
 
   if (!refreshToken) return reply.code(401).send({ error: "No refresh token provided "})
   
-  const token = req.server.db
-    .prepare('SELECT * FROM refresh_tokens WHERE refresh_token = ?')
+  const token = db.prepare('SELECT * FROM refresh_tokens WHERE refresh_token = ?')
     .get(refreshToken)
 
   if (!token) return reply.code(403).send({ error: "Invalid refresh token" })
@@ -69,6 +70,7 @@ const getToken = async function(req, reply) {
 
 const googleAuthHandler = async function(req, reply) {
   const { code } = req.query
+  const db = req.server.db
 
   if(!code) return reply.code(400).send({ error: 'Authorization code is required' })
 
@@ -86,8 +88,7 @@ const googleAuthHandler = async function(req, reply) {
     let user
 
     try {
-      user = await req.server.db
-        .prepare('SELECT id, name FROM users WHERE google_id = ?')
+      user = await db.prepare('SELECT id, name FROM users WHERE google_id = ?')
         .get(profile.sub)
 
       if(!user) {
@@ -98,11 +99,10 @@ const googleAuthHandler = async function(req, reply) {
           name = nameGenerator()
         }
 
-        const insertStatement = req.server.db.prepare('INSERT INTO users (email, name, google_id, avatar) VALUES (?, ?, ?, ?)')
-        insertStatement.run(profile.email, name, profile.sub, avatar)
+        db.prepare('INSERT INTO users (email, name, google_id, avatar) VALUES (?, ?, ?, ?)')
+          .run(profile.email, name, profile.sub, avatar)
     
-        const newUser = await req.server.db
-          .prepare('SELECT id, name FROM users WHERE google_id = ?')
+        const newUser = await db.prepare('SELECT id, name FROM users WHERE google_id = ?')
           .get(profile.sub)
 
         return completeLogin(req, reply, newUser)

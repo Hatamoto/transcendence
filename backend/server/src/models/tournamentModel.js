@@ -3,7 +3,10 @@ const Tournament = {
   properties: {
     id: { type: 'string' },
     name: { type: 'string' },
-    created_by: {type: 'integer' }
+    size: { type: 'integer' },
+    created_by: { type: 'integer' },
+    created_at: { type: 'string', format: 'date-time' },
+    status: { type: 'string' },
   },
 }
 

@@ -15,7 +15,7 @@ POST http://localhost:4000/api/login
 Content-Type: application/json
 
 {
-    "username": "uusi",
+    "email": "testi@moi.com",
     "password": "Test123!"
 }
 
@@ -95,3 +95,33 @@ Authorization: Bearer
 
 GET http://localhost:3000/api/friends
 Authorization: Bearer ayJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6InRlc3RpIiwiaWF0IjoxNzQ0Mjc4MDg0LCJleHAiOjE3NDQyODE2ODR9.WoLtOePwlvNheh4llONsIFyjfE71Ik800UmvQ4CRDNc
+
+### Create new tournament
+
+POST http://localhost:3000/api/tournament/create
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywibmFtZSI6InRlc3RpcyIsImlhdCI6MTc0NTQwODk4NSwiZXhwIjoxNzQ1NDA5ODg1fQ.DKu_Vgi486N7CZKIaqmCyFdT7v30WcqP8zsFFuoIfng
+
+{
+    "name": "testiturnaus",
+    "size": "2"
+}
+
+### Join tournament
+
+POST http://localhost:3000/api/tournament/1/join
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6InRlc3RpIiwiaWF0IjoxNzQ1NDA5NjQ5LCJleHAiOjE3NDU0MTA1NDl9.KoE6YckcKoiZvKWlcH1SPapkUtZxc_ZdB2V6ghEKAK0
+
+### set player ready
+
+PATCH http://localhost:3000/api/tournament/1/ready
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6InRlc3RpIiwiaWF0IjoxNzQ1NDA5NjQ5LCJleHAiOjE3NDU0MTA1NDl9.KoE6YckcKoiZvKWlcH1SPapkUtZxc_ZdB2V6ghEKAK0
+
+### Get all tournaments
+
+GET http://localhost:3000/api/tournaments
+
+### Start tournament
+
+POST http://localhost:3000/api/tournament/1/start
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6InRlc3RpIiwiaWF0IjoxNzQ1NDA5NjQ5LCJleHAiOjE3NDU0MTA1NDl9.KoE6YckcKoiZvKWlcH1SPapkUtZxc_ZdB2V6ghEKAK0
