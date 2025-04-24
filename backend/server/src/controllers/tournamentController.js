@@ -31,9 +31,10 @@ const createTournament = async function(req, reply) {
 }
 
 const getTournaments = async function(req, reply) {
+  const db = req.server.db
+
   try {
-    const tournaments = req.server.db
-      .prepare('SELECT * FROM tournaments WHERE status = ?')
+    const tournaments = db.prepare('SELECT * FROM tournaments WHERE status = ?')
       .all('created')
 
     if (tournaments.length === 0) return reply.code(404).send({ error: "No tournaments found" })
@@ -58,11 +59,15 @@ const joinTournament = async function(req, reply) {
     const tournament = db.prepare('SELECT * FROM tournaments WHERE id = ?')
       .get(tournamentId)
     
-    if (!tournament) return reply.code(404).send({ error: "tournament not found" })
-    else if (tournament.status !== 'created') return reply.code(409).send({ 
-      error: "Unable to join tournament",
-      status: tournament.status
-    })
+    if (!tournament) {
+      return reply.code(404).send({ error: "tournament not found" })
+    } else if (tournament.status !== 'created') {
+        return reply.code(409).send({ 
+        error: "Unable to join tournament",
+        status: tournament.status
+      })
+    }
+
     const hasJoined = db.prepare('SELECT * FROM tournament_players WHERE tournament_id = ? AND user_id = ?')
       .get(tournamentId, user.id)
     
@@ -104,6 +109,7 @@ const setReady = async function(req, reply) {
 
     const readyPlayers = db.prepare('SELECT user_id FROM tournament_players WHERE tournament_id = ? AND is_ready = 1')
       .all(tournamentId)
+
     const playerIds = readyPlayers.map(player => player.user_id)
     let updatedTournament = tournament
     
@@ -113,6 +119,7 @@ const setReady = async function(req, reply) {
 
       updatedTournament = db.prepare('SELECT * FROM tournaments WHERE id = ?')
         .get(tournament.id)
+
       return reply.send({ players: playerIds, tournament: updatedTournament })
     }
 
