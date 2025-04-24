@@ -516,6 +516,7 @@ export class frontEndGame {
 
 
 let game : frontEndGame;
+let animationFrameId: number | null = null;
 
 export function createNewGame(matchType : string, socket)
 {
@@ -525,6 +526,12 @@ export function createNewGame(matchType : string, socket)
 	{
 		game.socketLogic(socket);
 	}
+}
+
+export function stopSoloGame()
+{
+	if (animationFrameId != null)
+		cancelAnimationFrame(animationFrameId);
 }
 
 export function startSoloGame()
@@ -551,7 +558,7 @@ export function startSoloGame()
 	}, color);
 	function loopSolo() {
 		game.updateSoloGameState();
-		requestAnimationFrame(loopSolo);
+		animationFrameId = requestAnimationFrame(loopSolo);
 	}
 	loopSolo();
 }
