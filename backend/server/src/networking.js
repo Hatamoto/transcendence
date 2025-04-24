@@ -21,7 +21,6 @@ class IDAllocator {
 		}
     }
 
-
     allocate() {	// Finds available ids
 		if (this.openRooms.size > 0) {
 			return (this.openRooms.values().next().value);
@@ -100,9 +99,10 @@ export function setupNetworking(server){
 						roomIds.freeRoom(playerRoom);
 						log.info(`Room ${playerRoom} deleted`);
 					} else if (rooms[playerRoom].type == "normal") {
-						roomIds.openRoomDoors(playerRoom);
 						// Notify remaining players
 						io.to(playerRoom).emit("playerDisconnected", Object.keys(rooms[playerRoom].players).length);
+						if (games[playerRoom].gameStarted == false)
+							roomIds.openRoomDoors(playerRoom);
 					}
 					
 			}
@@ -142,7 +142,6 @@ export function setupNetworking(server){
 		});
 
 		socket.on("joinRoomQue", () => {
-			console.log("ASDS");
 			if (socket.rooms.size > 1)
 				return ;
 			const roomId = roomIds.allocate();
@@ -333,15 +332,23 @@ function startGameLoop(roomId) {
 	{
 		game.stop();
 		io.to(roomId).emit('gameOver', 1);
-		//if (!notTournament) check here for when a game isnt tournament so 
+		if (room.type == "normal")
+		{
 			room.gameStarted = false; // you can rematch
+			if (Object.keys(rooms[roomId].players).length === 1)
+				roomIds.openRoomDoors(roomId);
+		}
 		return ;
 	}
 	else if (game.getScores()[1] >= 5)
 	{
 		game.stop();
-		//if (!notTournament) check here for when a game isnt tournament so 
+		if (room.type == "normal")
+		{
 			room.gameStarted = false; // you can rematch
+			if (Object.keys(rooms[roomId].players).length === 1)
+				roomIds.openRoomDoors(roomId);
+		}
 		io.to(roomId).emit('gameOver', 2);
 		return ;
 	}
