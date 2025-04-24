@@ -1,10 +1,10 @@
-import socket from '../utils/socket.js';
+import { getSocket } from '../utils/socket.js';
 import { Logger, LogLevel } from '../utils/logger.js';
 import { startSoloGame } from './frontEndGame.js';
 
 const log = new Logger(LogLevel.INFO);
 
-export function setupButtons()
+export function setupButtons(socket)
 {
 	// Solo game
 	const soloBtn = document.getElementById("ready-solo");

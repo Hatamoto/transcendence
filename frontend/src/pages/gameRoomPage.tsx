@@ -1,19 +1,22 @@
 import Header from "../components/headers";
 import { createNewGame } from "../game/frontEndGame";
 import { useEffect, useRef } from "react";
-
+import { io, Socket } from 'socket.io-client';
+import { createSocket, getSocket } from "../utils/socket";
 
 export default function GameRoom({matchType}) {
 
 	const hasRun = useRef(false);
+	let socket: Socket | null = null;
 
 	useEffect(() => {
-	  if (!hasRun.current) {
-		createNewGame();
-		hasRun.current = true;
-	  }
+		if (!hasRun.current) {
+			 if (matchType != "solo")
+				createSocket();
+			createNewGame(matchType, getSocket());
+			hasRun.current = true;
+	  	}
 	}, []);
-
 
 	const matchTypeButtons = () => {
 		switch (matchType) {

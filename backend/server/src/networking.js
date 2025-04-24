@@ -142,6 +142,7 @@ export function setupNetworking(server){
 		});
 
 		socket.on("joinRoomQue", () => {
+			console.log("ASDS");
 			if (socket.rooms.size > 1)
 				return ;
 			const roomId = roomIds.allocate();
