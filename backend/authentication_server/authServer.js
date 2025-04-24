@@ -12,8 +12,8 @@ const fastify = Fastify({
 })
 
 await fastify.register(dbInit)
-await fastify.register(loginRoutes)
-await fastify.register(cors, {
+fastify.register(loginRoutes)
+fastify.register(cors, {
 	origin: 'http://localhost:5001',
 	credentials: true
 })

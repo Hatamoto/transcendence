@@ -64,13 +64,13 @@ fastify.setNotFoundHandler((req, reply) => {
 });
 
 await fastify.register(dbInit)
-await fastify.register(formbody)
-await fastify.register(cookie)
-await fastify.register(multipart)
-await fastify.register(root)
-await fastify.register(userRoutes)
-await fastify.register(friendRoutes)
-await fastify.register(tournamentRoutes)
+fastify.register(formbody)
+fastify.register(cookie)
+fastify.register(multipart)
+fastify.register(root)
+fastify.register(userRoutes)
+fastify.register(friendRoutes)
+fastify.register(tournamentRoutes)
 
 fastify.listen({ port: process.env.PORT || 5001, host: process.env.HOST }, function (err, address) {
 	log.info('Listening on port', process.env.PORT);

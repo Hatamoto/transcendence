@@ -36,6 +36,10 @@ GET http://localhost:4000/api/googleauth
 
 GET http://localhost:3000/api/users
 
+### Get single user
+
+GET http://localhost:3000/api/user/3
+
 ### Delete user
 
 DELETE http://localhost:3000/api/user/delete
