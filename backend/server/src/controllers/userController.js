@@ -49,6 +49,7 @@ const addUser = async function (req, reply) {
 	const data = await res.json();
 
 	if (!data.success) {
+		console.error('CAPTCHA verification failed:', data['error-codes']); 
 	return reply.code(400).send({ error: 'Invalid CAPTCHA' });
 	}
 

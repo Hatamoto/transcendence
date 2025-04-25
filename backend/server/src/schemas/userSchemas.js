@@ -27,14 +27,15 @@ const addUserOpts = {
   schema: {
     body: {
       type: 'object',
-      required: ['name', 'email', 'password'],
+      required: ['name', 'email', 'password', 'captchaToken'],
       properties: {
         name: { type: 'string' },
         email: { type: 'string', format: 'email' },
         password: { 
-          type: 'string',
-          minLength: 8,
-         },
+			type: 'string',
+			minLength: 8,
+		},
+		captchaToken: { type: 'string' },
       },
     },
     response: {

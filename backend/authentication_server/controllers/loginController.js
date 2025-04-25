@@ -27,7 +27,7 @@ const logoutUser = async function(req, reply) {
 }
 
 const loginUser = async function (req, reply) {
-  const { email, password , captchaToken} = req.body
+  const { email, password, captchaToken } = req.body
   const db = req.server.db
 
   try {
