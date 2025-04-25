@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import axios from 'axios'
-import { verifyIdToken, completeLogin, generateAccessToken } from '../services/authenticationServices.js'
+import { verifyIdToken, completeLogin, generateAccessToken, completeGoogleLogin } from '../services/authenticationServices.js'
 import { nameGenerator, isNameTaken } from '../services/nameGenerator.js'
 
 const logoutUser = async function(req, reply) {

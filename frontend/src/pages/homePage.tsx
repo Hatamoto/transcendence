@@ -2,11 +2,13 @@ import { Link } from 'react-router-dom';
 import Header from "../components/headers.js";
 import Background from '../components/background.js';
 import { useNavigate } from "react-router-dom";
+import { useToast } from '../components/toastBar/toastContext.js';
 // import { useEffect } from 'react';
 
 const Home: React.FC = () => {
 
 	const navigate = useNavigate();
+	const toast = useToast();
 
 	const handleGoogleLogin = () => {
 
@@ -22,21 +24,24 @@ const Home: React.FC = () => {
 			return;
 	
 		const { userId, accessToken, refreshToken } = event.data;
-	
-			if (userId && accessToken) {
-				sessionStorage.setItem("activeUserId", userId);
-				sessionStorage.setItem(
-					userId,
-					JSON.stringify({
-						accessToken,
-						refreshToken,
-						error: "Google signin successful",
-					})
-				);
-				navigate("/user");
-			}
-		console.log('User is now logged in');
 
+		
+	
+		if (userId && accessToken) {
+			sessionStorage.setItem("activeUserId", userId);
+			sessionStorage.setItem(
+				userId,
+				JSON.stringify({
+					accessToken,
+					refreshToken,
+					error: "Google signin successful",
+				})
+			);
+			navigate("/user");
+		} else { 
+			toast.open("Google signin failed", "error");
+		}
+		// console.log('User is now logged in');
 		});
 	}
 	
