@@ -11,29 +11,29 @@ const UserPage: React.FC = () => {
 	const navigate = useNavigate();
 	const toast = useToast();
 
-	useEffect(() => {
-		const checkAccess = async () => {
-			const userId = sessionStorage.getItem('activeUserId');
-			if (!userId) {
-				toast.open("Unauthorized", "error");
-				navigate('/login'); //if we try to go to /user page without trying to log in.
-				return ;
-			}
-			const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}')
-			const token = sessionData.accessToken;
+	// useEffect(() => {
+	// 	const checkAccess = async () => {
+	// 		const userId = sessionStorage.getItem('activeUserId');
+	// 		if (!userId) {
+	// 			toast.open("Unauthorized", "error");
+	// 			navigate('/login'); //if we try to go to /user page without trying to log in.
+	// 			return ;
+	// 		}
+	// 		const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}')
+	// 		const token = sessionData.accessToken;
 			
-			if (!token) {
-				toast.open(sessionData.error, "error");
-				navigate('/login');
-				// console.log(sessionData.error); // is the dev environment the cause of dubble logs? // change this to popup bar (component)
-				// sessionStorage.clear(); // check after you have logged in if this is effing things up
-			}
-			// console.log(sessionData.accessToken);
-			// console.log(sessionData.refreshToken);// information print
-			// toast.open(sessionData.error, "success");
-		}
-		checkAccess();
-	}, [navigate]);
+	// 		if (!token) {
+	// 			toast.open(sessionData.error, "error");
+	// 			navigate('/login');
+	// 			// console.log(sessionData.error); // is the dev environment the cause of dubble logs? // change this to popup bar (component)
+	// 			// sessionStorage.clear(); // check after you have logged in if this is effing things up
+	// 		}
+	// 		// console.log(sessionData.accessToken);
+	// 		// console.log(sessionData.refreshToken);// information print
+	// 		// toast.open(sessionData.error, "success");
+	// 	}
+	// 	checkAccess();
+	// }, [navigate]);
 
 	const handleLogout = async (event: React.MouseEvent) => {
 
@@ -51,7 +51,7 @@ const UserPage: React.FC = () => {
 			const response = await logoutUser(user);
 			console.log("Returning from logoutUser API with status:", response);
 	
-			if (response.status == 204) {
+			if (response.status === 204) {
 				sessionStorage.clear();
 				toast.open(response.error, "success");
 				// console.log(response.error)
@@ -81,7 +81,7 @@ const UserPage: React.FC = () => {
 		const response = await deleteUser(user);
 		console.log("Returning from deleteUser API with status:", response);
 	
-		if (response.status == 200) {
+		if (response.status === 200) {
 			sessionStorage.clear();
 			toast.open(response.error, "success");
 			// console.log(response.error)

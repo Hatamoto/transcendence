@@ -7,6 +7,7 @@ import GameRoom from './pages/gameRoomPage'
 import UserPage from './pages/userPage'
 import NoPage from './pages/noPage'
 import ProfilePage from './pages/profilePage'
+import ProtectedRoutes from './components/authRoutes'
 
 // //import "./index.css";
 
@@ -15,10 +16,10 @@ const router = createBrowserRouter([
   {path: "/home", element:<Home />},
   {path: "/login", element:<Login/> },
   {path: "/register", element: <Registration />},
-  {path: "/game", element: <GameRoom />},
-  {path: "/user", element: <UserPage />},
+  {path: "/game", element: <ProtectedRoutes><GameRoom /></ProtectedRoutes>},
+  {path: "/user", element: <ProtectedRoutes><UserPage /></ProtectedRoutes>},
   {path: "*", element: <NoPage />},
-  {path: "/user/profile", element: <ProfilePage />}
+  {path: "/user/profile", element: <ProtectedRoutes><ProfilePage /></ProtectedRoutes>}
 ]);
 
 const App: React.FC = () => {

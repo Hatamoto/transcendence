@@ -1,4 +1,80 @@
 
+interface AuthFetchOptions {
+	method: string;
+	body: string;
+	headers: {
+	  'Content-Type': string;
+	  'Authorization': string;
+	};
+}
+
+interface AuthFetchResponse {
+	status: number;
+	error: string;
+	newToken?: string;
+}
+
+async function authFetch(url: string, options: AuthFetchOptions): Promise<AuthFetchResponse> {
+
+	console.log("in authfetch before fetch", url, options);
+	const response = await fetch(url, options);
+	console.log("in authfetch after fetch", response);
+
+	const responseData = await response.json();
+
+	if (response.status === 401) {
+		return {
+			status: response.status,
+			error: responseData.error || 'Unauthorized'
+		}
+	}
+
+	if (response.status === 403) {
+
+		console.log("403, getting new token");
+
+		const userId = sessionStorage.getItem('activeUserId');
+		const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}')
+		const refreshToken = sessionData.refreshToken
+
+		const response = await fetch(`${API_AUTH_URL}/api/token`, {
+			method: 'POST',
+			body: JSON.stringify({id: Number(userId), token: sessionData.refreshToken}),
+			headers: {
+			'Content-Type': 'application/json',
+			'Authorization': `Bearer`
+			}
+		});
+		
+		console.log("hello after fetch ",response);
+		const newResponse = await response.json();
+		console.log("with new accessToken ",newResponse);
+
+		if (response.ok) {
+			console.log("ok response");
+			sessionStorage.removeItem(userId);
+			sessionStorage.setItem('activeUserId', userId.toString());
+			sessionStorage.setItem(userId.toString(), JSON.stringify({accessToken: newResponse.accessToken, refreshToken: refreshToken}));
+			return {
+				status: 1,
+				error: 'accessToken refreshed',
+				newToken: newResponse.accessToken
+			}
+		}
+
+		if (!response.status) {
+			return {
+				status: response.status,
+				error: newResponse.error
+			}
+		}
+	}
+	return {
+		status: response.status,
+		error: responseData.error
+	};
+}
+
 export interface RegistrationRequest {
 	name: string;
 	email: string;
@@ -121,7 +197,7 @@ export async function logoutUser(userData: LogoutRequest): Promise<LogoutRespons
 	try {
 		const response = await fetch(`${API_AUTH_URL}/api/logout`, {
 			method: 'DELETE',
-			body: JSON.stringify(userData),            
+			body: JSON.stringify(userData), 
 			headers: {
 			'Content-Type': 'application/json',
 			}
@@ -157,31 +233,54 @@ interface DeleteUserResponse {
 	error: string;
 }
 
-
 export async function deleteUser(userData: DeleteUserRequest): Promise<DeleteUserResponse> {
 
 	try {
-		const response = await fetch(`/api/user/delete`, {
-			method: 'DELETE',
-			body: JSON.stringify({id: userData.id, token: userData.token}),
-			headers: {
-			'Content-Type': 'application/json',
-			'Authorization': `Bearer ${userData.accToken}`
+			const options = {
+				method: 'DELETE',
+				body: JSON.stringify({id: userData.id, token: userData.token}),
+				headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${userData.accToken}`
+				}
 			}
-		});
 
-		
-		const responseData = await response.json();
-		console.log(response);
+		const response = await authFetch(`/api/user/delete` , options);
 
-		if (!response.ok)
-			return {
-				status: response.status,
+		if (response.status == 1) {
+			console.log(userData.accToken);
+			const retryResponse = await fetch(`/api/user/delete`, {
+				method: 'DELETE',
+				body: JSON.stringify({id: userData.id, token: userData.token}),
+				headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${response.newToken}`
+				}
+			});
+			
+			
+			const responseData = await retryResponse.json();
+			console.log(retryResponse);
+			
+			if (!retryResponse.ok)
+				return {
+				status: retryResponse.status,
 				error: responseData.error || 'User delete failed'
+				}
+			return {
+				status: retryResponse.status,
+				error: responseData.error || 'User delete successful'
+			};
+		}
+
+		if (response.status >= 300)
+			return {
+			status: response.status,
+			error: response.error || 'User delete failed'
 			}
 		return {
 			status: response.status,
-			error: responseData.error || 'User delete successful'
+			error: response.error || 'User delete successful'
 		};
 
 	} catch (error) {
@@ -191,10 +290,7 @@ export async function deleteUser(userData: DeleteUserRequest): Promise<DeleteUse
 			error: 'Something went wrong. Please try again.'
 		};
 	}
-}
-
-
-
+} //force logaout/delete if refreshToken has expired?
 
 
 
