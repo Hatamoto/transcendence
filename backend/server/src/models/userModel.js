@@ -1,7 +1,7 @@
 const User = {
   type: 'object',
   properties: {
-    id: { type: 'string' },
+    id: { type: 'integer' },
     name: { type: 'string' },
     email: {type: 'string' },
     status: { type: 'integer' },
