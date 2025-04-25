@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import Header from "../components/headers.js";
+import Background from '../components/background.js';
 import { useNavigate } from "react-router-dom";
 // import { useEffect } from 'react';
 
@@ -41,6 +42,7 @@ const Home: React.FC = () => {
 	
 	return (
 		<>
+		<Background />
 		<Header />
 			<div className="flex flex-col items-center justify-center min-h-screen">
 			<div className="bg-white p-6 rounded-lg w-96 flex flex-col gap-4 items-center shadow-md">
