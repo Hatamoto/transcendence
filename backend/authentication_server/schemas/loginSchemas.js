@@ -18,7 +18,7 @@ const loginOpts = {
   schema: {
     body: {
       type: 'object',
-      required: ['username', 'password', 'captchaToken'],
+      required: ['email', 'password', 'captchaToken'],
       properties: {
         email: { type: 'string', format: 'email' },
         password: { type: 'string' },
@@ -34,6 +34,7 @@ const tokenOpts = {
     body: {
       type: 'object',
       properties: {
+        id: { type: 'integer' },
         token: { type: 'string' },
       },
     },

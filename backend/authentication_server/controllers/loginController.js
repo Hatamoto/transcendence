@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import axios from 'axios'
-import { verifyIdToken, completeLogin, generateAccessToken } from '../services/authenticationServices.js'
+import { verifyIdToken, completeLogin, generateAccessToken, completeGoogleLogin } from '../services/authenticationServices.js'
 import { nameGenerator, isNameTaken } from '../services/nameGenerator.js'
 
 const logoutUser = async function(req, reply) {
@@ -64,18 +64,18 @@ const loginUser = async function (req, reply) {
 }
 
 const getToken = async function(req, reply) {
-  const refreshToken = req.body.token
+  const { id, token } = req.body
   const db = req.server.db
-
-  if (!refreshToken) return reply.code(401).send({ error: "No refresh token provided "})
+  console.log(req.body)
+  if (!token) return reply.code(401).send({ error: "No refresh token provided "})
   
-  const token = db.prepare('SELECT * FROM refresh_tokens WHERE refresh_token = ?')
-    .get(refreshToken)
+  const refreshToken = db.prepare('SELECT * FROM refresh_tokens WHERE refresh_token = ? AND user_id = ?')
+    .get(refreshToken, id)
 
-  if (!token) return reply.code(403).send({ error: "Invalid refresh token" })
+  if (!refreshToken) return reply.code(403).send({ error: "Invalid refresh token" })
 
   try {
-    const user = await req.server.jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const user = await req.server.jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
     const accessToken = generateAccessToken(req, { id: user.id, name: user.name });
     
     return reply.send({ accessToken });
