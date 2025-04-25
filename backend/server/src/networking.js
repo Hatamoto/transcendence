@@ -86,6 +86,18 @@ export function setupNetworking(server){
 			// Clean up rooms and connections when a player disconnects
 			const playerRoom = socket.room;
 				if (playerRoom && rooms[playerRoom]?.players[socket.id]) {
+					const player = rooms[playerRoom].players[socket.id];
+
+					if (player.dataChannel) {
+						player.dataChannel.close();
+						player.dataChannel = null;
+					}
+					  
+					if (player.peerConnection) {
+						player.peerConnection.close();
+						player.peerConnection = null;
+					}
+
 					delete rooms[playerRoom].players[socket.id];
 					log.info(`Player ${socket.id} removed from room ${playerRoom}`);
 					

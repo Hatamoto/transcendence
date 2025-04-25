@@ -1,5 +1,5 @@
 import Header from "../components/headers";
-import { createNewGame, stopSoloGame, frontEndGame } from "../game/frontEndGame";
+import { createNewGame, frontEndGame, cleanGame } from "../game/frontEndGame";
 import { useEffect, useRef } from "react";
 import { createSocket, getSocket, closeSocket } from "../utils/socket";
 
@@ -17,8 +17,8 @@ export default function GameRoom({matchType}) {
 
 	return () => {
 		if (frontEndGame && leftPage.current) {
-			stopSoloGame();
 			closeSocket();
+			cleanGame();
 		}
 		else
 			leftPage.current = true;

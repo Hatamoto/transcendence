@@ -138,13 +138,14 @@ export class frontEndGame {
 	private lastUpdateTime: number;
 
 	private dataChannel: RTCDataChannel | null = null;
-
-	private configuration: RTCConfiguration;
-
     private peerConnection: RTCPeerConnection | null = null;
+	private configuration: RTCConfiguration;
 
     // Add a property to store candidates that arrive before remote description
     private bufferedCandidates: RTCIceCandidateInit[] = [];
+
+    private keyDownHandler: (e: KeyboardEvent) => void;
+    private keyUpHandler: (e: KeyboardEvent) => void;
 
 	constructor() {
 		this.container = document.getElementById("game-container");
@@ -263,36 +264,62 @@ export class frontEndGame {
 		this.peerConnection.oniceconnectionstatechange = () => {
 			log.debug("ICE connection state:", this.peerConnection.iceConnectionState);
 		};
-	}	
+	}
+
+	cleanUp() {
+        if (this.keyDownHandler) {
+            document.removeEventListener('keydown', this.keyDownHandler);
+            this.keyDownHandler = null;
+        }
+        
+        if (this.keyUpHandler) {
+            document.removeEventListener('keyup', this.keyUpHandler);
+            this.keyUpHandler = null;
+        }
+
+		if (this.dataChannel) {
+			this.dataChannel.close();
+			this.dataChannel = null;
+		}
+		if (this.peerConnection) {
+			this.peerConnection.close();
+			this.peerConnection = null;
+		}
+	}
 
 	setupKeyListeners(dataChannel) {
 		log.info("Setting up key listeners");
-		document.addEventListener('keydown', (e) => {
-			if (e.code === KeyBindings.UP || e.code === KeyBindings.DOWN) {
-				const data = { key: e.code, isPressed: true };
-				log.debug("Sending key down event:", data);
-				dataChannel.send(JSON.stringify(data));
-			}
-		});
-		
-		document.addEventListener('keyup', (e) => {
-			if (e.code === KeyBindings.UP || e.code === KeyBindings.DOWN) {
-				const data = { key: e.code, isPressed: false };
-				log.debug("Sending key up event:", data);
-				dataChannel.send(JSON.stringify(data));
-			}
-		});
+        this.keyDownHandler = (e) => {
+            if (e.code === KeyBindings.UP || e.code === KeyBindings.DOWN) {
+                const data = { key: e.code, isPressed: true };
+                log.debug("Sending key down event:", data);
+                dataChannel.send(JSON.stringify(data));
+            }
+        };
+        
+        this.keyUpHandler = (e) => {
+            if (e.code === KeyBindings.UP || e.code === KeyBindings.DOWN) {
+                const data = { key: e.code, isPressed: false };
+                log.debug("Sending key up event:", data);
+                dataChannel.send(JSON.stringify(data));
+            }
+        };
+        
+        document.addEventListener('keydown', this.keyDownHandler);
+        document.addEventListener('keyup', this.keyUpHandler);
 	}
 
 	setupSoloKeyListeners() {
+        this.keyDownHandler = (e) => {
+            this.keysPressed[e.code] = true;
+        };
+        
+        this.keyUpHandler = (e) => {
+            this.keysPressed[e.code] = false;
+        };
 
-		document.addEventListener('keydown', (e) => {
-			this.keysPressed[e.code] = true;
-		});
-		
-		document.addEventListener('keyup', (e) => {
-			this.keysPressed[e.code] = false;
-		});
+        document.addEventListener('keydown', this.keyDownHandler);
+        document.addEventListener('keyup', this.keyUpHandler);
 	}
 
 	updateGameState(positions, scores) {
@@ -374,7 +401,7 @@ export class frontEndGame {
 
 
 	socketLogic(socket)
-{
+	{
 	socket.on('offer', async (offer) => {
 		try {
 			if (!this.peerConnection) {
@@ -528,11 +555,13 @@ export function createNewGame(matchType : string, socket)
 	}
 }
 
-export function stopSoloGame()
+export function cleanGame()
 {
 	if (animationFrameId != null)
 		cancelAnimationFrame(animationFrameId);
-}
+	game.cleanUp();
+	game = null;
+} 
 
 export function startSoloGame()
 {
