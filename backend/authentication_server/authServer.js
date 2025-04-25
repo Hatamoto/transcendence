@@ -24,7 +24,7 @@ fastify.register(jwt, {
   secret: process.env.ACCESS_TOKEN_SECRET,
 })
 
-fastify.listen({ port: process.env.AUTH_PORT || 4000 }, function (err, address) {
+await fastify.listen({ port: process.env.AUTH_PORT || 4000 }, function (err, address) {
   if (err) {
     fastify.log.error(err)
     process.exit(1)

@@ -1,13 +1,14 @@
 import bcrypt from 'bcrypt'
-import { v4 as uuidv4 } from 'uuid'
 import fs from 'fs'
 import util from 'util'
 import { pipeline } from 'stream'
 import path from 'path'
 
 const getUsers = async function (req, reply) {
+  const db = req.server.db
+
   try {
-    const users = req.server.db.prepare("SELECT * FROM users").all();
+    const users = db.prepare("SELECT * FROM users").all()
 
     if (users.length === 0) {
       return reply.code(404).send({ error: "No users found" })
@@ -20,6 +21,7 @@ const getUsers = async function (req, reply) {
 
 const addUser = async function (req, reply) {
   const { name, email, password, captchaToken } = req.body
+  const db = req.server.db
   const avatar = process.env.DEFAULT_AVATAR
   let hashedPassword = password
   const passwordPattern = /^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:'",.<>?])/
@@ -50,16 +52,16 @@ const addUser = async function (req, reply) {
 	return reply.code(400).send({ error: 'Invalid CAPTCHA' });
 	}
 
-  const user = {
-   id: uuidv4(),
-   name,
-   email,
-   avatar
-  }
-
   try {
-    const insertStatement = req.server.db.prepare('INSERT INTO users (name, email, password, avatar) VALUES (?, ?, ?, ?)')
-    insertStatement.run(name, email, hashedPassword, avatar)
+    const insertStatement = db.prepare('INSERT INTO users (name, email, password, avatar) VALUES (?, ?, ?, ?)')
+    const result = insertStatement.run(name, email, hashedPassword, avatar)
+
+    const user = {
+      id: result.lastInsertRowid,
+      name,
+      email,
+      avatar
+    }
 
     return reply.code(201).send(user)
   } catch (error) {
@@ -74,10 +76,11 @@ const addUser = async function (req, reply) {
 
 const getUser = async function (req, reply) {
   const { id } = req.params
+  const db = req.server.db
 
   try {
-    const getStatement = req.server.db.prepare('SELECT * FROM users WHERE id = ?')
-    const user = getStatement.get(id)
+    const user = db.prepare('SELECT * FROM users WHERE id = ?')
+      .get(id)
 
     if (!user) {
       return reply.code(404).send({ error: "User not found" })
@@ -91,18 +94,21 @@ const getUser = async function (req, reply) {
 
 const deleteUser = async function (req, reply) {
   const { id, token } = req.body
+  const db = req.server.db
 
   try {
-    const userId = req.server.db.prepare('SELECT user_id FROM refresh_tokens WHERE refresh_token = ?').get(token)
+    const userId = db.prepare('SELECT user_id FROM refresh_tokens WHERE refresh_token = ?')
+      .get(token)
+    
     if (!userId) return reply.code(404).send({ error: "Refresh token not found"})
     
-    const deleteTokenStatement = req.server.db.prepare('DELETE FROM refresh_tokens WHERE refresh_token = ?')
-    deleteTokenStatement.run(token)
+    db.prepare('DELETE FROM refresh_tokens WHERE refresh_token = ?')
+      .run(token)
 
-    const deleteUserStatement = req.server.db.prepare('DELETE FROM users WHERE id = ?')
-    deleteUserStatement.run(id)
+    db.prepare('DELETE FROM users WHERE id = ?')
+      .run(id)
     
-    return reply.send({message: `User ${id} has been removed`})
+    return reply.send({ message: `User ${id} has been removed` })
   } catch (error) {
     return reply.code(500).send({ error: error.message })
   }
@@ -111,16 +117,18 @@ const deleteUser = async function (req, reply) {
 const updateUser = async function (req, reply) {
   const {id} = req.params
   const { name, email } = req.body
-  
+  const db = req.server.db
+
   try {
-    const getStatement = req.server.db.prepare('SELECT * FROM users WHERE id = ?')
-    const user = getStatement.get(id)
+    const user = db.prepare('SELECT * FROM users WHERE id = ?')
+      .get(id)
     if (!user) {
       return reply.code(404).send({ error: 'User not found' })
     }
 
-    const updateStatement = req.server.db.prepare('UPDATE users SET name = ?, email = ? WHERE id = ?')
-    updateStatement.run(name, email, id)
+    db.prepare('UPDATE users SET name = ?, email = ? WHERE id = ?')
+      .run(name, email, id)
+
     return reply.send({
       id,
       name,
@@ -134,18 +142,18 @@ const updateUser = async function (req, reply) {
 const updatePassword = async function (req, reply) {
   const {id} = req.params
   const { password } = req.body
-  
+  const db = req.server.db
   const passwordPattern = /^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};:'",.<>?])/
+
   if (!passwordPattern.test(password)) {
     return reply.code(400).send({ error: 'Password must contain at least one digit, one letter, and one special character.' })
   }
 
   try {
-    const getStatement = req.server.db.prepare('SELECT * FROM users WHERE id = ?')
-    const user = getStatement.get(id)
-    if (!user) {
-      return reply.code(404).send({ error: 'User not found' })
-    }
+    const user = db.prepare('SELECT * FROM users WHERE id = ?')
+      .get(id)
+
+    if (!user) return reply.code(404).send({ error: 'User not found' })
 
     let hashedPassword = password
 
@@ -154,8 +162,8 @@ const updatePassword = async function (req, reply) {
       hashedPassword = await bcrypt.hash(password, salt)
     }
 
-    const updateStatement = req.server.db.prepare('UPDATE users SET password = ? WHERE id = ?')
-    updateStatement.run(hashedPassword, id)
+    db.prepare('UPDATE users SET password = ? WHERE id = ?')
+      .run(hashedPassword, id)
    
     return reply.send({ message: `Password was changed for user ${id}` })
   } catch (error) {
@@ -164,7 +172,7 @@ const updatePassword = async function (req, reply) {
       } else {
         return reply.code(500).send({ error: error.message })
       }
-    }
+  }
 }
 
 const getDashboard = async function(req, reply) {
@@ -183,12 +191,13 @@ const uploadAvatar = async function(req, reply) {
     const pump = util.promisify(pipeline)
     const uploadDir = path.join(__dirname, '../avatars')
     const filePath = path.join(uploadDir, avatar.filename)
-    
+    const db = req.server.db
+
     await pump(avatar.file, fs.createWriteStream(filePath))
 
     const avatarPath = `/avatars/${avatar.filename}`
-    const updateStatement = req.server.db.prepare('UPDATE users SET avatar = ? WHERE name = ?')
-    updateStatement.run(avatarPath, username)
+    db.prepare('UPDATE users SET avatar = ? WHERE name = ?')
+      .run(avatarPath, username)
   } catch (error) {
     return reply.code(500).send({ error: error.message })
   }
