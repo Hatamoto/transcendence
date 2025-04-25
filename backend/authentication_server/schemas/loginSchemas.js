@@ -33,6 +33,7 @@ const tokenOpts = {
     body: {
       type: 'object',
       properties: {
+        id: { type: 'integer' },
         token: { type: 'string' },
       },
     },
