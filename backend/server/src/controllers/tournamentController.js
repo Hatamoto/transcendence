@@ -80,8 +80,8 @@ const joinTournament = async function(req, reply) {
       .all(tournament.id)
 
     if (players.length === tournament.size) {
-      const updateStatement = db.prepare('UPDATE tournaments SET status = ? WHERE id = ?')
-      updateStatement.run('waiting', tournament.id)
+      db.prepare('UPDATE tournaments SET status = ? WHERE id = ?')
+        .run('waiting', tournament.id)
     }
     return reply.send({ message: `User ${user.name} successfully joined tournament ${tournament.name}` })
   } catch (error) {
@@ -206,4 +206,10 @@ const startTournament = async function(req, reply) {
   }
 }
 
-export { createTournament, getTournaments, joinTournament, setReady, startTournament }
+export { 
+  createTournament, 
+  getTournaments, 
+  joinTournament, 
+  setReady, 
+  startTournament 
+}

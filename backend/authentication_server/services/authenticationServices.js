@@ -25,7 +25,11 @@ const completeLogin = async function(req, reply, user) {
 
   try {
     const accessToken = generateAccessToken(req, { id: user.id, name: user.name })
-    const refreshToken = req.server.jwt.sign({ id: user.id, name: user.name }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' })
+    const refreshToken = req.server.jwt.sign(
+      { id: user.id, name: user.name }, 
+      process.env.REFRESH_TOKEN_SECRET, 
+      { expiresIn: '7d' }
+    )
 
     db.prepare('UPDATE users SET status = 1 WHERE name = ?')
       .run(user.name)
