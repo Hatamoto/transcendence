@@ -7,6 +7,7 @@ import GameRoom from './pages/gameRoomPage'
 import UserPage from './pages/userPage'
 import NoPage from './pages/noPage'
 import ProfilePage from './pages/profilePage'
+import EditProfile from './pages/editProfile'
 
 // //import "./index.css";
 
@@ -18,7 +19,8 @@ const router = createBrowserRouter([
   {path: "/game", element: <GameRoom />},
   {path: "/user", element: <UserPage />},
   {path: "*", element: <NoPage />},
-  {path: "/user/profile", element: <ProfilePage />}
+  {path: "/user/profile", element: <ProfilePage />},
+  {path: "/user/edit", element: <EditProfile />}
 ]);
 
 const App: React.FC = () => {

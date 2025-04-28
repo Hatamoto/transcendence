@@ -198,7 +198,7 @@ export interface User {
 	onlineStatus: boolean;
 	wins: number;
 	losses: number;
-	avatarPath: string;
+	avatar: string;
 	email: string;
 	error: string;
 }
@@ -220,7 +220,7 @@ export async function getUser(id: string): Promise<User> {
 				onlineStatus: false,
 				wins: 0,
 				losses: 0,
-				avatarPath: '',
+				avatar: '',
 				email: '',
 				error: responseData.error
 		}
@@ -228,7 +228,7 @@ export async function getUser(id: string): Promise<User> {
 			onlineStatus: responseData.status,
 			wins: responseData.wins,
 			losses: responseData.losses,
-			avatarPath: responseData.avatarPath,
+			avatar: responseData.avatar,
 			email: responseData.email,
 			error: responseData.error
 		}
@@ -240,7 +240,7 @@ export async function getUser(id: string): Promise<User> {
 			onlineStatus: false,
 			wins: 0,
 			losses: 0,
-			avatarPath: '',
+			avatar: '',
 			email: '',
 			error: 'Something went wrong. Please try again.'
 		};
