@@ -12,16 +12,19 @@ const fastify = Fastify({
 })
 
 await fastify.register(dbInit)
-await fastify.register(loginRoutes)
-await fastify.register(cors, {
-	origin: 'http://localhost:5001',
-	credentials: true
-})
+await Promise.all([
+  fastify.register(loginRoutes),
+  fastify.register(cors, {
+    origin: ['http://localhost:5001', 'http://localhost:5173'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
+  }),
+])
 fastify.register(jwt, {
   secret: process.env.ACCESS_TOKEN_SECRET,
 })
 
-fastify.listen({ port: process.env.AUTH_PORT || 4000 }, function (err, address) {
+await fastify.listen({ port: process.env.AUTH_PORT || 4000 }, function (err, address) {
   if (err) {
     fastify.log.error(err)
     process.exit(1)

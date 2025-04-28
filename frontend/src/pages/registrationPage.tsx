@@ -1,6 +1,9 @@
-import Header from "../components/headers";
+import Header, { siteKey } from "../components/headers";
+import { useToast } from "../components/toastBar/toastContext";
 import { RegistrationRequest, registerUser } from "../services/api";
 import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
+import ReCAPTCHA from "react-google-recaptcha";
 
 interface RegistrationProps {
 	username: string;
@@ -10,6 +13,12 @@ interface RegistrationProps {
 }
 
 const Registration: React.FC = () => {
+	const navigate = useNavigate();
+	const [captchaError, setcaptchaError] = useState<string | null>(null);
+	const [captchaToken, setCaptchaToken] = useState("");
+	const [showCaptcha, setCaptcha] = useState(false);
+	
+	const toast = useToast();
 
 	const [formState, setFormState] = useState<RegistrationProps>({
 		username: '',
@@ -31,6 +40,18 @@ const Registration: React.FC = () => {
 	const handleSubmit = async (event: React.FormEvent) => {
 		event.preventDefault();
 
+		if (!captchaToken && !showCaptcha)
+		{
+			setCaptcha(true);
+			return;
+		}
+
+		if (!captchaToken) {
+		  setcaptchaError("Please complete the CAPTCHA");
+		  return ;
+		}
+		setcaptchaError(null);
+
 		if (formState.password !== formState.confirm_password) {
 			setPasswordError('Passwords do not match');
 			return;
@@ -41,19 +62,29 @@ const Registration: React.FC = () => {
 		const user: RegistrationRequest = {
 			name: formState.username,
 			email: formState.email,
-			password: formState.password
+			password: formState.password,
+			captchaToken: captchaToken
 		}
-		console.log("asdfghassd");
 
-		const success = await registerUser(user);
-		console.log("asdfghassd");
+		console.log("Calling registerUser API");
+		const response = await registerUser(user);
+		console.log("Returning from registerUser API call with status: ", response);
 
-		console.log(success);
-		// if (success) {
-		// 	alert('Registration worked');
-		// } else {
-		// 	alert('Registration failed. Please check your credentials.');
-		// }
+		console.log("Toast Context: ", toast);
+
+		if (response.status == 201) {
+			toast.open(response.error, "success");
+			// console.log(response.error);
+			navigate("/login");
+		} else {
+			toast.open(response.error, "error");
+			// console.log(response.error);
+			setFormState(prev => ({
+				...prev,
+				username: '',
+				email: ''
+			}));
+		}
 	};
 
 
@@ -96,7 +127,7 @@ const Registration: React.FC = () => {
 
 				<div className="w-64">
 					<label htmlFor="password" className="block text-sm font-medium text-gray-700">
-						Password
+						Password <span className="text-xs text-gray-500">(minimum 8 characters)</span>
 					</label>
 					<input
 						type="password"
@@ -123,9 +154,16 @@ const Registration: React.FC = () => {
 						required
 					/>
 				</div>
-
 				{passwordError && <p style={{ color: 'red' }}>{passwordError}</p>}
-
+				{showCaptcha && 
+				<ReCAPTCHA
+					sitekey={siteKey}
+					onChange={(token) => {
+						setcaptchaError(null);
+						setCaptchaToken(token || "");
+					}}
+				/> }
+				{captchaError && <p style={{ color: 'red' }}>{captchaError}</p>}
 				<button
 					type="submit"
 					className="w-64 bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center"

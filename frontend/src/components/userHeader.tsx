@@ -1,6 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+// type UserHeaderProps = {
+// 	userName: string;
+// };{userName}
+
+// const UserHeader: React.FC<UserHeaderProps> = ({ userName }) => {
+
 const UserHeader: React.FC = () => {
 
 	return (

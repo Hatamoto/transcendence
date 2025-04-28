@@ -42,37 +42,41 @@ class Ball extends Entity {
 	}
 
 	update(player, player2, deltaTime) {
-		if (this.yPos + this.height >= 600) this.yVel = -1;
-		else if (this.yPos <= 0) this.yVel = 1;
+		const nextX = this.xPos + this.xVel * this.speed * deltaTime;
+		const nextY = this.yPos + this.yVel * this.speed * deltaTime;
+
+		if (nextY + this.height >= 600) this.yVel = -1;
+		else if (nextY <= 0) this.yVel = 1;
 
 		if (
-			this.xPos <= player.xPos + player.width &&
-			this.yPos + this.height >= player.yPos &&
-			this.yPos <= player.yPos + player.height
+			nextX <= player.xPos + player.width &&
+			nextY + this.height >= player.yPos &&
+			nextY <= player.yPos + player.height
 		) {
 			this.xVel = 1;
 		}
 		if (
-			this.xPos + this.width >= player2.xPos &&
-			this.yPos + this.height >= player2.yPos &&
-			this.yPos <= player2.yPos + player2.height
+			nextX + this.width >= player2.xPos &&
+			nextY + this.height >= player2.yPos &&
+			nextY <= player2.yPos + player2.height
 		) {
 			this.xVel = -1;
 		}
 
-		if (this.xPos <= 0) 
-		{
+		if (nextX <= 0) {
 			player.points++;
 			this.xPos = 400 - this.width / 2;
 			this.yVel = Math.random() < 0.5 ? 1 : -1;
-		} else if (this.xPos + this.width >= 800)
-		{
+			return; // skip position update this frame
+		} else if (nextX + this.width >= 800) {
 			player2.points++;
 			this.xPos = 400 - this.width / 2;
 			this.yVel = Math.random() < 0.5 ? 1 : -1;
+			return; // skip position update this frame
 		}
-		this.xPos += this.xVel * this.speed * deltaTime;
-		this.yPos += this.yVel * this.speed * deltaTime;
+	
+		this.xPos = nextX;
+		this.yPos = nextY;
 	}
 
 	set(value)
@@ -96,8 +100,10 @@ class Player extends Entity {
 	}
 
 	move(deltaTime) {
-		if (this.yPos + this.height + this.yVel * this.speed >= 600) return;
-		else if (this.yPos + this.yVel * this.speed <= 0) return;
+		const nextY = this.yPos + this.yVel * this.speed * deltaTime;
+		
+		if (nextY + this.height >= 600) return;
+		else if (nextY + this.yVel <= 0) return;
 
 		this.yPos += this.yVel * this.speed * deltaTime;
 	}

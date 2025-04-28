@@ -1,7 +1,7 @@
 import dotenv from "dotenv"
 import Fastify from 'fastify'
 import fastifyStatic from '@fastify/static'
-import { root, userRoutes, friendRoutes } from './routes/routes.js'
+import { root, userRoutes, friendRoutes, tournamentRoutes } from './routes/routes.js'
 import dbInit from './database.js'
 import path from 'path'
 import cookie from '@fastify/cookie'
@@ -64,14 +64,15 @@ fastify.setNotFoundHandler((req, reply) => {
 });
 
 await fastify.register(dbInit)
-await fastify.register(formbody)
-await fastify.register(cookie)
-await fastify.register(multipart)
-await fastify.register(root)
-await fastify.register(userRoutes)
-await fastify.register(friendRoutes)
+fastify.register(formbody)
+fastify.register(cookie)
+fastify.register(multipart)
+fastify.register(root)
+fastify.register(userRoutes)
+fastify.register(friendRoutes)
+fastify.register(tournamentRoutes)
 
-fastify.listen({ port: process.env.PORT || 5001, host: process.env.HOST }, function (err, address) {
+await fastify.listen({ port: process.env.PORT || 5001, host: process.env.HOST }, function (err, address) {
 	log.info('Listening on port', process.env.PORT);
 	if (err) {
 		log.info('Error: ', err)

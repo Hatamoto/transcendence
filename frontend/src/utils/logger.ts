@@ -1,6 +1,4 @@
 // @ts-ignore
-import socket from './socket.js';
-
 export enum LogLevel {
 	DEBUG = 0,
 	INFO = 1,
@@ -44,10 +42,12 @@ export class Logger {
 			console.log(tag, ...args);
 
 			// Send log to backend
-			socket.emit('frontend-log', {
-				level: this.levelName(level),
-				args: args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg)
-			});
+			// needs a way to be disabled so I can use one socket
+			return ;
+			//socket.emit('frontend-log', {
+			//	level: this.levelName(level),
+			//	args: args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg)
+			//});
 		}
 	}
 

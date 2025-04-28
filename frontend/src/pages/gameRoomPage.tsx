@@ -1,29 +1,72 @@
 import Header from "../components/headers";
-import { createNewGame } from "../game/frontEndGame";
+import { createNewGame, frontEndGame, cleanGame } from "../game/frontEndGame";
 import { useEffect, useRef } from "react";
+import { createSocket, getSocket, closeSocket } from "../utils/socket";
 
-
-export default function GameRoom() {
-
+export default function GameRoom({matchType}) {
 	const hasRun = useRef(false);
+	const leftPage = useRef(false);
 
 	useEffect(() => {
-	  if (!hasRun.current) {
-		createNewGame();
+	if (!hasRun.current) {
+		if (matchType !== "solo")
+		createSocket();
+		createNewGame(matchType, getSocket());
 		hasRun.current = true;
-	  }
+	}
+
+	return () => {
+		if (frontEndGame && leftPage.current) {
+			closeSocket();
+			cleanGame();
+		}
+		else
+			leftPage.current = true;
+	};
 	}, []);
+  
+	const matchTypeButtons = () => {
+		switch (matchType) {
+			case "solo":
+				return(
+					<>
+					<p id="size-txt" className="text-center text-gray-600 mb-4">Lobby size: 1/1</p>
+					<h1 className="text-2xl font-bold text-center mb-4">Welcome to the Solo Game!</h1>
+					<button id="ready-solo" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
+						Start!
+					</button>
+					</>
+				);
+			case "tournament":
+				return(
+					<>
+					<p id="size-txt" className="text-center text-gray-600 mb-4">Lobby size: 0/2</p>
+					<h1 className="text-2xl font-bold text-center mb-4">Welcome to the Tournament!</h1>
+					<button id="ready-tour" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
+						Ready up!
+					</button>
+					</>
+				);
+			case "normal":
+				return(
+					<>
+					<p id="size-txt" className="text-center text-gray-600 mb-4">Lobby size: 0/2</p>
+					<h1 className="text-2xl font-bold text-center mb-4">Welcome to the Gameroom!</h1>
+					<button id="ready-match" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
+						Start Matchmaking!
+					</button>
+					</>
+				);
+			default:
+			return (<p>FUCK OFF</p>);
+		}
+	};
 
 	return (
 		<>
 			<Header />
-			<div id="gameroom-page" className="bg-green-100 p-8 rounded-lg shadow-md w-[820px]">
-				<h1 className="text-2xl font-bold text-center mb-4">Welcome to the Gameroom!</h1>
-				<p id="size-txt" className="text-center text-gray-600 mb-4">Lobby size: 0/2</p>
-				
-				<button id="test-btn" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
-					Start New Game
-				</button>
+			<div id="gameroom-page" className="bg-green-100 p-8 rounded-lg shadow-md w-[820px]">				
+				{matchTypeButtons()}
 
 				<label htmlFor="colorSelect">Choose ball color:</label>
 				<select id="colorSelect" name="mySelect" defaultValue="white">
