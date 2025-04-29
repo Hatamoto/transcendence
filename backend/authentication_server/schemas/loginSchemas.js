@@ -1,5 +1,4 @@
 import { logoutUser, loginUser, getToken, googleAuthHandler } from '../controllers/loginController.js'
-import authenticateToken from '../../server/src/middleware/authentication.js'
 
 const logoutOpts = {
   schema: {
@@ -18,10 +17,11 @@ const loginOpts = {
   schema: {
     body: {
       type: 'object',
-      required: ['email', 'password'],
+      required: ['email', 'password', 'captchaToken'],
       properties: {
-        email: { type: 'string' },
+        email: { type: 'string', format: 'email' },
         password: { type: 'string' },
+        captchaToken: { type: 'string' },
       },
     },
   },
@@ -33,11 +33,11 @@ const tokenOpts = {
     body: {
       type: 'object',
       properties: {
+        id: { type: 'integer' },
         token: { type: 'string' },
       },
     },
   },
-  preHandler: authenticateToken,
   handler: getToken,
 }
 

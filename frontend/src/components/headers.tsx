@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+export const siteKey = "6Lf-7hwrAAAAAJfpGT5ZQUZYd-hAZVjLZx6aJEl9";
+
 const Header: React.FC = () => {
 
 	return (

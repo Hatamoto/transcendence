@@ -1,6 +1,23 @@
-import { EXT_IP } from "../config/env-config";
+// socket.ts
+import { io, Socket } from 'socket.io-client';
+import { DefaultEventsMap } from '@socket.io/component-emitter';
 
-// @ts-ignore
-const socket = io();
+let socket: Socket<DefaultEventsMap, DefaultEventsMap> | null = null;
 
-export default socket;
+export function createSocket() {
+	if (!socket) {
+		console.log("Creating socket");
+		socket = io();
+	}
+}
+
+export function closeSocket(){
+	if (socket) {
+		socket.disconnect();
+		socket = null;
+	}
+}
+
+export function getSocket(){
+	return socket;
+}

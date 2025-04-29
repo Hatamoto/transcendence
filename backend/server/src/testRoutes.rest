@@ -4,8 +4,8 @@ POST http://localhost:5001/api/user
 Content-Type: application/json
 
 {
-    "name": "testis",
-    "email": "testis@moi.com",
+    "name": "uusi",
+    "email": "uusi@moi.com",
     "password": "Test123!"
 }
 
@@ -15,7 +15,11 @@ POST http://localhost:4000/api/login
 Content-Type: application/json
 
 {
+<<<<<<< HEAD
+    "email": "testi@moi.com",
+=======
     "username": "patrik",
+>>>>>>> 8e825b4725ac77f8aa21b8fdb0969a1cbf91466b
     "password": "Test123!"
 }
 
@@ -25,7 +29,11 @@ DELETE http://localhost:4000/api/logout
 Content-Type: application/json
 
 {
+<<<<<<< HEAD
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywibmFtZSI6InV1c2kiLCJpYXQiOjE3NDQ4NzY1ODZ9.DrWWZY2fukIzfPEI3jOMr54dKN94a0EAeF9rs6uX5Kc"
+=======
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwibmFtZSI6IlBhdHJpayBMw6VuZyIsImlhdCI6MTc0NDcxNDY4MX0.1X99fxMTIhxhmEU-xXm63U9joj5n9Mmu-sN1m4gzhp0"
+>>>>>>> 8e825b4725ac77f8aa21b8fdb0969a1cbf91466b
 }
 
 ### Google sign in
@@ -36,24 +44,37 @@ GET http://localhost:4000/api/googleauth
 
 GET http://localhost:5001/api/users
 
+### Get single user
+
+GET http://localhost:3000/api/user/3
+
 ### Delete user
 
+<<<<<<< HEAD
+DELETE http://localhost:3000/api/user/delete
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OCwibmFtZSI6Im1hdHVyZW1vb3NlNTEiLCJpYXQiOjE3NDQ5NzA2ODQsImV4cCI6MTc0NDk3MTU4NH0.sIj7xYW9S_jGU7_3SgLX9fOanbhJhvfYhCkG0Fln5Eo
+
+{
+    "id": "8",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OCwibmFtZSI6Im1hdHVyZW1vb3NlNTEiLCJpYXQiOjE3NDQ5NzA2ODR9.aorAG4W1Pe6sI-aPehRLf9THyOH8S9ZUs8eFik4Kdis"
+=======
 DELETE http://localhost:5001/api/user/8
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OCwibmFtZSI6IlBhdHJpayBMw6VuZyIsImlhdCI6MTc0NDg4MTI3NywiZXhwIjoxNzQ0ODg0ODc3fQ.xVdGAKpBWim4_dR5ZOL7bkj5rC_0AhefSNJofiUUe30
 
 {
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OCwibmFtZSI6IlBhdHJpayBMw6VuZyIsImlhdCI6MTc0NDg4MTI3N30.tKbZnDorDPn-l13nhp_L7O_H1-L3fl_McwLkt1-0sow"
+>>>>>>> 8e825b4725ac77f8aa21b8fdb0969a1cbf91466b
 }
 
 ### Get new refresh token
 
 POST http://localhost:4000/api/token
 Content-Type: application/json
-Authorization: Bearer 
 
 {
-    "token": ""
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OCwibmFtZSI6InF1aWNrZXN0Z2F5YWw0MSIsImlhdCI6MTc0NDk2NjAwOH0.ySyZ9TXpekg-HPb127vLtMBNOIy-i_JqOXWCQ-r0Lzk"
 }
 
 ### Send friend request
@@ -95,3 +116,33 @@ Authorization: Bearer
 
 GET http://localhost:3000/api/friends
 Authorization: Bearer ayJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6InRlc3RpIiwiaWF0IjoxNzQ0Mjc4MDg0LCJleHAiOjE3NDQyODE2ODR9.WoLtOePwlvNheh4llONsIFyjfE71Ik800UmvQ4CRDNc
+
+### Create new tournament
+
+POST http://localhost:3000/api/tournament/create
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywibmFtZSI6InRlc3RpcyIsImlhdCI6MTc0NTQwODk4NSwiZXhwIjoxNzQ1NDA5ODg1fQ.DKu_Vgi486N7CZKIaqmCyFdT7v30WcqP8zsFFuoIfng
+
+{
+    "name": "testiturnaus",
+    "size": "2"
+}
+
+### Join tournament
+
+POST http://localhost:3000/api/tournament/1/join
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6InRlc3RpIiwiaWF0IjoxNzQ1NDA5NjQ5LCJleHAiOjE3NDU0MTA1NDl9.KoE6YckcKoiZvKWlcH1SPapkUtZxc_ZdB2V6ghEKAK0
+
+### set player ready
+
+PATCH http://localhost:3000/api/tournament/1/ready
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6InRlc3RpIiwiaWF0IjoxNzQ1NDA5NjQ5LCJleHAiOjE3NDU0MTA1NDl9.KoE6YckcKoiZvKWlcH1SPapkUtZxc_ZdB2V6ghEKAK0
+
+### Get all tournaments
+
+GET http://localhost:3000/api/tournaments
+
+### Start tournament
+
+POST http://localhost:3000/api/tournament/1/start
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6InRlc3RpIiwiaWF0IjoxNzQ1NDA5NjQ5LCJleHAiOjE3NDU0MTA1NDl9.KoE6YckcKoiZvKWlcH1SPapkUtZxc_ZdB2V6ghEKAK0

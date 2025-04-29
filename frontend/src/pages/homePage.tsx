@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import Header from "../components/headers.js";
+import Background from '../components/background.js';
 import { useNavigate } from "react-router-dom";
 import { useToast } from '../components/toastBar/toastContext.js';
 // import { useEffect } from 'react';
@@ -46,6 +47,7 @@ const Home: React.FC = () => {
 	
 	return (
 		<>
+		<Background />
 		<Header />
 			<div className="flex flex-col items-center justify-center min-h-screen">
 			<div className="bg-white p-6 rounded-lg w-96 flex flex-col gap-4 items-center shadow-md">
@@ -54,6 +56,12 @@ const Home: React.FC = () => {
 					className="w-64 bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center"
 			  	>
 					Demo Game
+			  	</Link>
+				  <Link 
+					to="/solo-game"
+					className="w-64 bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center"
+			  	>
+					Demo SignleplayernerNWnSns Game
 			  	</Link>
 			  	<Link 
 					to="/login"
