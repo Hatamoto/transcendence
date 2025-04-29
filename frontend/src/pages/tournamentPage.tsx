@@ -31,15 +31,28 @@ export async function createrTour(tournament): Promise<number> {
 	}
 }
 
-export async function joinTour(): Promise<number> {
+export async function joinerTour(): Promise<number> {
 	
 	const userId = sessionStorage.getItem('activeUserId');
 	
 	const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}')
 	
 	try {
-		const response = await fetch('/api/tournament/1/join', {
+		const response = await fetch('/api/tournament/5/join', {
 			method: 'POST',
+			headers: {
+			'Authorization': `Bearer ${sessionData.accessToken}`
+			}
+		});
+
+		const responseData = await response.json();
+
+	} catch (error) {
+		console.error("Login error:", error);
+	}
+	try {
+		const response = await fetch('/api/tournament/5/ready', {
+			method: 'PATCH',
 			headers: {
 			'Authorization': `Bearer ${sessionData.accessToken}`
 			}
@@ -54,12 +67,37 @@ export async function joinTour(): Promise<number> {
 	}
 }
 
+export async function starterTour(): Promise<number> {
+	
+	const userId = sessionStorage.getItem('activeUserId');
+	
+	const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}')
+	
+	try {
+		const response = await fetch('/api/tournament/5/start', {
+			method: 'POST',
+			headers: {
+			'Authorization': `Bearer ${sessionData.accessToken}`
+			}
+		});
+
+		const responseData = await response.json();
+		console.log(responseData.error);
+		console.log(responseData.bracket)
+
+		return response.status;
+
+	} catch (error) {
+		console.error("Login error:", error);
+	}
+}
+
 
 const TournamentsPage: React.FC = () => {
 
 
 	const createTour = () => {
-		createrTour({name: "test", size: 4}).then((response) => {
+		createrTour({name: "paskaturnaus", size: 2}).then((response) => {
 			if (response == 200) {
 				console.log("Tournament created");
 			} else {
@@ -69,16 +107,28 @@ const TournamentsPage: React.FC = () => {
 		);
 	}
 
-	const ASDjoinTour = () => {
-		joinTour().then((response) => {
+	const joinTour = () => {
+		joinerTour().then((response) => {
 			if (response == 200) {
-				console.log("Tournament created");
+				console.log("Tournament joined");
 			} else {
-				console.log("Tournament creation failed");
+				console.log("Tournament join failed");
 			}
 		}
 		);
 	}
+
+	const startTour = () => {
+		starterTour().then((response) => {
+			if (response == 200) {
+				console.log("Tournament started");
+			} else {
+				console.log("Tournament start failed");
+			}
+		}
+		);
+	}
+
 
 	return (
 		<>
@@ -92,7 +142,8 @@ const TournamentsPage: React.FC = () => {
 					join tournament
 		</button>
 
-		<button id="test-start-tour" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
+		<button onClick={startTour} 
+		id="test-start-tour" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
 					start tournament
 		</button>
 

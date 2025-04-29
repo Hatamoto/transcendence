@@ -140,7 +140,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6I
 
 ### Get all tournaments
 
-GET http://localhost:3000/api/tournaments
+GET http://localhost:5001/api/tournaments
 
 ### Start tournament
 
