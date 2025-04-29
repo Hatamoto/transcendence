@@ -154,11 +154,30 @@ export function setupNetworking(server){
 		});
 
 		socket.on("joinRoomQue", () => {
+			let roomFlag = 0;
+			const socketRoom = [...socket.rooms][1]
+
 			if (socket.rooms.size > 1)
-				return ;
+			{
+				io.to(socketRoom).emit('playerDisconnected', Object.keys(rooms[socketRoom].players).length);
+				socket.leave([...socket.rooms][1]);
+				if (Object.keys(rooms[socketRoom].players).length === 1)
+					roomFlag = 1;
+				else
+					roomFlag = 2;
+				delete rooms[socketRoom].players[socket.id];
+				
+				const player = rooms[socketRoom].players[socket.id];
+			}
 			const roomId = roomIds.allocate();
+
+			if (roomFlag == 1)
+				roomIds.freeRoom(socketRoom);
+			else if (roomFlag == 2)
+				roomIds.openRoomDoors(socketRoom);
 			if (roomId == -1)
 				return ;
+
 			if (!rooms[roomId]) {
 				roomIds.openRoomDoors(roomId);
 				rooms[roomId] = {
@@ -338,33 +357,36 @@ function startGameLoop(roomId) {
 
 	if (!game.isRunning())
 		return ;
-	log.info("Game running: " + roomId);
+	//log.info("Game running: " + roomId);
 
-	if (game.getScores()[0] >= 5)
-	{
+	if (game.getScores()[0] >= 5 || game.getScores()[1] >= 5) {
 		game.stop();
-		io.to(roomId).emit('gameOver', 1);
-		if (room.type == "normal")
-		{
-			room.gameStarted = false; // you can rematch
-			if (Object.keys(rooms[roomId].players).length === 1)
+	
+		if (room.type === "normal") {
+			room.gameStarted = false; // Allow rematch
+			if (Object.keys(room.players).length === 1) {
 				roomIds.openRoomDoors(roomId);
+			}
 		}
-		return ;
-	}
-	else if (game.getScores()[1] >= 5)
-	{
-		game.stop();
-		if (room.type == "normal")
-		{
-			room.gameStarted = false; // you can rematch
-			if (Object.keys(rooms[roomId].players).length === 1)
-				roomIds.openRoomDoors(roomId);
+	
+		const winner = game.getScores()[0] >= 5 ? 1 : 2;
+		io.to(roomId).emit('gameOver', winner);
+	
+		for (const playerId in room.players) {
+			const player = room.players[playerId];
+	
+			if (player.dataChannel) {
+				player.dataChannel.close();
+				player.dataChannel = null;
+			}
+	
+			if (player.peerConnection) {
+				player.peerConnection.close();
+				player.peerConnection = null;
+			}
 		}
-		io.to(roomId).emit('gameOver', 2);
-		return ;
+		return;
 	}
-		
 
 	game.update();
 	

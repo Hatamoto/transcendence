@@ -47,8 +47,8 @@ const Home: React.FC = () => {
 	
 	return (
 		<>
-		<Background />
 		<Header />
+		<Background />
 			<div className="flex flex-col items-center justify-center min-h-screen">
 			<div className="bg-white p-6 rounded-lg w-96 flex flex-col gap-4 items-center shadow-md">
 			  	<Link 
@@ -57,7 +57,7 @@ const Home: React.FC = () => {
 			  	>
 					Demo Game
 			  	</Link>
-				  <Link 
+				<Link 
 					to="/solo-game"
 					className="w-64 bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center"
 			  	>

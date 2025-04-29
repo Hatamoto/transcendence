@@ -2,6 +2,8 @@ import Header from "../components/headers";
 import { createNewGame, frontEndGame, cleanGame } from "../game/frontEndGame";
 import { useEffect, useRef } from "react";
 import { createSocket, getSocket, closeSocket } from "../utils/socket";
+import Background from '../components/background.js';
+
 
 export default function GameRoom({matchType}) {
 	const hasRun = useRef(false);
@@ -10,7 +12,7 @@ export default function GameRoom({matchType}) {
 	useEffect(() => {
 	if (!hasRun.current) {
 		if (matchType !== "solo")
-		createSocket();
+			createSocket();
 		createNewGame(matchType, getSocket());
 		hasRun.current = true;
 	}
@@ -64,6 +66,7 @@ export default function GameRoom({matchType}) {
 
 	return (
 		<>
+			<Background />
 			<Header />
 			<div id="gameroom-page" className="bg-green-100 p-8 rounded-lg shadow-md w-[820px]">				
 				{matchTypeButtons()}
