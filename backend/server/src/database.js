@@ -26,7 +26,7 @@ async function dbInit(fastify, options) {
 //   `)
 
 // db.exec(`
-//    DROP TABLE IF EXISTS users;
+//    DROP TABLE IF EXISTS tournaments;
 // `)
 
 //   db.exec(`

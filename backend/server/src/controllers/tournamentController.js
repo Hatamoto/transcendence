@@ -4,7 +4,6 @@ const createTournament = async function(req, reply) {
   const { name, size } = req.body
   const userId = req.user.id
   const db = req.server.db
-
   try{
     const tournaments = db.prepare('SELECT * FROM tournaments WHERE created_by = ?')
       .all(userId)
@@ -26,6 +25,7 @@ const createTournament = async function(req, reply) {
 
     return reply.send({ message: "Tournament successfully created" })
   } catch (error) {
+	console.log(error)
     return reply.code(500).send({ error: error.message })
   }
 }
