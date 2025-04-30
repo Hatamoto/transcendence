@@ -9,11 +9,11 @@ const createTournament = async function(req, reply) {
     const tournaments = db.prepare('SELECT * FROM tournaments WHERE created_by = ?')
       .all(userId)
 
-    if (tournaments.length !== 0) {
-      const activeTournaments = tournaments.some(item => {
+    if (tournaments.length > 0) {
+      const activeTournaments = tournaments.map(item => {
         item.status !== 'completed'
       })
-      if (activeTournaments) {
+      if (activeTournaments.length > 0) {
         return reply.code(409).send({ 
           error: "User already has an active tournament started",
           status: activeTournaments.status
