@@ -2,74 +2,125 @@ import { Ball } from "./frontEndGame"
 
 export interface PredictedPath {
 	finalY: number;
-	points: [number, number][];
+}
+
+export interface AIPlayerInput {
+	SUP: boolean;
+	SDOWN: boolean;
 }
 
 export class GameAI {
-	private ctx: CanvasRenderingContext2D = null;
 	private canvasHeight: number = 0;
 	private targetX: number = 0;
-	private timer
+	private predictedPath: PredictedPath | null = null;
+	private pathPoints: [number, number][] = [];
+	private playerHeight: number = 0;
+	private targetY: number = 0;
+	private difficulty: number = 0; // smallest value is the hardest
+	private maxDifficulty: number = 4;
+
+	public aiPlayerInput: AIPlayerInput = {	
+		SUP: false,
+		SDOWN: false
+	};
+	private lastPredictionTime: number = 0;
 
 	constructor(
-		ctx: CanvasRenderingContext2D,
-		canvasHeight: number = 480,
-		targetX: number = 690
+		canvasHeight: number = 600,
+		playerX: number = 780,
+		playerHeight: number = 80,
 	) {
-		this.ctx = ctx;
 		this.canvasHeight = canvasHeight;
-		this.targetX = targetX;
+		this.targetX = playerX;
+		this.playerHeight = playerHeight;
 	}
 
-// This now accepts your real class instance
-public predict(ball: Ball): PredictedPath {
-	let simulatedXVel = ball.xVel * ball.speed;
-	let simulatedYVel = ball.yVel * ball.speed;
-	let simulatedX = ball.xPos;
-	let simulatedY = ball.yPos;
-	const radius = ball.width; // assuming square ball
+	public getKeyPresses(ball: Ball, yPos: number) {
+		// Get the predicted path of the ball
+		const now = Date.now();
+		const treshold = 4; // Adjust this value as needed
 
-	const pathPoints: [number, number][] = [[simulatedX, simulatedY]];
+		// console.log("Ball Y Position: ", ball.yPos);
+		// console.log("Player Y Position: ", yPos);
+		// console.log("Last Prediction Time: ", this.lastPredictionTime);
 
-	while (simulatedX !== this.targetX) {
-		const nextX =
-			simulatedXVel > 0
-				? Math.min(simulatedX + simulatedXVel, this.targetX)
-				: Math.max(simulatedX + simulatedXVel, this.targetX);
-
-		let nextY = simulatedY + simulatedYVel;
-
-		if (nextY - radius < 0 || nextY + radius > this.canvasHeight) {
-			simulatedYVel *= -1;
-			nextY = simulatedY + simulatedYVel;
+		if (this.lastPredictionTime < now - 1000) {
+			this.pathPoints = [];
+			this.predictedPath = this.predict(ball);
+			this.lastPredictionTime = now;
+			this.targetY = this.predictedPath.finalY - this.playerHeight / 2;
+			const r = Math.random();
+			const difficultyFactor = (this.maxDifficulty - this.difficulty);
+			const randomAdjust = (Math.random() * this.playerHeight / 3) * difficultyFactor;
+			if (r < 0.5) {
+				this.targetY += randomAdjust
+				console.log("Randomly adjusting target Y +", randomAdjust);
+			} else {
+				this.targetY -= randomAdjust
+				console.log("Randomly adjusting target Y -", randomAdjust);
+			}
+			// console.log("Predicting new path");
 		}
 
-		pathPoints.push([nextX, nextY]);
-		simulatedX = nextX;
-		simulatedY = nextY;
+		if (yPos + treshold < this.targetY) {
+			this.aiPlayerInput.SDOWN = true;
+			this.aiPlayerInput.SUP = false;
+		}
+		else if (yPos - treshold > this.targetY) {
+			this.aiPlayerInput.SUP = true;
+			this.aiPlayerInput.SDOWN = false;
+		}
+		else {
+			this.aiPlayerInput.SUP = false;
+			this.aiPlayerInput.SDOWN = false;
+		}
 	}
 
-	this.drawPrediction(pathPoints);
+	// This now accepts your real class instance
+	private predict(ball: Ball): PredictedPath {
+		let simulatedXVel = ball.xVel * ball.speed;
+		let simulatedYVel = ball.yVel * ball.speed;
+		let simulatedX = ball.xPos;
+		let simulatedY = ball.yPos;
+		const radius = ball.height / 2;
 
-	return {
-		finalY: simulatedY,
-		points: pathPoints
-	};
-}
+		while (simulatedX !== this.targetX) {
+			const nextX =
+				simulatedXVel > 0
+					? Math.min(simulatedX + simulatedXVel, this.targetX)
+					: Math.max(simulatedX + simulatedXVel, this.targetX);
 
+			let nextY = simulatedY + simulatedYVel;
 
-	private drawPrediction(pathPoints: [number, number][]) {
-		this.ctx.strokeStyle = "red";
-		this.ctx.lineWidth = 2;
-		this.ctx.beginPath();
+			if (nextY - radius < 0 || nextY + radius > this.canvasHeight) {
+				simulatedYVel *= -1;
+				nextY = simulatedY + simulatedYVel;
+			}
 
-		for (let i = 0; i < pathPoints.length - 1; i++) {
-			const [x1, y1] = pathPoints[i];
-			const [x2, y2] = pathPoints[i + 1];
-			this.ctx.moveTo(x1, y1);
-			this.ctx.lineTo(x2, y2);
+			this.pathPoints.push([nextX, nextY]);
+			simulatedX = nextX;
+			simulatedY = nextY;
 		}
 
-		this.ctx.stroke();
+		return {
+			finalY: simulatedY
+		};
+	}
+
+
+	public drawAIPrediction(ctx: CanvasRenderingContext2D) {
+
+		console.log("Drawing AI prediction");
+		ctx.strokeStyle = "blue";
+		ctx.lineWidth = 2;
+		ctx.beginPath();
+
+		for (let i = 0; i < this.pathPoints.length - 1; i++) {
+			const [x1, y1] = this.pathPoints[i];
+			const [x2, y2] = this.pathPoints[i + 1];
+			ctx.moveTo(x1, y1);
+			ctx.lineTo(x2, y2);
+		}
+		ctx.stroke();
 	}
 }

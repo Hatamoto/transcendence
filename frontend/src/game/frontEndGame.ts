@@ -2,7 +2,7 @@
 import { Logger, LogLevel } from '../utils/logger.js';
 import { TURN_URL, TURN_USER, TURN_PASS, EXT_IP, STUN_URL} from '../config/env-config.js';
 import { setupButtons  } from './matchmaking.js';
-import { GameAI, PredictedPath } from './gameAI';
+import { GameAI, PredictedPath, AIPlayerInput } from './gameAI';
 
 const log = new Logger(LogLevel.INFO);
 
@@ -140,6 +140,7 @@ export class frontEndGame {
 	private gameAI: GameAI | null = null;
 	private predictedPath: PredictedPath | null = null;
 	private lastAIupdate: number = 0;
+	private aiPlayerInput: AIPlayerInput | null = null;
 
 	private dataChannel: RTCDataChannel | null = null;
     private peerConnection: RTCPeerConnection | null = null;
@@ -153,8 +154,8 @@ export class frontEndGame {
 
 	constructor() {
 		this.container = document.getElementById("game-container");
-		this.player1 = new Player(50, 10, 300, 10);
-		this.player2 = new Player(50, 10, 300, 780);
+		this.player1 = new Player(60, 10, 300, 10);
+		this.player2 = new Player(60, 10, 300, 780);
 
 		//const ip = this.getExternalIP();
 		//if (ip) {
@@ -223,7 +224,7 @@ export class frontEndGame {
 
 	setupAI() 
 	{
-		this.gameAI = new GameAI(this.ctx, this.gameCanvas.height, this.gameCanvas.width);
+		this.gameAI = new GameAI(this.gameCanvas.height, this.player2.xPos, this.player2.height);
 	}
 
 	setupPeerConnectionEvents(socket) {
@@ -391,24 +392,13 @@ export class frontEndGame {
 		else
 			this.player1.setvel(0);
 
-		// Simulate keypresses with AI
-		if (now - this.lastAIupdate > 1000) {
-			this.predictedPath = this.gameAI.predict(this.ball)
-			if (this.predictedPath)
-				{
-					const predictedY = this.predictedPath.finalY;
-					if (this.player2.getpos()[0] + treshold < predictedY) {
-						this.keysPressed[KeyBindings.SDOWN] = true;
-						// this.player2.setvel(1);
-					}
-					else if (this.player2.getpos()[0] - treshold > predictedY) {
-						this.keysPressed[KeyBindings.SUP] = true;
-						//this.player2.setvel(-1);
-					}
-				}
-		}
+		// Simulate AI player movement
+		this.gameAI.getKeyPresses(this.ball, this.player2.getpos()[0]);
+		// console.log("AI Player Input: ", this.gameAI.aiPlayerInput);
+		this.keysPressed[KeyBindings.SUP] = this.gameAI.aiPlayerInput.SUP;
+		this.keysPressed[KeyBindings.SDOWN] = this.gameAI.aiPlayerInput.SDOWN;
 
- 		else if (this.keysPressed[KeyBindings.SUP]) 
+ 		if (this.keysPressed[KeyBindings.SUP]) 
 			this.player2.setvel(-1);
 		else if (this.keysPressed[KeyBindings.SDOWN])
 			this.player2.setvel(1);
@@ -435,9 +425,9 @@ export class frontEndGame {
 		this.ctx.fillText(this.player1Score.toString(), this.gameCanvas.width / 2 + 48, 50);
 		this.ctx.fillStyle = this.color;
 		this.ctx.fillRect(this.ballX, this.ballY, this.ballSize, this.ballSize);
-		this.ctx.fillRect(10, this.player1.getpos()[0], 10, 50);
-		this.ctx.fillRect(780, this.player2.getpos()[0], 10, 50);
-
+		this.ctx.fillRect(10, this.player1.getpos()[0], 10, this.player1.height);
+		this.ctx.fillRect(780, this.player2.getpos()[0], 10, this.player2.height);
+		this.gameAI.drawAIPrediction(this.ctx);
 		if (this.ball)
 		{
 			this.ball.draw(this.ctx);
