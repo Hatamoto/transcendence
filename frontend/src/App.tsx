@@ -13,25 +13,26 @@ import ProtectedRoutes from './components/authRoutes'
 // //import "./index.css";
 
 const router = createBrowserRouter([
-  {path: "/", element:<Home />},
-  {path: "/home", element:<Home />},
-  {path: "/login", element:<Login/> },
-  {path: "/register", element: <Registration />},
-	{path: "/game", element: <ProtectedRoutes> <GameRoom matchType="normal" /></ProtectedRoutes> },
-	{path: "/solo-game", element: <ProtectedRoutes> <GameRoom matchType="solo" /></ProtectedRoutes> },
-  {path: "/tournaments", element: <ProtectedRoutes> <TournamentsPage /></ProtectedRoutes>},
-  {path: "/user", element: <ProtectedRoutes><UserPage /></ProtectedRoutes>},
-  {path: "*", element: <NoPage />},
-  {path: "/user/profile", element: <ProtectedRoutes><ProfilePage /></ProtectedRoutes>}
+	{ path: "/", element: <Home /> },
+	{ path: "/home", element: <Home /> },
+	{ path: "/login", element: <Login /> },
+	{ path: "/register", element: <Registration /> },
+	{ path: "/game", element: <ProtectedRoutes> <GameRoom matchType="normal" /></ProtectedRoutes> },
+	{ path: "/solo-game", element: <ProtectedRoutes> <GameRoom matchType="solo" /></ProtectedRoutes> },
+	{ path: "/ai-game", element: <ProtectedRoutes> <GameRoom matchType="ai" /></ProtectedRoutes> },
+	{ path: "/tournaments", element: <ProtectedRoutes> <TournamentsPage /></ProtectedRoutes> },
+	{ path: "/user", element: <ProtectedRoutes><UserPage /></ProtectedRoutes> },
+	{ path: "*", element: <NoPage /> },
+	{ path: "/user/profile", element: <ProtectedRoutes><ProfilePage /></ProtectedRoutes> }
 ]);
 
 const App: React.FC = () => {
 
-  return (
-    <div>
-      <RouterProvider router={router}></RouterProvider>
-    </div>
-  )
+	return (
+		<div>
+			<RouterProvider router={router}></RouterProvider>
+		</div>
+	)
 }
 
 export default App;

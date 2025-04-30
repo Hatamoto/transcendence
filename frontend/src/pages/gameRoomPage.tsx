@@ -9,7 +9,7 @@ export default function GameRoom({matchType}) {
 
 	useEffect(() => {
 	if (!hasRun.current) {
-		if (matchType !== "solo")
+		if (matchType !== "solo" && matchType !== "ai")
 		createSocket();
 		createNewGame(matchType, getSocket());
 		hasRun.current = true;
@@ -33,6 +33,16 @@ export default function GameRoom({matchType}) {
 					<p id="size-txt" className="text-center text-gray-600 mb-4">Lobby size: 1/1</p>
 					<h1 className="text-2xl font-bold text-center mb-4">Welcome to the Solo Game!</h1>
 					<button id="ready-solo" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
+						Start!
+					</button>
+					</>
+				);
+			case "ai":
+				return(
+					<>
+					<p id="size-txt" className="text-center text-gray-600 mb-4">Lobby size: 1/1</p>
+					<h1 className="text-2xl font-bold text-center mb-4">Welcome to the VS AI Game!</h1>
+					<button id="ready-ai" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
 						Start!
 					</button>
 					</>

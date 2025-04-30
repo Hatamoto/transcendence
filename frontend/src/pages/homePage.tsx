@@ -63,6 +63,12 @@ const Home: React.FC = () => {
 			  	>
 					Demo SignleplayernerNWnSns Game
 			  	</Link>
+					<Link 
+					to="/ai-game"
+					className="w-64 bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center"
+			  	>
+					Demo VS AI Game
+			  	</Link>
 			  	<Link 
 					to="/login"
 					className="w-64 bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center"

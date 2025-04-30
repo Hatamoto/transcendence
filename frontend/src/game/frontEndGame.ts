@@ -368,6 +368,32 @@ export class frontEndGame {
 		this.updateGraphics();
 	}
 
+	updateAIGameState()
+	{
+		const now = Date.now();
+		const deltaTime = (now - this.lastUpdateTime) / 16.67; // Normalize to ~60 FPS
+		this.lastUpdateTime = now;
+
+		if (this.keysPressed[KeyBindings.UP])
+			this.player1.setvel(-1);
+		else if (this.keysPressed[KeyBindings.DOWN])
+			this.player1.setvel(1);
+		else
+			this.player1.setvel(0);
+
+		if (this.keysPressed[KeyBindings.SUP]) 
+			this.player2.setvel(-1);
+		else if (this.keysPressed[KeyBindings.SDOWN])
+			this.player2.setvel(1);
+		else
+			this.player2.setvel(0);
+
+		this.player1.move(this.keysPressed, deltaTime);
+		this.player2.move(this.keysPressed, deltaTime);
+		this.ball.update(this.player1, this.player2, deltaTime);
+		this.updateGraphics();
+	}
+
 	updateGraphics() 
 	{
 		this.ctx.fillStyle = "#000";
@@ -549,7 +575,7 @@ export function createNewGame(matchType : string, socket)
 {
 	setupButtons(socket);
 	game = new frontEndGame();
-	if (matchType != "solo")
+	if (matchType != "solo" && matchType != "ai")
 	{
 		game.socketLogic(socket);
 	}
