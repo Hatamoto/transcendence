@@ -228,7 +228,6 @@ export interface DeleteUserRequest {
 	id: number;
 	accToken: string;
 	token: string; // refreshtoken, name: token to match backend
-	captchaToken: string;
 }
 
 interface DeleteUserResponse {
@@ -294,6 +293,52 @@ export async function deleteUser(userData: DeleteUserRequest): Promise<DeleteUse
 		};
 	}
 } //force logaout/delete if refreshToken has expired?
+
+
+
+
+export interface FriendRequestRequest {
+	id: string;
+}
+
+interface FriendRequestResponse {
+	status: number,
+	error: string,
+}
+
+export async function friendRequest(requestData: FriendRequestRequest): Promise<FriendRequestResponse> {
+	
+	try {
+		const response = await fetch("/api/friend/request", {
+			method: 'POST',
+			body: JSON.stringify(requestData), 
+			headers: {
+			'Content-Type': 'application/json',
+			}
+		});
+
+		const responseData = await response.json();
+
+		if (!response.ok)
+			return {
+				status: response.status,
+				error: responseData.error || 'Friend request failed'
+			}
+		return {
+			status: response.status,
+			error: responseData.error || 'Friend request sent successfully'
+		};
+
+	} catch (error) {
+		console.error("Friend request:", error);
+		return {
+			status: 500,
+			error: 'Something went wrong. Please try again.'
+		};
+	}
+}
+
+// authentication token, No token provided. Go though authFetch??
 
 
 
@@ -425,14 +470,3 @@ export async function updatePassword(id: string, password: string) {
 // 	return ((await apiCall(options)).status);
 // } //i guess we doublecheck in front 
 
-export async function friendRequest(id: string) {
-	const options : ApiOptions = {
-		method: 'POST',
-		url: '/api/friend/request',
-		body: { firendId: id },
-		headers: {
-		'Content-Type': 'application/json',
-		},
-	};
-	return ((await apiCall(options)).status);
-}
