@@ -2,19 +2,20 @@
 import { Logger, LogLevel } from '../utils/logger.js';
 import { TURN_URL, TURN_USER, TURN_PASS, EXT_IP, STUN_URL} from '../config/env-config.js';
 import { setupButtons  } from './matchmaking.js';
+import { GameAI, PredictedPath } from './gameAI';
 
 const log = new Logger(LogLevel.INFO);
 
 log.info("UI ready")
 
-class Entity {
-	protected yVel: number;
-	protected xVel: number;
-	protected height: number;
-	protected width: number;
-	protected yPos: number;
-	protected xPos: number;
-	protected speed: number;
+export class Entity {
+	public yVel: number;
+	public xVel: number;
+	public height: number;
+	public width: number;
+	public yPos: number;
+	public xPos: number;
+	public speed: number;
 
 	constructor(h, w, y, x) {
 		this.yVel = 0;
@@ -35,7 +36,7 @@ class Entity {
 	}
 }
 
-class Ball extends Entity {
+export class Ball extends Entity {
 	constructor(h, w, y, x) {
 		super(h, w, y, x);
 		this.speed = 5;
@@ -116,7 +117,7 @@ class Player extends Entity {
 
 enum KeyBindings{
 	UP = 'KeyW',
-    DOWN = 'KeyS',
+  DOWN = 'KeyS',
 	SUP = 'ArrowUp',
 	SDOWN = 'ArrowDown'
 }
@@ -136,6 +137,9 @@ export class frontEndGame {
 	private ballSize : number;
 	private ball: Ball | null = null;
 	private lastUpdateTime: number;
+	private gameAI: GameAI | null = null;
+	private predictedPath: PredictedPath | null = null;
+	private lastAIupdate: number = 0;
 
 	private dataChannel: RTCDataChannel | null = null;
     private peerConnection: RTCPeerConnection | null = null;
@@ -215,6 +219,11 @@ export class frontEndGame {
 		this.ctx = this.gameCanvas.getContext("2d")!;
 		this.gameCanvas.width = 800;
 		this.gameCanvas.height = 600;
+	}
+
+	setupAI() 
+	{
+		this.gameAI = new GameAI(this.ctx, this.gameCanvas.height, this.gameCanvas.width);
 	}
 
 	setupPeerConnectionEvents(socket) {
@@ -373,6 +382,7 @@ export class frontEndGame {
 		const now = Date.now();
 		const deltaTime = (now - this.lastUpdateTime) / 16.67; // Normalize to ~60 FPS
 		this.lastUpdateTime = now;
+		const treshold = 4;
 
 		if (this.keysPressed[KeyBindings.UP])
 			this.player1.setvel(-1);
@@ -381,7 +391,24 @@ export class frontEndGame {
 		else
 			this.player1.setvel(0);
 
-		if (this.keysPressed[KeyBindings.SUP]) 
+		// Simulate keypresses with AI
+		if (now - this.lastAIupdate > 1000) {
+			this.predictedPath = this.gameAI.predict(this.ball)
+			if (this.predictedPath)
+				{
+					const predictedY = this.predictedPath.finalY;
+					if (this.player2.getpos()[0] + treshold < predictedY) {
+						this.keysPressed[KeyBindings.SDOWN] = true;
+						// this.player2.setvel(1);
+					}
+					else if (this.player2.getpos()[0] - treshold > predictedY) {
+						this.keysPressed[KeyBindings.SUP] = true;
+						//this.player2.setvel(-1);
+					}
+				}
+		}
+
+ 		else if (this.keysPressed[KeyBindings.SUP]) 
 			this.player2.setvel(-1);
 		else if (this.keysPressed[KeyBindings.SDOWN])
 			this.player2.setvel(1);
@@ -390,6 +417,7 @@ export class frontEndGame {
 
 		this.player1.move(this.keysPressed, deltaTime);
 		this.player2.move(this.keysPressed, deltaTime);
+
 		this.ball.update(this.player1, this.player2, deltaTime);
 		this.updateGraphics();
 	}
@@ -618,3 +646,32 @@ export function startSoloGame()
 	loopSolo();
 }
 
+export function startAIGame()
+{
+	const select = document.getElementById("colorSelect") as HTMLSelectElement;
+	const color = select.options[select.selectedIndex].value;
+	const ballSize  = (document.getElementById("ball-size") as HTMLInputElement)
+	const ballSpeed = (document.getElementById("ball-speed") as HTMLInputElement)
+	const ballSizeValue = ballSize.value.trim() === "" ? ballSize.placeholder : ballSize.value;
+	const ballSpeedValue = ballSpeed.value.trim() === "" ? ballSpeed.placeholder : ballSpeed.value;
+
+	document.getElementById("gameroom-page").hidden = true;
+	game.setupSoloKeyListeners();
+	game.createCanvas();
+	game.setupAI();
+	game.settings({
+		ballSettings: {
+			ball: new Ball(20, 20, 400, 300),
+			ballSize: ballSizeValue,
+			ballSpeed: ballSpeedValue
+		},
+		playerSettings: {
+
+		}
+	}, color);
+	function loopAI() {
+		game.updateAIGameState();
+		animationFrameId = requestAnimationFrame(loopAI);
+	}
+	loopAI();
+}

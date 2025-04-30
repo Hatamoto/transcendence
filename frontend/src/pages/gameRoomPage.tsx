@@ -2,15 +2,20 @@ import Header from "../components/headers";
 import { createNewGame, frontEndGame, cleanGame } from "../game/frontEndGame";
 import { useEffect, useRef } from "react";
 import { createSocket, getSocket, closeSocket } from "../utils/socket";
+import { Logger, LogLevel } from '../utils/logger.js';
+
 
 export default function GameRoom({matchType}) {
 	const hasRun = useRef(false);
 	const leftPage = useRef(false);
-
+	const log = new Logger(LogLevel.INFO);
+	
 	useEffect(() => {
 	if (!hasRun.current) {
-		if (matchType !== "solo" && matchType !== "ai")
-		createSocket();
+		log.info("Creating new game: ", matchType);
+		if (matchType !== "solo" && matchType !== "ai") {
+			createSocket();
+		}
 		createNewGame(matchType, getSocket());
 		hasRun.current = true;
 	}

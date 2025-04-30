@@ -74,7 +74,8 @@ const UserPage: React.FC = () => {
 		const user: DeleteUserRequest = {
 			id: Number(userId),
 			accToken: sessionData.accessToken,
-			token: sessionData.refreshToken
+			token: sessionData.refreshToken,
+			captchaToken: sessionData.captchaToken,
 		};
 	
 		console.log("Calling deleteUser API");

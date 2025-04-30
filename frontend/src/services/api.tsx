@@ -436,3 +436,73 @@ export async function friendRequest(id: string) {
 	};
 	return ((await apiCall(options)).status);
 }
+
+
+export interface Friend {
+	friend_id: string;
+}
+
+export async function getFriends(): Promise<Friend[] | null> {
+	const userId = sessionStorage.getItem('activeUserId');
+	if (!userId) {
+		console.error("No active user ID in session");
+		return null;
+	}
+
+	const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}');
+	let accessToken = sessionData.accessToken;
+	if (!accessToken) {
+		console.error("No access token in session");
+		return null;
+	}
+
+	const options: AuthFetchOptions = {
+		method: "GET",
+		body: "",
+		headers: {
+			"Content-Type": "application/json",
+			"Authorization": `Bearer ${accessToken}`,
+		},
+	};
+
+	let response = await authFetch("/api/friends", options);
+
+	// If token was refreshed, retry the request with the new token
+	if (response.status === 1 && response.newToken) {
+		options.headers.Authorization = `Bearer ${response.newToken}`;
+		response = await authFetch("/api/friends", options);
+	}
+
+	if (response.status === 204) return [];
+	if (response.status !== 200) {
+		console.error("Error fetching friends:", response.error);
+		return null;
+	}
+
+	// You need to fetch the actual friend data again manually here
+	try {
+		const finalFetch = await fetch("/api/friends", {
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				"Authorization": options.headers.Authorization,
+			}
+		});
+
+		if (finalFetch.status === 204) return [];
+		if (!finalFetch.ok) {
+			console.error("Final fetch failed:", finalFetch.statusText);
+			return null;
+		}
+
+		const data = await finalFetch.json();
+		return data as Friend[];
+
+	} catch (err) {
+		console.error("Network error on final fetch:", err);
+		return null;
+	}
+}
+
+
+
