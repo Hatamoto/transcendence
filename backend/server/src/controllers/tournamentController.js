@@ -21,10 +21,18 @@ const createTournament = async function(req, reply) {
       }
     }
 
-    db.prepare('INSERT INTO tournaments (name, created_by, size, status) VALUES (?, ?, ?, ?)')
+    const result = db.prepare('INSERT INTO tournaments (name, created_by, size, status) VALUES (?, ?, ?, ?)')
       .run(name, userId, size, 'created')
+    
+    const tournament = {
+      id: result.lastInsertRowid,
+      name: name,
+      size: size,
+      created_by: userId,
+      status: 'created'
+    }
 
-    return reply.send({ message: "Tournament successfully created" })
+    return reply.send(tournament)
   } catch (error) {
     return reply.code(500).send({ error: error.message })
   }
