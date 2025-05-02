@@ -14,6 +14,128 @@ interface AuthFetchResponse {
 	newToken?: string;
 }
 
+interface ApiOptions {
+	method: string;
+	url: string;
+	body?: Record<string, any>;
+	headers?: Record<string, string>;
+}
+
+interface ApiReturn<T> {
+	status: number;
+	data?: T;
+}
+
+export interface User {
+	name: string;
+	onlineStatus: boolean;
+	wins: number;
+	losses: number;
+	avatarPath: string;
+}
+
+async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
+	const { method, url, body, headers } = options;
+
+	try {
+		const response = await fetch(url, {
+			method,
+			headers,
+			body: body ? JSON.stringify(body) : undefined,
+			credentials: 'include',
+		});
+  
+		const responseData = await response.json();
+  
+		if (!response.ok)
+			return { status: response.status, data: undefined };
+
+		return { status: response.status, data: responseData }
+	
+	} catch (error) {
+		throw error; // idk what happens here :()()() saku mita helvettia
+	}
+}
+
+interface ProtectedApiOptions {
+	method: string;
+	url: string;
+	body?: Record<string, any> | string;
+	headers?: Record<string, string>;
+}
+
+interface ProtectedApiReturn<T> {
+	status: number;
+	data?: T;
+	error?: string;
+}
+
+export async function protectedApiCall<T>(options: ProtectedApiOptions): Promise<ProtectedApiReturn<T>> {
+	const userId = sessionStorage.getItem('activeUserId');
+	if (!userId) return { status: 401, error: 'No active user' };
+
+	const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}');
+	let accessToken = sessionData.accessToken;
+	const refreshToken = sessionData.refreshToken;
+
+	if (!accessToken || !refreshToken) return { status: 401, error: 'Missing tokens' };
+
+	const buildHeaders = (token: string) => ({
+		'Content-Type': 'application/json',
+		Authorization: `Bearer ${token}`,
+		...(options.headers || {})
+	});
+
+	const requestInit = (token: string): RequestInit => ({
+		method: options.method,
+		headers: buildHeaders(token),
+		body: options.body ? JSON.stringify(options.body) : undefined,
+		credentials: 'include',
+	});
+
+	// first attempt
+	let res = await fetch(options.url, requestInit(accessToken));
+	if (res.status === 403) {
+		// try refresh
+		const refreshRes = await fetch(`${API_AUTH_URL}/api/token`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer`, // intentional placeholder?
+			},
+			body: JSON.stringify({ id: Number(userId), token: refreshToken }),
+		});
+
+		if (!refreshRes.ok) {
+			const err = await refreshRes.json();
+			return { status: 403, error: err.error || 'Refresh failed' };
+		}
+
+		const newTokens = await refreshRes.json();
+		sessionStorage.setItem(userId, JSON.stringify({
+			accessToken: newTokens.accessToken,
+			refreshToken
+		}));
+
+		// retry original call with new token
+		res = await fetch(options.url, requestInit(newTokens.accessToken));
+	}
+
+	if (!res.ok) {
+		let error;
+		try {
+			const json = await res.json();
+			error = json?.error;
+		} catch {
+			error = 'Unknown error';
+		}
+		return { status: res.status, error };
+	}
+
+	const data = await res.json();
+	return { status: res.status, data };
+}
+
 async function authFetch(url: string, options: AuthFetchOptions): Promise<AuthFetchResponse> {
 
 	console.log("in authfetch before fetch", url, options);
@@ -237,91 +359,33 @@ interface DeleteUserResponse {
 }
 
 export async function deleteUser(userData: DeleteUserRequest): Promise<DeleteUserResponse> {
-
 	try {
-			const options = {
-				method: 'DELETE',
-				body: JSON.stringify({id: userData.id, token: userData.token}),
-				headers: {
-				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${userData.accToken}`
-				}
-			}
+		const response = await protectedApiCall<DeleteUserResponse>({
+			method: "DELETE",
+			url: "/api/user/delete",
+			body: {
+				id: userData.id,
+				token: userData.token, // this is the refreshToken
+			},
+			headers: {
+				"Content-Type": "application/json",
+			},
+		});
 
-		const response = await authFetch(`/api/user/delete` , options);
-
-		if (response.status == 1) {
-			console.log(userData.accToken);
-			const retryResponse = await fetch(`/api/user/delete`, {
-				method: 'DELETE',
-				body: JSON.stringify({id: userData.id, token: userData.token}),
-				headers: {
-				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${response.newToken}`
-				}
-			});
-			
-			
-			const responseData = await retryResponse.json();
-			console.log(retryResponse);
-			
-			if (!retryResponse.ok)
-				return {
-				status: retryResponse.status,
-				error: responseData.error || 'User delete failed'
-				}
-			return {
-				status: retryResponse.status,
-				error: responseData.error || 'User delete successful'
-			};
-		}
-
-		if (response.status >= 300)
-			return {
-			status: response.status,
-			error: response.error || 'User delete failed'
-			}
 		return {
 			status: response.status,
-			error: response.error || 'User delete successful'
+			error: response.error || (response.status === 200 ? "User delete successful" : "User delete failed"),
 		};
 
 	} catch (error) {
-		console.error("Delete user:", error);
+		console.error("Delete user error:", error);
 		return {
 			status: 500,
-			error: 'Something went wrong. Please try again.'
+			error: "Something went wrong. Please try again."
 		};
 	}
-} //force logaout/delete if refreshToken has expired?
-
-
-
-
-
-
-
-
-
-
-
-
-interface ApiOptions {
-	method: string;
-	url: string;
-	body?: Record<string, any>;
-	headers?: Record<string, string>;
 }
 
-interface ApiReturn<T> {
-	status: number;
-	data?: T;
-}
-
-// interface ApiReturn {
-// 	status: number;
-// 	data?: string;
-// }
 
 export interface User {
 	name: string;
@@ -330,30 +394,6 @@ export interface User {
 	losses: number;
 	avatarPath: string;
 }
-
-async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
-	const { method, url, body, headers } = options;
-
-	try {
-		const response = await fetch(url, {
-			method,
-			headers,
-			body: body ? JSON.stringify(body) : undefined,
-			credentials: 'include',
-		});
-  
-		const responseData = await response.json();
-  
-		if (!response.ok)
-			return { status: response.status, data: undefined };
-
-		return { status: response.status, data: responseData }
-	
-	} catch (error) {
-		throw error; // idk what happens here :()()() saku mita helvettia
-	}
-}
-
 
 export async function getAllUsers(): Promise<User[] | number> {
 	const options : ApiOptions = {
@@ -414,17 +454,6 @@ export async function updatePassword(id: string, password: string) {
 	return ((await apiCall(options)).status);
 }
 
-// export async function deleteUser(id: string) {
-// 	const options : ApiOptions = {
-// 		method: 'DELETE',
-// 		url: `/api/user/${id}`,
-// 		headers: {
-// 		'Content-Type': 'application/json',
-// 		},
-// 	};
-// 	return ((await apiCall(options)).status);
-// } //i guess we doublecheck in front 
-
 export async function friendRequest(id: string) {
 	const options : ApiOptions = {
 		method: 'POST',
@@ -437,41 +466,15 @@ export async function friendRequest(id: string) {
 	return ((await apiCall(options)).status);
 }
 
-
 export interface Friend {
 	friend_id: string;
 }
 
 export async function getFriends(): Promise<Friend[] | null> {
-	const userId = sessionStorage.getItem('activeUserId');
-	if (!userId) {
-		console.error("No active user ID in session");
-		return null;
-	}
-
-	const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}');
-	let accessToken = sessionData.accessToken;
-	if (!accessToken) {
-		console.error("No access token in session");
-		return null;
-	}
-
-	const options: AuthFetchOptions = {
+	const response = await protectedApiCall<Friend[]>({
 		method: "GET",
-		body: "",
-		headers: {
-			"Content-Type": "application/json",
-			"Authorization": `Bearer ${accessToken}`,
-		},
-	};
-
-	let response = await authFetch("/api/friends", options);
-
-	// If token was refreshed, retry the request with the new token
-	if (response.status === 1 && response.newToken) {
-		options.headers.Authorization = `Bearer ${response.newToken}`;
-		response = await authFetch("/api/friends", options);
-	}
+		url: "/api/friends",
+	});
 
 	if (response.status === 204) return [];
 	if (response.status !== 200) {
@@ -479,29 +482,7 @@ export async function getFriends(): Promise<Friend[] | null> {
 		return null;
 	}
 
-	// You need to fetch the actual friend data again manually here
-	try {
-		const finalFetch = await fetch("/api/friends", {
-			method: "GET",
-			headers: {
-				"Content-Type": "application/json",
-				"Authorization": options.headers.Authorization,
-			}
-		});
-
-		if (finalFetch.status === 204) return [];
-		if (!finalFetch.ok) {
-			console.error("Final fetch failed:", finalFetch.statusText);
-			return null;
-		}
-
-		const data = await finalFetch.json();
-		return data as Friend[];
-
-	} catch (err) {
-		console.error("Network error on final fetch:", err);
-		return null;
-	}
+	return response.data || [];
 }
 
 

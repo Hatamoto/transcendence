@@ -10,12 +10,12 @@ if (Array.isArray(response)) {
 	console.error("Error fetching users:", response);
 }
 
-// const response2 = await getFriends();
-// if (Array.isArray(response2)) {
-// 	sessionStorage.setItem('friends', JSON.stringify(response2));
-// }	else {
-// 	console.error("Error fetching friends:", response2);
-// }
+const response2 = await getFriends();
+if (Array.isArray(response2)) {
+	sessionStorage.setItem('friends', JSON.stringify(response2));
+}	else {
+	console.error("Error fetching friends:", response2);
+}
 
 const UserHeader: React.FC = () => {
 	
@@ -23,7 +23,7 @@ const UserHeader: React.FC = () => {
 	let friends: Friend[] = [];
 
 	const usersJson = sessionStorage.getItem("users");
-	// const friendsJson = sessionStorage.getItem("friends");
+	const friendsJson = sessionStorage.getItem("friends");
 
 	if (usersJson) {
 		try {
@@ -36,16 +36,16 @@ const UserHeader: React.FC = () => {
 		}
 	}
 
-	// if (friendsJson) {
-	// 	try {
-	// 		const parsed = JSON.parse(friendsJson);
-	// 		if (Array.isArray(parsed)) {
-	// 			friends = parsed as Friend[];
-	// 		}
-	// 	} catch (e) {
-	// 		console.error("Failed to parse friends from sessionStorage:", e);
-	// 	}
-	// }	
+	if (friendsJson) {
+		try {
+			const parsed = JSON.parse(friendsJson);
+			if (Array.isArray(parsed)) {
+				friends = parsed as Friend[];
+			}
+		} catch (e) {
+			console.error("Failed to parse friends from sessionStorage:", e);
+		}
+	}	
 
 	return (
 		<header className="bg-black text-white py-10 px-10 shadow-lg flex items-center justify-between">

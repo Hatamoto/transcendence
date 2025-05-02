@@ -98,6 +98,14 @@ const UserPage: React.FC = () => {
 		<UserHeader />
 		<FriendsList />
 		<div className="flex flex-col items-center justify-center min-h-screen gap-6">
+			<div className="bg-black p-6 rounded-lg w-96 flex flex-col gap-4 items-center shadow-md">
+				<button
+					onClick={() => navigate("/home")}
+					className="w-64 bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center"
+				>
+					Go to Home Page
+				</button>
+			</div>
 			<div className="bg-black p-6 text-white rounded-lg w-96 flex flex-col gap-4 items-center shadow-md">
 			<button 
 				onClick={handleLogout} 
