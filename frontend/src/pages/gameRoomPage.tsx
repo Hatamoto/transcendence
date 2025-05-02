@@ -1,6 +1,6 @@
 import Header from "../components/headers";
 import { createNewGame, frontEndGame, cleanGame } from "../game/frontEndGame";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createSocket, getSocket, closeSocket } from "../utils/socket";
 import Background from '../components/background.js';
 
@@ -8,24 +8,39 @@ import Background from '../components/background.js';
 export default function GameRoom({matchType}) {
 	const hasRun = useRef(false);
 	const leftPage = useRef(false);
+	const [tournamentStatus, setTournamentStatus] = useState(null);
 
 	useEffect(() => {
-	if (!hasRun.current) {
-		if (matchType !== "solo")
-			createSocket();
-		createNewGame(matchType, getSocket());
-		hasRun.current = true;
-	}
-
-	return () => {
-		if (frontEndGame && leftPage.current) {
+		if (!hasRun.current) {
+			if (matchType !== "solo") createSocket();
+			createNewGame(matchType, getSocket());
+			hasRun.current = true;
+		}
+	  
+		if (matchType === "tournament") {
+			fetch('/api/tournament/1')
+			.then((res) => {
+				if (res.status === 204)
+					setTournamentStatus("active");
+				else
+					setTournamentStatus("no-tournament");
+			})
+			.catch((err) => {
+				console.error("Failed to fetch tournament:", err);
+				setTournamentStatus("error");
+			});
+		}
+	  
+		return () => {
+		  if (frontEndGame && leftPage.current) {
 			closeSocket();
 			cleanGame();
-		}
-		else
+		  } else {
 			leftPage.current = true;
-	};
-	}, []);
+		  }
+		};
+	  }, []);
+	  
   
 	const matchTypeButtons = () => {
 		switch (matchType) {
@@ -40,7 +55,7 @@ export default function GameRoom({matchType}) {
 					</>
 				);
 			case "tournament":
-				if (!1)
+				if (tournamentStatus == "active")
 				{
 					return (<p>No Tournament Active!</p>);
 				}	

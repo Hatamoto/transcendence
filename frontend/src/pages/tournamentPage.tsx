@@ -153,7 +153,7 @@ const TournamentsPage: React.FC = () => {
 					to="/tour-game"
 					className="w-64 bg-blue-500 text-white py-2 rounded-md hover:bg-green-700 text-center"
 			  	>
-					Join Room
+					Go To Game page
 		</Link>
 
 		{/*<button id="create-tour" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">

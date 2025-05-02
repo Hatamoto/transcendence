@@ -22,7 +22,8 @@ import {
   createTournamentOpts,
   joinTournamentOpts,
   setReadyOpts,
-  startTournamentOpts
+  startTournamentOpts,
+  getTournamentParticipantOpts
 } from '../schemas/tournamentSchemas.js'
 
 let cachedIP = null;

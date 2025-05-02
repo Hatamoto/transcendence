@@ -100,7 +100,7 @@ const startTournamentOpts = {
   handler: startTournament,
 }
 
-const getTournamentParticipantOptsOpts = {
+const getTournamentParticipantOpts = {
   schema: {
     params: {
       type: 'object',
@@ -120,5 +120,5 @@ export {
   joinTournamentOpts,
   setReadyOpts,
   startTournamentOpts,
-  getTournamentParticipantOptsOpts
+  getTournamentParticipantOpts
 }

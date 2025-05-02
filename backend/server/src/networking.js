@@ -149,8 +149,37 @@ export function setupNetworking(server){
 		//	joinRoom(roomId, socket);
 		//});
 
-		socket.on("readyTour", () => {
-			// allocate a room when both players are ready in the database
+		function findGameRoom(userId) {		  
+			const match = db.prepare('SELECT * FROM matches WHERE (player_one_id = ? OR player_two_id = ?) AND status = ?')
+			  .get(userId, userId, 'waiting')
+			
+			if (!match) {
+				return (-1)
+			}
+		  
+			if (!match.room_id) {
+			  const roomId = roomIds.allocate();
+			  roomIds.closeRoomDoors(roomId);
+
+			  db.prepare('UPDATE matches room_id = ? WHERE id = ?')
+				.run(roomId, match.id)
+				
+				return (roomId)
+			} else {
+				db.prepare('UPDATE matches status = ? WHERE id = ?')
+				.run('in_progress', match.id)
+			  return (match.room_id)
+			}
+		}
+
+		socket.on("readyTour", (userId) => {
+			// allocate a room when a players opponent doesnt have a room
+			// if opponent has a room join it
+			// a check so nobody else can join the room
+			const roomId = findGameRoom(userId);
+			if (roomId === -1)
+				return ;
+			joinRoom(roomId);
 		});
 
 		socket.on("joinRoomQue", () => {
