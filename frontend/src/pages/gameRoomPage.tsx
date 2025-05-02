@@ -9,27 +9,38 @@ export default function GameRoom({matchType}) {
 	const hasRun = useRef(false);
 	const leftPage = useRef(false);
 	const [tournamentStatus, setTournamentStatus] = useState(null);
+	const userId = sessionStorage.getItem('activeUserId');
+	const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}')
 
 	useEffect(() => {
 		if (!hasRun.current) {
-			if (matchType !== "solo") createSocket();
-			createNewGame(matchType, getSocket());
-			hasRun.current = true;
-		}
-	  
-		if (matchType === "tournament") {
-			fetch('/api/tournament/1')
+			if (matchType === "tournament") {
+				fetch('/api/tournament/1', {
+					method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${sessionData.accessToken}`
+				}
+			})
 			.then((res) => {
+				console.log(res.status);
 				if (res.status === 204)
 					setTournamentStatus("active");
 				else
-					setTournamentStatus("no-tournament");
+				setTournamentStatus("no-tournament");
 			})
 			.catch((err) => {
 				console.error("Failed to fetch tournament:", err);
 				setTournamentStatus("error");
 			});
 		}
+
+		if (matchType != "solo") createSocket();
+			createNewGame(matchType, getSocket());
+			
+		hasRun.current = true;
+	}
+	  
 	  
 		return () => {
 		  if (frontEndGame && leftPage.current) {
@@ -55,7 +66,7 @@ export default function GameRoom({matchType}) {
 					</>
 				);
 			case "tournament":
-				if (tournamentStatus == "active")
+				if (tournamentStatus != "active")
 				{
 					return (<p>No Tournament Active!</p>);
 				}	

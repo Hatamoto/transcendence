@@ -239,7 +239,8 @@ const getTournamentParticipant = async function(req, reply) {
     
     if (!player) return reply.code(404).send({ error: `Player not found in tournament ${tournamentId}` })
     
-    return reply.code(204)
+	console.log("AAAAAAASD");
+    return reply.code(204).send()
   } catch (error) {
       console.log(error)
       return reply.code(500).send({ error: error.message })

@@ -24,7 +24,7 @@ export async function createrTour(tournament): Promise<number> {
 		});
 
 		const responseData = await response.json();
-
+ 
 		return response.status;
 
 	} catch (error) {
@@ -39,7 +39,7 @@ export async function joinerTour(): Promise<number> {
 	const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}')
 	
 	try {
-		const response = await fetch('/api/tournament/5/join', {
+		const response = await fetch('/api/tournament/1/join', {
 			method: 'POST',
 			headers: {
 			'Authorization': `Bearer ${sessionData.accessToken}`
@@ -52,7 +52,7 @@ export async function joinerTour(): Promise<number> {
 		console.error("Login error:", error);
 	}
 	try {
-		const response = await fetch('/api/tournament/5/ready', {
+		const response = await fetch('/api/tournament/1/ready', {
 			method: 'PATCH',
 			headers: {
 			'Authorization': `Bearer ${sessionData.accessToken}`
@@ -75,7 +75,7 @@ export async function starterTour(): Promise<number> {
 	const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}')
 	
 	try {
-		const response = await fetch('/api/tournament/5/start', {
+		const response = await fetch('/api/tournament/1/start', {
 			method: 'POST',
 			headers: {
 			'Authorization': `Bearer ${sessionData.accessToken}`

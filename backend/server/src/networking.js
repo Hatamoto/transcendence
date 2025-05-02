@@ -3,6 +3,7 @@ import wrtc from "wrtc";
 import { Game } from './game/game.js';
 import { Logger, LogLevel } from './utils/logger.js';
 import { startChat } from "./chat.js";
+import db from './dbInstance.js'
 
 const log = new Logger(LogLevel.INFO);
 

@@ -33,7 +33,9 @@ export function setupButtons(socket)
 	const readyBtn = document.getElementById("ready-tour");
 	if (readyBtn)
 	{
+		console.log("123");
 		readyBtn.addEventListener("click", () => {
+			console.log("asd");
 			socket.emit("readyTour");
 		});
 	}
