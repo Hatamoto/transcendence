@@ -2,7 +2,7 @@
 import { Logger, LogLevel } from '../utils/logger.js';
 import { TURN_URL, TURN_USER, TURN_PASS, EXT_IP, STUN_URL} from '../config/env-config.js';
 import { setupButtons  } from './matchmaking.js';
-import { GameAI, PredictedPath, AIPlayerInput } from './gameAI';
+import { GameAI } from './gameAI';
 
 const log = new Logger(LogLevel.INFO);
 
@@ -101,7 +101,7 @@ class Player extends Entity {
 		this.yVel = velocityY;
 	}
 
-	move(keysPressed: { [key: string]: boolean }, deltaTime) {
+	move(deltaTime) {
 		const nextY = this.yPos + this.yVel * this.speed * deltaTime;
 		
 		if (nextY + this.height >= 600) return;
@@ -137,6 +137,7 @@ export class frontEndGame {
 	private ballSize : number;
 	private ball: Ball | null = null;
 	private lastUpdateTime: number;
+	private isAIgame: boolean = false;
 	private gameAI: GameAI | null = null;
 
 	private dataChannel: RTCDataChannel | null = null;
@@ -203,6 +204,10 @@ export class frontEndGame {
 			log.error("Failed to fetch external IP:", err);
 			return null;
 		}
+	}
+
+	setIsAIgame(isAIgame: boolean) {
+		this.isAIgame = isAIgame;
 	}
 
 	setScore(player1Score, player2Score) {
@@ -369,8 +374,8 @@ export class frontEndGame {
 		else
 			this.player2.setvel(0);
 
-		this.player1.move(this.keysPressed, deltaTime);
-		this.player2.move(this.keysPressed, deltaTime);
+		this.player1.move(deltaTime);
+		this.player2.move(deltaTime);
 		this.ball.update(this.player1, this.player2, deltaTime);
 		this.updateGraphics();
 	}
@@ -402,8 +407,8 @@ export class frontEndGame {
 		else
 			this.player2.setvel(0);
 
-		this.player1.move(this.keysPressed, deltaTime);
-		this.player2.move(this.keysPressed, deltaTime);
+		this.player1.move(deltaTime);
+		this.player2.move(deltaTime);
 
 		this.ball.update(this.player1, this.player2, deltaTime);
 		this.updateGraphics();
@@ -424,7 +429,10 @@ export class frontEndGame {
 		this.ctx.fillRect(this.ballX, this.ballY, this.ballSize, this.ballSize);
 		this.ctx.fillRect(10, this.player1.getpos()[0], 10, this.player1.height);
 		this.ctx.fillRect(780, this.player2.getpos()[0], 10, this.player2.height);
-		this.gameAI.drawAIPrediction(this.ctx);
+		if (this.isAIgame)
+		{
+			this.gameAI.drawAIPrediction(this.ctx);
+		}
 		if (this.ball)
 		{
 			this.ball.draw(this.ctx);
@@ -642,6 +650,7 @@ export function startAIGame()
 	const ballSizeValue = ballSize.value.trim() === "" ? ballSize.placeholder : ballSize.value;
 	const ballSpeedValue = ballSpeed.value.trim() === "" ? ballSpeed.placeholder : ballSpeed.value;
 
+	game.setIsAIgame(true);
 	document.getElementById("gameroom-page").hidden = true;
 	game.setupSoloKeyListeners();
 	game.createCanvas();

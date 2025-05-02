@@ -1,19 +1,3 @@
-
-interface AuthFetchOptions {
-	method: string;
-	body: string;
-	headers: {
-	  'Content-Type': string;
-	  'Authorization': string;
-	};
-}
-
-interface AuthFetchResponse {
-	status: number;
-	error: string;
-	newToken?: string;
-}
-
 interface ApiOptions {
 	method: string;
 	url: string;
@@ -26,13 +10,7 @@ interface ApiReturn<T> {
 	data?: T;
 }
 
-export interface User {
-	name: string;
-	onlineStatus: boolean;
-	wins: number;
-	losses: number;
-	avatarPath: string;
-}
+// SPLITTAA TÄÄ!!!!
 
 async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
 	const { method, url, body, headers } = options;
@@ -44,18 +22,26 @@ async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
 			body: body ? JSON.stringify(body) : undefined,
 			credentials: 'include',
 		});
-  
-		const responseData = await response.json();
-  
-		if (!response.ok)
-			return { status: response.status, data: undefined };
 
-		return { status: response.status, data: responseData }
-	
+		let responseData: any = null;
+		try {
+			const text = await response.text();
+			responseData = text ? JSON.parse(text) : null;
+		} catch (err) {
+			console.warn("Failed to parse JSON response", err);
+		}
+
+		if (!response.ok) {
+			return { status: response.status, data: undefined };
+		}
+
+		return { status: response.status, data: responseData };
+
 	} catch (error) {
-		throw error; // idk what happens here :()()() saku mita helvettia
+		throw error;
 	}
 }
+
 
 interface ProtectedApiOptions {
 	method: string;
@@ -75,7 +61,7 @@ export async function protectedApiCall<T>(options: ProtectedApiOptions): Promise
 	if (!userId) return { status: 401, error: 'No active user' };
 
 	const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}');
-	let accessToken = sessionData.accessToken;
+	const accessToken = sessionData.accessToken;
 	const refreshToken = sessionData.refreshToken;
 
 	if (!accessToken || !refreshToken) return { status: 401, error: 'Missing tokens' };
@@ -93,22 +79,26 @@ export async function protectedApiCall<T>(options: ProtectedApiOptions): Promise
 		credentials: 'include',
 	});
 
-	// first attempt
 	let res = await fetch(options.url, requestInit(accessToken));
+
 	if (res.status === 403) {
-		// try refresh
 		const refreshRes = await fetch(`${API_AUTH_URL}/api/token`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
-				Authorization: `Bearer`, // intentional placeholder?
+				Authorization: `Bearer`, // placeholder
 			},
 			body: JSON.stringify({ id: Number(userId), token: refreshToken }),
 		});
 
 		if (!refreshRes.ok) {
-			const err = await refreshRes.json();
-			return { status: 403, error: err.error || 'Refresh failed' };
+			let errMsg = 'Refresh failed';
+			try {
+				const text = await refreshRes.text();
+				errMsg = text ? JSON.parse(text).error : errMsg;
+			} catch (_) {}
+
+			return { status: 403, error: errMsg };
 		}
 
 		const newTokens = await refreshRes.json();
@@ -117,85 +107,24 @@ export async function protectedApiCall<T>(options: ProtectedApiOptions): Promise
 			refreshToken
 		}));
 
-		// retry original call with new token
 		res = await fetch(options.url, requestInit(newTokens.accessToken));
 	}
 
-	if (!res.ok) {
-		let error;
-		try {
-			const json = await res.json();
-			error = json?.error;
-		} catch {
-			error = 'Unknown error';
-		}
-		return { status: res.status, error };
+	let data: any = null;
+	try {
+		const text = await res.text();
+		data = text ? JSON.parse(text) : null;
+	} catch (err) {
+		console.warn("Failed to parse JSON in protectedApiCall", err);
 	}
 
-	const data = await res.json();
+	if (!res.ok) {
+		return { status: res.status, error: data?.error || 'Unknown error' };
+	}
+
 	return { status: res.status, data };
 }
 
-async function authFetch(url: string, options: AuthFetchOptions): Promise<AuthFetchResponse> {
-
-	console.log("in authfetch before fetch", url, options);
-	const response = await fetch(url, options);
-	console.log("in authfetch after fetch", response);
-
-	const responseData = await response.json();
-
-	if (response.status === 401) {
-		return {
-			status: response.status,
-			error: responseData.error || 'Unauthorized'
-		}
-	}
-
-	if (response.status === 403) {
-
-		console.log("403, getting new token");
-
-		const userId = sessionStorage.getItem('activeUserId');
-		const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}')
-		const refreshToken = sessionData.refreshToken
-
-		const response = await fetch(`${API_AUTH_URL}/api/token`, {
-			method: 'POST',
-			body: JSON.stringify({id: Number(userId), token: sessionData.refreshToken}),
-			headers: {
-			'Content-Type': 'application/json',
-			'Authorization': `Bearer`
-			}
-		});
-		
-		console.log("hello after fetch ",response);
-		const newResponse = await response.json();
-		console.log("with new accessToken ",newResponse);
-
-		if (response.ok) {
-			console.log("ok response");
-			sessionStorage.removeItem(userId);
-			sessionStorage.setItem('activeUserId', userId.toString());
-			sessionStorage.setItem(userId.toString(), JSON.stringify({accessToken: newResponse.accessToken, refreshToken: refreshToken}));
-			return {
-				status: 1,
-				error: 'accessToken refreshed',
-				newToken: newResponse.accessToken
-			}
-		}
-
-		if (!response.status) {
-			return {
-				status: response.status,
-				error: newResponse.error
-			}
-		}
-	}
-	return {
-		status: response.status,
-		error: responseData.error
-	};
-}
 
 export interface RegistrationRequest {
 	name: string;
@@ -223,7 +152,12 @@ export async function registerUser(userData: RegistrationRequest): Promise<Regis
 			}
 		});
 
-		const responseData = await response.json();
+		let responseData;
+		try {
+			responseData = await response.json();
+		} catch {
+			responseData = {};
+		}
 
 		if (!response.ok)
 			return { userId: 0,
@@ -278,7 +212,12 @@ export async function loginUser(userData: LoginRequest, captchaToken): Promise<L
 			}
 		});
 
-		const responseData = await response.json();
+		let responseData;
+		try {
+			responseData = await response.json();
+		} catch {
+			responseData = {};
+		}
 
 		if (!response.ok)
 			return { userId: 0,
@@ -396,74 +335,121 @@ export interface User {
 }
 
 export async function getAllUsers(): Promise<User[] | number> {
-	const options : ApiOptions = {
+	const response = await protectedApiCall<User[]>({
 		method: 'GET',
-		url: '/api/users',         
+		url: '/api/users',
 		headers: {
-		'Content-Type': 'application/json',
+			'Content-Type': 'application/json',
 		},
-	};
-	const response = await apiCall<User[]>(options);
+	});
+
 	if (response.status !== 200)
-		return (response.status);
-	return (response.data as User[]);
+		return response.status;
+
+	return response.data as User[];
 }
 
 export async function getUser(id: string): Promise<User | number> {
-	const options : ApiOptions = {
+	const response = await protectedApiCall<User>({
 		method: 'GET',
-		url: `/api/user/${id}`, 
+		url: `/api/user/${id}`,
 		headers: {
-		'Content-Type': 'application/json',
+			'Content-Type': 'application/json',
 		},
-	};
-	const response = await apiCall<User>(options);
+	});
+
 	if (response.status !== 200)
-		return (response.status); //maybe we could return the whole api struct or the json message also
-	return (response.data as User);
+		return response.status;
+
+	return response.data as User;
 }
+
 
 // export async function getDashboard() {
 // }
 
-export async function uploadAvatar() {
+export async function uploadAvatar(file: File): Promise<ProtectedApiReturn<null>> {
+	const formData = new FormData();
+	formData.append('avatar', file);
+
+	const userId = sessionStorage.getItem('activeUserId');
+	const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}');
+	const accessToken = sessionData.accessToken;
+
+	const response = await fetch('/api/user/avatar', {
+		method: 'POST',
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+		},
+		body: formData,
+	});
+
+	if (!response.ok) {
+		return { status: response.status, error: 'Upload failed' };
+	}
+
+	return { status: response.status, data: null };
 }
 
-export async function updateUser(id: string, user: RegistrationRequest) {
-	const options : ApiOptions = {
+
+export async function updateUser(id: string, user: RegistrationRequest): Promise<number> {
+	const response = await protectedApiCall<null>({
 		method: 'PUT',
 		url: `/api/user/${id}`,
-		body: user,            
+		body: user,
 		headers: {
-		'Content-Type': 'application/json',
+			'Content-Type': 'application/json',
 		},
-	};
-	return ((await apiCall(options)).status);
+	});
+
+	return response.status;
 }
+
 
 // do we pass passwrods as string before backend? IDK
-export async function updatePassword(id: string, password: string) {
-	const options : ApiOptions = {
+export async function updatePassword(id: string, password: string): Promise<number> {
+	const response = await protectedApiCall<null>({
 		method: 'PUT',
 		url: `/api/user/pwd/${id}`,
-		body: { password: password },
+		body: { password },
 		headers: {
-		'Content-Type': 'application/json',
+			'Content-Type': 'application/json',
 		},
-	};
-	return ((await apiCall(options)).status);
+	});
+
+	return response.status;
 }
 
-export async function friendRequest(id: string) {
-	const options : ApiOptions = {
+
+export async function friendRequest(friendId: number): Promise<ProtectedApiReturn<null>> {
+	return await protectedApiCall<null>({
 		method: 'POST',
 		url: '/api/friend/request',
-		body: { firendId: id },
-		headers: {
-		'Content-Type': 'application/json',
-		},
-	};
-	return ((await apiCall(options)).status);
+		body: { friendId },
+	});
+}
+
+export async function acceptRequest(friendId: number): Promise<ProtectedApiReturn<null>> {
+	return await protectedApiCall<null>({
+		method: 'POST',
+		url: '/api/friend/accept',
+		body: { friendId },
+	});
+}
+
+export async function blockRequest(friendId: number): Promise<ProtectedApiReturn<null>> {
+	return await protectedApiCall<null>({
+		method: 'POST',
+		url: '/api/friend/block',
+		body: { friendId },
+	});
+}
+
+export async function checkPending(): Promise<ProtectedApiReturn<boolean>> {
+	return await protectedApiCall<boolean>({
+		method: 'POST',
+		url: '/api/friend/check',
+	});
 }
 
 export interface Friend {
