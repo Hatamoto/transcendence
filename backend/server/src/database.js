@@ -1,13 +1,14 @@
 import fp from 'fastify-plugin'
-import Database from 'better-sqlite3'
+// import Database from 'better-sqlite3'
 import { Logger, LogLevel } from './utils/logger.js';
+import db from './dbInstance.js'
 
 const log = new Logger(LogLevel.INFO);
 
 async function dbInit(fastify, options) {
   log.info("Creating database");
-  const dbFile = process.env.DB_FILE || "../../database/database.db"
-  const db = new Database(dbFile); //, { verbose: console.log })
+  // const dbFile = process.env.DB_FILE || "../../database/database.db"
+  // const db = new Database(dbFile); //, { verbose: console.log })
 
 //  db.exec(`
 //    DROP TABLE IF EXISTS otp_codes;
@@ -69,7 +70,7 @@ async function dbInit(fastify, options) {
       size INTEGER,
       created_by INTEGER,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      status TEXT NOT NULL CHECK(status IN ('created', 'waiting', 'ready', 'in_progress', 'completed')),
+      status TEXT NOT NULL CHECK(status IN ('created', 'ready', 'in_progress', 'completed')),
       FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
     );
   `)
@@ -104,7 +105,8 @@ async function dbInit(fastify, options) {
       player_one_prev_match INTEGER,
       player_two_prev_match INTEGER,
       winner_id INTEGER,
-      status TEXT NOT NULL DEFAULT 'waiting' CHECK(status IN ('waiting', 'pending', 'in_progress', 'completed', 'bye')),
+      room_id INTEGER DEFAULT NULL,
+      status TEXT NOT NULL DEFAULT 'waiting' CHECK(status IN ('waiting', 'in_progress', 'completed', 'bye')),
       FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
       FOREIGN KEY (player_one_id) REFERENCES users(id),
       FOREIGN KEY (player_two_id) REFERENCES users(id),
