@@ -40,15 +40,23 @@ export default function GameRoom({matchType}) {
 					</>
 				);
 			case "tournament":
-				return(
-					<>
-					<p id="size-txt" className="text-center text-gray-600 mb-4">Lobby size: 0/2</p>
-					<h1 className="text-2xl font-bold text-center mb-4">Welcome to the Tournament!</h1>
-					<button id="ready-tour" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
-						Ready up!
-					</button>
-					</>
-				);
+				if (!1)
+				{
+					return (<p>No Tournament Active!</p>);
+				}	
+				else
+				{
+					return(
+							<>
+							<p id="size-txt" className="text-center text-gray-600 mb-4">Lobby size: 0/2</p>
+							<h1 className="text-2xl font-bold text-center mb-4">Welcome to the Tournament!</h1>
+							<button id="ready-tour" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
+								Ready up!
+							</button>
+							</>
+						);
+				}
+			
 			case "normal":
 				return(
 					<>

@@ -1,4 +1,5 @@
 import UserHeader from "../components/userHeader";
+import { Link } from 'react-router-dom';
 import React from 'react';
 
 export interface tournament {
@@ -146,6 +147,14 @@ const TournamentsPage: React.FC = () => {
 		id="test-start-tour" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
 					start tournament
 		</button>
+
+
+		<Link 
+					to="/tour-game"
+					className="w-64 bg-blue-500 text-white py-2 rounded-md hover:bg-green-700 text-center"
+			  	>
+					Join Room
+		</Link>
 
 		{/*<button id="create-tour" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
 					Create tournament

@@ -34,8 +34,9 @@ const getTournaments = async function(req, reply) {
   const db = req.server.db
 
   try {
-    const tournaments = db.prepare('SELECT * FROM tournaments WHERE status = ?')
-      .all('created')
+    const tournaments = db.prepare('SELECT * FROM tournaments')
+      .all()
+
 
     if (tournaments.length === 0) return reply.code(404).send({ error: "No tournaments found" })
     
