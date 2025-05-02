@@ -105,7 +105,7 @@ async function dbInit(fastify, options) {
       player_two_prev_match INTEGER,
       winner_id INTEGER,
       status TEXT NOT NULL DEFAULT 'waiting' CHECK(status IN ('waiting', 'pending', 'in_progress', 'completed', 'bye')),
-      FOREIGN KEY (tournament_id) REFERENCES tournaments(id),
+      FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
       FOREIGN KEY (player_one_id) REFERENCES users(id),
       FOREIGN KEY (player_two_id) REFERENCES users(id),
       FOREIGN KEY (winner_id) REFERENCES users(id),

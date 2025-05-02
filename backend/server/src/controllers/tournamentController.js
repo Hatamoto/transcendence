@@ -8,11 +8,11 @@ const createTournament = async function(req, reply) {
     const tournaments = db.prepare('SELECT * FROM tournaments WHERE created_by = ?')
       .all(userId)
 
-    if (tournaments.length !== 0) {
-      const activeTournaments = tournaments.some(item => {
+    if (tournaments.length > 0) {
+      const activeTournaments = tournaments.map(item => {
         item.status !== 'completed'
       })
-      if (activeTournaments) {
+      if (activeTournaments.length > 0) {
         return reply.code(409).send({ 
           error: "User already has an active tournament started",
           status: activeTournaments.status
@@ -20,10 +20,18 @@ const createTournament = async function(req, reply) {
       }
     }
 
-    db.prepare('INSERT INTO tournaments (name, created_by, size, status) VALUES (?, ?, ?, ?)')
+    const result = db.prepare('INSERT INTO tournaments (name, created_by, size, status) VALUES (?, ?, ?, ?)')
       .run(name, userId, size, 'created')
+    
+    const tournament = {
+      id: result.lastInsertRowid,
+      name: name,
+      size: size,
+      created_by: userId,
+      status: 'created'
+    }
 
-    return reply.send({ message: "Tournament successfully created" })
+    return reply.send(tournament)
   } catch (error) {
 	console.log(error)
     return reply.code(500).send({ error: error.message })
@@ -207,10 +215,33 @@ const startTournament = async function(req, reply) {
   }
 }
 
+const getTournamentParticipant = async function(req, reply) {
+  const { tournamentId } = req.params
+  const db = req.server.db
+
+  try {
+    const tournament = db.prepare('SELECT * FROM tournaments WHERE id = ? AND status = ?')
+    .get(tournamentId, 'in_progress')
+
+    if (!tournament) return reply.code(404).send({ error: `No tournament found with id ${tournamentId} and status in_progress` })
+    
+    const player = db.prepare('SELECT * FROM tournament_players WHERE tournament_id = ? AND user_id = ?')
+      .get(tournamentId, req.user.id)
+    
+    if (!player) return reply.code(404).send({ error: `Player not found in tournament ${tournamentId}` })
+    
+    return reply.code(204)
+  } catch (error) {
+      console.log(error)
+      return reply.code(500).send({ error: error.message })
+  }
+}
+
 export { 
   createTournament, 
   getTournaments, 
   joinTournament, 
   setReady, 
-  startTournament 
+  startTournament,
+  getTournamentParticipant
 }

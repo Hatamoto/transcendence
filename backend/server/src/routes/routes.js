@@ -74,6 +74,7 @@ async function tournamentRoutes (fastify, options) {
   fastify.post('/api/tournament/:tournamentId/join', joinTournamentOpts)
   fastify.post('/api/tournament/:tournamentId/start', startTournamentOpts)
   fastify.patch('/api/tournament/:tournamentId/ready', setReadyOpts)
+  fastify.get('/api/tournament/:tournamentId/', getTournamentParticipantOpts)
 }
 
 export { root, userRoutes, friendRoutes, tournamentRoutes }
