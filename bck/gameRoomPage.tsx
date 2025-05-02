@@ -38,12 +38,12 @@ export default function GameRoom({matchType}) {
 	const matchTypeButtons = () => {
 		
 		const difficulties = [
-			{ level: 0, label: "🍭 Baby Mode" },
-			{ level: 1, label: "😎 Chill" },
-			{ level: 2, label: "⚔️ Let’s Goo!!" },
-			{ level: 3, label: "🔥 Hardcore" },
-			{ level: 4, label: "💀 Terminator" }
-		]
+			{ level: 0, label: "Very Easy" },
+			{ level: 1, label: "Easy" },
+			{ level: 2, label: "Normal" },
+			{ level: 3, label: "Hard" },
+			{ level: 4, label: "Insane" }
+		];
 		
 		switch (matchType) {
 			case "solo":
@@ -63,32 +63,18 @@ export default function GameRoom({matchType}) {
 						<h1 className="text-2xl font-bold text-center mb-4">Welcome to the VS AI Game!</h1>
 
 						<div className="flex w-full mb-4">
-						{difficulties.map(({ level, label }, index) => {
-							const isFirst = index === 0;
-							const isLast = index === difficulties.length - 1;
-
-							const roundedClass = isFirst
-								? 'rounded-l-md'
-								: isLast
-								? 'rounded-r-md'
-								: 'rounded-none';
-
-							return (
+							{difficulties.map(({ level, label }, index) => (
 								<button
 									key={level}
-									className={`w-1/5 py-2 text-white text-center ${roundedClass} ${
-										difficulty === level
-											? 'bg-green-700'
-											: 'bg-green-900 hover:bg-green-500'
-									} ${index < difficulties.length - 1 ? 'mr-1' : ''}`}
+									className={`w-1/6 py-2 rounded-md text-white text-center ${
+										difficulty === level ? 'bg-green-700' : 'bg-green-900 hover:bg-green-500'
+									} ${index < difficulties.length - 1 ? 'mr-1/24' : ''}`}
 									onClick={() => setDifficulty(level)}
 								>
 									{label}
 								</button>
-							);
-						})}
-					</div>
-
+							))}
+						</div>
 
 						<button
 							id="ready-ai"
