@@ -6,14 +6,15 @@ import Background from '../components/background.js';
 
 
 export default function GameRoom({matchType}) {
-	const hasRun = useRef(false);
+	const hasRun1 = useRef(false);
+	const hasRun2 = useRef(false);
 	const leftPage = useRef(false);
 	const [tournamentStatus, setTournamentStatus] = useState(null);
 	const userId = sessionStorage.getItem('activeUserId');
 	const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}')
 
 useEffect(() => {
-	if (!hasRun.current && matchType === "tournament") {
+	if (!hasRun1.current && matchType === "tournament") {
 		fetch('/api/tournament/1', {
 			method: 'GET',
 			headers: {
@@ -36,6 +37,7 @@ useEffect(() => {
 		setTournamentStatus("normal");
 	}
 
+	hasRun1.current = true;
 	return () => {
 		if (frontEndGame && leftPage.current) {
 			closeSocket();
@@ -47,7 +49,7 @@ useEffect(() => {
 }, []);
 
 useEffect(() => {
-	if (hasRun.current) return;
+	if (hasRun2.current) return;
 	const isTournamentReady = tournamentStatus === "active" || tournamentStatus === "normal";
 
 	if (isTournamentReady) {
@@ -56,7 +58,7 @@ useEffect(() => {
 		}
 
 		createNewGame(matchType, getSocket(), userId);
-		hasRun.current = true;
+		hasRun2.current = true;
 	}
 }, [tournamentStatus]);
 
