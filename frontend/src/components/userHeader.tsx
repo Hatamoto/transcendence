@@ -1,8 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { friendRequest, FriendRequestRequest } from "../services/api";
+import { friendRequest, FriendRequestRequest, getFriendsRequest } from "../services/api";
 import { useToast } from "./toastBar/toastContext";
+import { getAllUsers, getFriends } from "../services/api";
 
 interface UserHeaderProps {
 	userName: string;
@@ -29,11 +30,16 @@ const UserHeader: React.FC = () => {
 			}));
 		};
 
+		const userId = sessionStorage.getItem('activeUserId');
+		const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}')
+
 		const handleSubmit = async (event: React.FormEvent) => {
 			event.preventDefault();
 
+
 			const user: FriendRequestRequest = {
-				id: formState.id
+				friendId: Number(formState.id),
+				accToken: sessionData.accessToken,
 			};
 	  
 			const response = await friendRequest(user);
@@ -53,7 +59,34 @@ const UserHeader: React.FC = () => {
 	
 		const [visibleState, changeState] = useState(false);
 		
-		const toggleState = () => {
+		const toggleState = async () => {
+
+			if (!visibleState) {
+				
+				const response = await getAllUsers();
+				console.log(response.users);//test log
+	
+				if (Array.isArray(response.users)) {
+					sessionStorage.setItem('users', JSON.stringify(response.users));
+				} else {
+					toast.open(response.error, "error");
+					console.error("Error fetching users:", response);
+				}
+
+				const token: getFriendsRequest = {
+					accToken: sessionData.accessToken,
+				}
+				
+				const response2 = await getFriends(token);
+
+				if (Array.isArray(response2.users)) {
+					sessionStorage.setItem('friends', JSON.stringify(response2.users));
+				} else {
+					toast.open(response2.error, "error");
+					console.error("Error fetching friends:", response2);
+				}
+			}
+				
 			changeState(prevState => !prevState);
 		};
 

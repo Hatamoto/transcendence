@@ -1,7 +1,7 @@
 
 interface AuthFetchOptions {
 	method: string;
-	body: string;
+	body?: string;
 	headers: {
 	  'Content-Type': string;
 	  'Authorization': string;
@@ -10,8 +10,9 @@ interface AuthFetchOptions {
 
 interface AuthFetchResponse {
 	status: number;
-	error: string;
+	error?: string;
 	newToken?: string;
+	users?: User[];
 }
 
 async function authFetch(url: string, options: AuthFetchOptions): Promise<AuthFetchResponse> {
@@ -20,7 +21,12 @@ async function authFetch(url: string, options: AuthFetchOptions): Promise<AuthFe
 	const response = await fetch(url, options);
 	console.log("in authfetch after fetch", response);
 
-	const responseData = await response.json();
+	if (response.status === 204) {
+		return {
+			status: response.status,
+		};
+	}
+		const responseData = await response.json();
 
 	if (response.status === 401) {
 		return {
@@ -71,7 +77,8 @@ async function authFetch(url: string, options: AuthFetchOptions): Promise<AuthFe
 	}
 	return {
 		status: response.status,
-		error: responseData.error
+		error: responseData.error,
+		users: responseData
 	};
 }
 
@@ -298,39 +305,64 @@ export async function deleteUser(userData: DeleteUserRequest): Promise<DeleteUse
 
 
 export interface FriendRequestRequest {
-	id: string;
+	friendId: number;
+	accToken: string;
 }
 
 interface FriendRequestResponse {
-	status: number,
-	error: string,
+	status: number;
+	error: string;
 }
 
 export async function friendRequest(requestData: FriendRequestRequest): Promise<FriendRequestResponse> {
 	
 	try {
-		const response = await fetch("/api/friend/request", {
-			method: 'POST',
-			body: JSON.stringify(requestData), 
-			headers: {
-			'Content-Type': 'application/json',
+			const options = {
+				method: 'POST',
+				body: JSON.stringify({ friendId: requestData.friendId }),
+				headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${requestData.accToken}`
+				}
 			}
-		});
 
-		const responseData = await response.json();
+		const response = await authFetch('/api/friend/request', options);
 
-		if (!response.ok)
-			return {
-				status: response.status,
+		if (response.status === 1) {
+			const retryResponse = await fetch(`/api/friend/request`, {
+				method: 'POST',
+				body: JSON.stringify({ friendId: requestData.friendId }),
+				headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${response.newToken}`
+				}
+			});
+
+			const responseData = await retryResponse.json();
+		
+			if (!retryResponse.ok)
+				return {
+				status: retryResponse.status,
 				error: responseData.error || 'Friend request failed'
-			}
-		return {
-			status: response.status,
-			error: responseData.error || 'Friend request sent successfully'
+				}
+			return {
+				status: retryResponse.status,
+				error: responseData.error || 'Friend request sent successfully'
+			};
+		};
+
+		if (response.status >= 300)
+			return {
+		status: response.status,
+		error: response.error || 'Friend request failed'
+	}
+	return {
+		status: response.status,
+			error: response.error || 'Friend request sent successfully'
 		};
 
 	} catch (error) {
-		console.error("Friend request:", error);
+		console.error("friendRequest:", error);
 		return {
 			status: 500,
 			error: 'Something went wrong. Please try again.'
@@ -338,16 +370,133 @@ export async function friendRequest(requestData: FriendRequestRequest): Promise<
 	}
 }
 
-// authentication token, No token provided. Go though authFetch??
+// with id that doesnt exist in the database. "FOREIGNkey error?? what is this Tomi?"
+
+interface getAllUsersResponse {
+	status: number;
+	error?: string;
+	users?: User[];
+}
+
+export async function getAllUsers(): Promise<getAllUsersResponse> {
+
+	try {
+
+		const response = await fetch('/api/users' ,{
+			method: 'GET'
+		});
+
+		const responseData = await response.json();
+
+		if (!response.ok)
+			return {
+		status: response.status,
+		error: responseData.error || 'Fetching users failed',
+		}
+		return {
+			status: response.status,
+			users: responseData
+		}
+
+	} catch (error) {
+		console.error("getAllUsers Error:", error);
+		return {
+			status: 500,
+			error: 'Something went wrong. Please try again.'
+		};
+	}
+}
+
+export interface getFriendsRequest {
+	accToken: string;
+}
+
+interface getFriendsResponse {
+	status: number;
+	error?: string;
+	users?: User[];
+}
+
+export async function getFriends(requestData: getFriendsRequest): Promise<getFriendsResponse> {
+
+	try {
+			const options = {
+				method: 'GET',
+				headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${requestData.accToken}`
+				}
+			}
+
+		const response = await authFetch('/api/friends', options);
+
+		if (response.status === 1) {
+			const retryResponse = await fetch(`/api/friends`, {
+				method: 'GET',
+				headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${response.newToken}`
+				}
+			});
+
+			const responseData = await retryResponse.json();
+		
+			if (!retryResponse.ok)
+				return {
+				status: retryResponse.status,
+				error: responseData.error || 'Fetching friends failed'
+				}
+			return {
+				status: retryResponse.status,
+				users: responseData
+			};
+		}
+
+		if (response.status >= 300)
+			return {
+			status: response.status,
+			error: response.error || 'Fetching friends failed',
+		}
+		if (response.status === 204)
+			return {
+			status: response.status,
+			users: []
+		}
+		return {
+			status: response.status,
+			users: response.users
+		}
+
+	} catch (error) {
+		console.error("getFriends Error:", error);
+		return {
+			status: 500,
+			error: 'Something went wrong. Please try again.'
+		};
+	}
+}
+
+//limit the friends list size in the back to not fetch that many to the front. 
+//log out the user when accesstoken expires to have a failsafe
 
 
 
 
 
 
-
-
-
+// export async function getAllUsers(): Promise<User[] | number> {
+// 	const options : ApiOptions = {
+// 		method: 'GET',
+// 		url: '/api/users',         
+// 		headers: {
+// 		'Content-Type': 'application/json',
+// 		},
+// 	};
+// 	const response = await apiCall<User[]>(options);
+// 	if (response.status !== 200)
+// 		return (response.status);
+// 	return (response.data as User[]);
+// }
 
 
 
@@ -400,19 +549,6 @@ async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
 }
 
 
-export async function getAllUsers(): Promise<User[] | number> {
-	const options : ApiOptions = {
-		method: 'GET',
-		url: '/api/users',         
-		headers: {
-		'Content-Type': 'application/json',
-		},
-	};
-	const response = await apiCall<User[]>(options);
-	if (response.status !== 200)
-		return (response.status);
-	return (response.data as User[]);
-}
 
 export async function getUser(id: string): Promise<User | number> {
 	const options : ApiOptions = {
