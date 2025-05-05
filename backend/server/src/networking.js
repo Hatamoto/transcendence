@@ -166,14 +166,14 @@ export function setupNetworking(server){
 			  .run(roomId, match.id)
 				
 				return (roomId)
-			} else if (Object.keys(rooms[match.room_id].players).length === 1) {
+			} else {
 				console.log("amogi01");
+			if (rooms[match.room_id]?.players && Object.keys(rooms[match.room_id].players).length === 1) {
 				db.prepare('UPDATE matches SET status = ? WHERE id = ?')
 				.run('in_progress', match.id);
+			}
 			  return (match.room_id)
 			}
-			console.log("amogi00");
-			return (-1);
 		}
 
 		socket.on("readyTour", (userId) => {
