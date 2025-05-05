@@ -175,7 +175,6 @@ export function setupNetworking(server){
 				return ;
 			}
 			if (!rooms[roomId]) {
-				roomIds.openRoomDoors(roomId);
 				rooms[roomId] = {
 				players: {},
 				gameStarted: false,
@@ -408,7 +407,7 @@ function startGameLoop(roomId) {
 		}
 	
 		const winner = game.getScores()[0] >= 5 ? 1 : 2;
-		io.to(roomId).emit('gameOver', winner);
+		io.to(roomId).emit('gameOver', winner, room.type);
 	
 		for (const playerId in room.players) {
 			const player = room.players[playerId];

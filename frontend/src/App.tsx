@@ -12,7 +12,7 @@ import ProtectedRoutes from './components/authRoutes'
 
 // //import "./index.css";
 
-const router = createBrowserRouter([
+export const router = createBrowserRouter([
   {path: "/", element:<Home />},
   {path: "/home", element:<Home />},
   {path: "/login", element:<Login/> },

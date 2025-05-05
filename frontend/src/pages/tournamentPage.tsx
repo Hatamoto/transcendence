@@ -1,6 +1,7 @@
 import UserHeader from "../components/userHeader";
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import React from 'react';
+
 
 export interface tournament {
 	name : string;
@@ -95,8 +96,6 @@ export async function starterTour(): Promise<number> {
 
 
 const TournamentsPage: React.FC = () => {
-
-
 	const createTour = () => {
 		createrTour({name: "paskaturnaus", size: 2}).then((response) => {
 			if (response == 200) {

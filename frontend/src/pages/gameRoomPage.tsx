@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { createSocket, getSocket, closeSocket } from "../utils/socket";
 import Background from '../components/background.js';
 
-
 export default function GameRoom({matchType}) {
 	const hasRun1 = useRef(false);
 	const hasRun2 = useRef(false);
@@ -33,7 +32,7 @@ useEffect(() => {
 			console.error("Failed to fetch tournament:", err);
 			setTournamentStatus("error");
 		});
-	} else {
+	} else if (matchType !== "tournament") {
 		setTournamentStatus("normal");
 	}
 

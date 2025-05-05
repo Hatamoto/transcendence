@@ -10,7 +10,7 @@ const Header: React.FC = () => {
 		  {/* Left Side: Title and Subheading */}
 		  <div className="flex items-center space-x-10">
 			<h1 className="text-5xl font-extrabold tracking-tight text-green-500">
-			  ft_Transcendence
+			  ft_transcendence
 			</h1>
 		  </div>
 	

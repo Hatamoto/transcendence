@@ -2,6 +2,7 @@
 import { Logger, LogLevel } from '../utils/logger.js';
 import { TURN_URL, TURN_USER, TURN_PASS, EXT_IP, STUN_URL} from '../config/env-config.js';
 import { setupButtons  } from './matchmaking.js';
+import { router } from '../App';
 
 const log = new Logger(LogLevel.INFO);
 
@@ -533,8 +534,9 @@ export class frontEndGame {
 			game.updateGraphics();
 		});
 		
-		socket.on("gameOver", (winner : number) => {
-			document.getElementById("gameroom-page").hidden = false;
+		socket.on("gameOver", (winner : number, type : string) => {
+			if (type == "solo")
+				document.getElementById("gameroom-page").hidden = false;
 			var winnerElement = document.createElement("span");
 			winnerElement.id = "winner-text";
 			winnerElement.textContent = "Winner: " + winner;
@@ -546,6 +548,12 @@ export class frontEndGame {
 		
 			container.prepend(winnerElement);
 			game.cleanUp();
+			if (type == "tournament")
+			{
+				setTimeout(() => {
+					router.navigate("/tournaments");
+				  }, 3000);
+			}
 		});
 	}
 }
