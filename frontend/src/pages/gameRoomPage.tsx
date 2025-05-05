@@ -12,37 +12,30 @@ export default function GameRoom({matchType}) {
 	const userId = sessionStorage.getItem('activeUserId');
 	const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}')
 
-	useEffect(() => {
-		if (!hasRun.current) {
-			if (matchType === "tournament") {
-				fetch('/api/tournament/1', {
-					method: 'GET',
-				headers: {
-					'Content-Type': 'application/json',
-					'Authorization': `Bearer ${sessionData.accessToken}`
-				}
-			})
-			.then((res) => {
-				console.log(res.status);
-				if (res.status === 204)
-					setTournamentStatus("active");
-				else
+useEffect(() => {
+	if (!hasRun.current && matchType === "tournament") {
+		fetch('/api/tournament/1', {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${sessionData.accessToken}`
+			}
+		})
+		.then((res) => {
+			if (res.status === 204) {
+				setTournamentStatus("active");
+			} else {
 				setTournamentStatus("no-tournament");
-			})
-			.catch((err) => {
-				console.error("Failed to fetch tournament:", err);
-				setTournamentStatus("error");
-			});
-		}
-		
-		if (matchType != "solo") createSocket();
-		window.onload = () => {
-			createNewGame(matchType, getSocket(), userId);
-		}
-		hasRun.current = true;
+			}
+		})
+		.catch((err) => {
+			console.error("Failed to fetch tournament:", err);
+			setTournamentStatus("error");
+		});
+	} else {
+		setTournamentStatus("normal");
 	}
-	
-	
+
 	return () => {
 		if (frontEndGame && leftPage.current) {
 			closeSocket();
@@ -52,6 +45,20 @@ export default function GameRoom({matchType}) {
 		}
 	};
 }, []);
+
+useEffect(() => {
+	if (hasRun.current) return;
+	const isTournamentReady = tournamentStatus === "active" || tournamentStatus === "normal";
+
+	if (isTournamentReady) {
+		if (matchType !== "solo") {
+			createSocket();
+		}
+
+		createNewGame(matchType, getSocket(), userId);
+		hasRun.current = true;
+	}
+}, [tournamentStatus]);
 
 
 const matchTypeButtons = () => {
@@ -104,7 +111,7 @@ const matchTypeButtons = () => {
 			<Background />
 			<Header />
 			<div id="gameroom-page" className="bg-green-100 p-8 rounded-lg shadow-md w-[820px]">				
-				{matchTypeButtons()}
+			{matchTypeButtons()}
 
 				<label htmlFor="colorSelect">Choose ball color:</label>
 				<select id="colorSelect" name="mySelect" defaultValue="white">
