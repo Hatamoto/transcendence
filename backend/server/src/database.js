@@ -22,9 +22,9 @@ async function dbInit(fastify, options) {
 //     DROP TABLE IF EXISTS matches;
 //  `)
 
-//   db.exec(`
-//      DROP TABLE IF EXISTS tournaments;
-//   `)
+  // db.exec(`
+  //    DROP TABLE IF EXISTS tournaments;
+  // `)
 
 // db.exec(`
 //    DROP TABLE IF EXISTS users;
