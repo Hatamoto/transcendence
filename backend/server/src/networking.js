@@ -11,7 +11,7 @@ global.RTCPeerConnection = wrtc.RTCPeerConnection;
 global.RTCSessionDescription = wrtc.RTCSessionDescription;
 global.RTCIceCandidate = wrtc.RTCIceCandidate;
 
-// Alloactes ids whenever they are freed
+// Allocates ids whenever they are freed
 class IDAllocator {
     constructor(maxID) {
         this.maxID = maxID;
@@ -53,7 +53,7 @@ class IDAllocator {
 let io;
 const games = {};
 const rooms = {};
-const roomIds = new IDAllocator(50);
+const roomIds = new IDAllocator(5000); // max room amount
 
 export function setupNetworking(server){
 	log.debug('Checking WebRTC globals:');
@@ -81,10 +81,10 @@ export function setupNetworking(server){
 			method.call(log, ...logdata.args, { __frontend: true });
 		});
 
+		// Clean up rooms and connections when a player disconnects
 		socket.on("disconnect", () => {
 			log.info("User disconnected:", socket.id);
 		
-			// Clean up rooms and connections when a player disconnects
 			const playerRoom = socket.room;
 				if (playerRoom && rooms[playerRoom]?.players[socket.id]) {
 					const player = rooms[playerRoom].players[socket.id];
@@ -139,17 +139,7 @@ export function setupNetworking(server){
 			}
 		});
 
-		//socket.on("joinRoom", (roomId) => {
-		//	if (!rooms[roomId]) {
-		//		rooms[roomId] = {
-		//		players: {},
-		//		gameStarted: false,
-		//		hostId: null
-		//		};
-		//	}
-		//	joinRoom(roomId, socket);
-		//});
-
+		// finding room for tournament
 		function findGameRoom(userId) {		  
 			const match = db.prepare('SELECT * FROM matches WHERE (player_one_id = ? OR player_two_id = ?) AND status = ?')
 			  .get(userId, userId, 'waiting')
@@ -161,13 +151,11 @@ export function setupNetworking(server){
 			if (!match.room_id) {
 			  const roomId = roomIds.allocate();
 			  roomIds.closeRoomDoors(roomId);
-				console.log("amogi02");
 			  db.prepare('UPDATE matches SET room_id = ? WHERE id = ?')
 			  .run(roomId, match.id)
 				
 				return (roomId)
 			} else {
-				console.log("amogi01");
 			if (rooms[match.room_id]?.players && Object.keys(rooms[match.room_id].players).length === 1) {
 				db.prepare('UPDATE matches SET status = ? WHERE id = ?')
 				.run('in_progress', match.id);
@@ -176,11 +164,10 @@ export function setupNetworking(server){
 			}
 		}
 
+
+		// Allocates a room id for a tournament room
+		// and lets the other player join in
 		socket.on("readyTour", (userId) => {
-			console.log("UserId: " + userId);
-			// allocate a room when a players opponent doesnt have a room
-			// if opponent has a room join it
-			// a check so nobody else can join the room
 			const roomId = findGameRoom(userId);
 			if (roomId === -1)
 			{
@@ -196,10 +183,11 @@ export function setupNetworking(server){
 				type: "tournament" // Games matchmaking type
 				};
 			}
-			console.log("RoomId: " + roomId);
 			joinRoom(roomId, socket);
 		});
 
+		// Normal matchmaking
+		// Allocates a room id for a normal room
 		socket.on("joinRoomQue", () => {
 			let roomFlag = 0;
 			const socketRoom = [...socket.rooms][1]
@@ -213,8 +201,6 @@ export function setupNetworking(server){
 				else
 					roomFlag = 2;
 				delete rooms[socketRoom].players[socket.id];
-				
-				const player = rooms[socketRoom].players[socket.id];
 			}
 			const roomId = roomIds.allocate();
 
@@ -239,6 +225,7 @@ export function setupNetworking(server){
 			joinRoom(roomId, socket);
 		});
 
+		// Lets the host of the room start the game
 		socket.on('hostStart', (settings) => {
 			const playerRoom = socket.room;
 			if (!playerRoom || !rooms[playerRoom] || rooms[playerRoom].hostId != socket.id) return;
@@ -392,6 +379,8 @@ function initializeWebRTC(roomId) {
 	}
 }
 
+// Game loop for updating game state
+// and sending it to players
 function startGameLoop(roomId) {
 	const room = rooms[roomId];
 	const game = games[roomId];
@@ -471,7 +460,8 @@ function startGameLoop(roomId) {
 	setImmediate(gameLoop);
 }
 
-
+// Handles the joining of a room
+// and the initialization of the game
 function joinRoom(roomId, socket)
 {
 	if (Object.keys(rooms[roomId].players).length < 2) {
