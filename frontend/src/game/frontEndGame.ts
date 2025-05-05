@@ -568,7 +568,8 @@ export function cleanGame()
 {
 	if (animationFrameId != null)
 		cancelAnimationFrame(animationFrameId);
-	game.cleanUp();
+	if (game)
+		game.cleanUp();
 	game = null;
 } 
 

@@ -53,7 +53,14 @@ const blockRequestOpts = {
 }
 
 const getFriendsOpts = {
-  schema: {},
+  schema: {
+    response: {
+      200: {
+        type: 'array',
+        items: User,
+      },
+    },
+  },
   preHandler: authenticateToken,
   handler: getFriends,
 }

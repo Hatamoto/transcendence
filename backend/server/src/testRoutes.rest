@@ -129,3 +129,7 @@ GET http://localhost:5001/api/tournaments
 
 POST http://localhost:3000/api/tournament/1/start
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwibmFtZSI6InRlc3RpIiwiaWF0IjoxNzQ1NDA5NjQ5LCJleHAiOjE3NDU0MTA1NDl9.KoE6YckcKoiZvKWlcH1SPapkUtZxc_ZdB2V6ghEKAK0
+
+### Check active tournament for user
+
+GET http://localhost:5001/api/tournament/1

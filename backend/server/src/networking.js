@@ -414,6 +414,8 @@ function startGameLoop(roomId) {
 			if (Object.keys(room.players).length === 1) {
 				roomIds.openRoomDoors(roomId);
 			}
+		} else if (room.type === "tournament") {
+			
 		}
 	
 		const winner = game.getScores()[0] >= 5 ? 1 : 2;

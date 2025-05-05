@@ -263,7 +263,8 @@ function findGameRoom() {
     db.prepare('UPDATE matches room_id = ? WHERE id = ?')
       .run(roomId, match.id)
   } else {
-    
+    db.prepare('UPDATE matches status = ? WHERE id = ?')
+      .run('in_progress', match.id)
   }
 }
 
