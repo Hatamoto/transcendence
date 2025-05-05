@@ -6,6 +6,7 @@ import {
   getFriends
 } from '../controllers/friendController.js'
 import authenticateToken from '../middleware/authentication.js'
+import User from '../models/userModel.js'
 
 const friendRequestOpts = {
   schema: {
