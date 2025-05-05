@@ -2,7 +2,7 @@ import { OAuth2Client } from 'google-auth-library'
 const client = new OAuth2Client(process.env.CLIENT_ID);
 
 function generateAccessToken (req, user) {
-  return req.server.jwt.sign(user, { expiresIn: '15m' })
+  return req.server.jwt.sign(user, { expiresIn: '1h' })
 }
 
 async function verifyIdToken(idToken) {

@@ -1,10 +1,9 @@
-import { getSocket } from '../utils/socket.js';
 import { Logger, LogLevel } from '../utils/logger.js';
 import { startSoloGame } from './frontEndGame.js';
 
 const log = new Logger(LogLevel.INFO);
 
-export function setupButtons(socket)
+export function setupButtons(socket, userId)
 {
 	// Solo game
 	const soloBtn = document.getElementById("ready-solo");
@@ -33,10 +32,9 @@ export function setupButtons(socket)
 	const readyBtn = document.getElementById("ready-tour");
 	if (readyBtn)
 	{
-		console.log("123");
 		readyBtn.addEventListener("click", () => {
-			console.log("asd");
-			socket.emit("readyTour");
+			console.log("Ready button clicked");
+			socket.emit("readyTour", (userId));
 		});
 	}
 }

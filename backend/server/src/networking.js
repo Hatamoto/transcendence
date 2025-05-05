@@ -161,26 +161,43 @@ export function setupNetworking(server){
 			if (!match.room_id) {
 			  const roomId = roomIds.allocate();
 			  roomIds.closeRoomDoors(roomId);
-
-			  db.prepare('UPDATE matches room_id = ? WHERE id = ?')
-				.run(roomId, match.id)
+				console.log("amogi02");
+			  db.prepare('UPDATE matches SET room_id = ? WHERE id = ?')
+			  .run(roomId, match.id)
 				
 				return (roomId)
-			} else {
-				db.prepare('UPDATE matches status = ? WHERE id = ?')
-				.run('in_progress', match.id)
+			} else if (Object.keys(rooms[match.room_id].players).length === 1) {
+				console.log("amogi01");
+				db.prepare('UPDATE matches SET status = ? WHERE id = ?')
+				.run('in_progress', match.id);
 			  return (match.room_id)
 			}
+			console.log("amogi00");
+			return (-1);
 		}
 
 		socket.on("readyTour", (userId) => {
+			console.log("UserId: " + userId);
 			// allocate a room when a players opponent doesnt have a room
 			// if opponent has a room join it
 			// a check so nobody else can join the room
 			const roomId = findGameRoom(userId);
 			if (roomId === -1)
+			{
+				console.log("Mita vittua")
 				return ;
-			joinRoom(roomId);
+			}
+			if (!rooms[roomId]) {
+				roomIds.openRoomDoors(roomId);
+				rooms[roomId] = {
+				players: {},
+				gameStarted: false,
+				hostId: null,
+				type: "tournament" // Games matchmaking type
+				};
+			}
+			console.log("RoomId: " + roomId);
+			joinRoom(roomId, socket);
 		});
 
 		socket.on("joinRoomQue", () => {

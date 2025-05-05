@@ -554,9 +554,9 @@ export class frontEndGame {
 let game : frontEndGame;
 let animationFrameId: number | null = null;
 
-export function createNewGame(matchType : string, socket)
+export function createNewGame(matchType : string, socket, userId : string)
 {
-	setupButtons(socket);
+	setupButtons(socket, userId);
 	game = new frontEndGame();
 	if (matchType != "solo")
 	{
