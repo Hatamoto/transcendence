@@ -7,8 +7,7 @@ import {
   updateUser,
   updatePassword,
   getDashboard,
-  uploadAvatar,
-  searchUsers
+  uploadAvatar
 } from '../controllers/userController.js'
 import authenticateToken from '../middleware/authentication.js'
 import User from '../models/userModel.js'

@@ -405,7 +405,20 @@ function startGameLoop(roomId) {
 			}
 		} else if (room.type === "tournament") {
 			const playerIds = Object.keys(room.players);
-			//playerIds[winner].dbId
+			const winnerId = playerIds[winner].dbId
+      const loserId = playerIds[1 - winner].dbId
+
+      try {
+        const match = db.prepare(`
+          SELECT * FROM matches 
+          WHERE (player_one_id = ? AND player_two_id = ? AND status = ?) 
+          OR (player_one_id = ? AND player_two_id = ? AND status = ?)
+        `).get(winnerId, loserId, 'in_progress')
+
+        
+      } catch (error) {
+          console.log(error)
+      }
 		}
 	
 		io.to(roomId).emit('gameOver', winner + 1, room.type);

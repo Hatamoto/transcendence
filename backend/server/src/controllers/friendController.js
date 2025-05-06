@@ -32,7 +32,7 @@ const checkPending = async function(req, reply) {
 
   try {
     const friendRequests = db.prepare(`
-      SELECT users.name
+      SELECT users.name, users.id
       FROM friends 
       JOIN users ON users.id = friends.user_id
       WHERE friend_id = ? AND status = ?
@@ -116,27 +116,10 @@ const getFriends = async function(req, reply) {
   }
 }
 
-const searchFriends = async function(req, reply) {
-  const db = req.server.db
-  const { query } = req.query
-  try {
-    const results = db.prepare(`
-      SELECT * FROM users
-      WHERE name LIKE ? COLLATE NOCASE
-    `).all(`%${query}%`)
-
-    return reply.send(results)
-  } catch (error) {
-    console.log(error)
-    return reply.code(500).send({ error: error.message })
-  }
-}
-
 export { 
   friendRequest, 
   checkPending, 
   acceptRequest, 
   blockRequest, 
-  getFriends,
-  searchFriends
+  getFriends
 }
