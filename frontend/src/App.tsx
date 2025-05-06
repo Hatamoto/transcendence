@@ -29,7 +29,10 @@ export const router = createBrowserRouter([
 const App: React.FC = () => {
 
   return (
-    <div>
+    <div
+      style={{ cursor: "url('cursor.png'), auto" }}
+      className="min-h-screen"
+    >
       <RouterProvider router={router}></RouterProvider>
     </div>
   )
