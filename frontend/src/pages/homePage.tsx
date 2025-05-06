@@ -44,6 +44,14 @@ const Home: React.FC = () => {
 		// console.log('User is now logged in');
 		});
 	}
+
+	const handleClick = () => {
+		clickSound.currentTime = 0;
+		clickSound.play();
+	  };
+
+	const clickSound = new Audio("/rain.mp3");
+
 	
 	return (
 		<>
@@ -59,6 +67,7 @@ const Home: React.FC = () => {
 			  	</Link>
 				<Link 
 					to="/solo-game"
+					onClick={handleClick}
 					className="w-64 bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center"
 			  	>
 					Demo SignleplayernerNWnSns Game
