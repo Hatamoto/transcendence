@@ -8,7 +8,7 @@ const ProtectedRoutes: React.FC<{children: React.ReactNode}> = ({children}) => {
 	const userId = sessionStorage.getItem("activeUserId");
 
 	if (!userId) {
-		toast.open("Unauthorized", "error");
+		//toast.open("Unauthorized", "error");
 		return <Navigate to="/login" replace />
 	}
 
