@@ -182,7 +182,7 @@ export function setupNetworking(server){
 				type: "tournament" // Games matchmaking type
 				};
 			}
-			joinRoom(roomId, socket);
+			joinRoom(roomId, socket, userId);
 		});
 
 		// Normal matchmaking
@@ -396,6 +396,7 @@ function startGameLoop(roomId) {
 
 	if (game.getScores()[0] >= 5 || game.getScores()[1] >= 5) {
 		game.stop();
+		const winner = game.getScores()[0] >= 5 ? 0 : 1;
 	
 		if (room.type === "normal") {
 			room.gameStarted = false; // Allow rematch
@@ -403,11 +404,11 @@ function startGameLoop(roomId) {
 				roomIds.openRoomDoors(roomId);
 			}
 		} else if (room.type === "tournament") {
-			
+			const playerIds = Object.keys(room.players);
+			//playerIds[winner].dbId
 		}
 	
-		const winner = game.getScores()[0] >= 5 ? 1 : 2;
-		io.to(roomId).emit('gameOver', winner, room.type);
+		io.to(roomId).emit('gameOver', winner + 1, room.type);
 	
 		for (const playerId in room.players) {
 			const player = room.players[playerId];
@@ -461,14 +462,16 @@ function startGameLoop(roomId) {
 
 // Handles the joining of a room
 // and the initialization of the game
-function joinRoom(roomId, socket)
+function joinRoom(roomId, socket, dbId)
 {
-	if (Object.keys(rooms[roomId].players).length < 2) {
-		if (Object.keys(rooms[roomId].players).length === 0) {
-		rooms[roomId].hostId = socket.id;
+	const room = rooms[roomId];
+	if (Object.keys(room.players).length < 2) {
+		if (Object.keys(room.players).length === 0 && room.type == "normal") {
+			room.hostId = socket.id;
 		}
 		
-		rooms[roomId].players[socket.id] = {
+		room.players[socket.id] = {
+		dbId: dbId,
 		playerPosition: { x: 0, y: 0 },
 		peerConnection: null,
 		dataChannel: null,
@@ -478,16 +481,44 @@ function joinRoom(roomId, socket)
 		socket.room = roomId;
 		socket.join(roomId);
 
-		io.to(roomId).emit("playerJoined", Object.keys(rooms[roomId].players).length);
+		io.to(roomId).emit("playerJoined", Object.keys(room.players).length);
 		log.info(`${socket.id} joined room ${roomId}`);
 	}
 
-	const numPlayers = Object.keys(rooms[roomId].players).length;
+	const numPlayers = Object.keys(room.players).length;
 	log.info(`Players in room: ${numPlayers}`);
 
 	// when room is full start game and initialize WebRTC
-	if (Object.keys(rooms[roomId].players).length === 2) {
-		const playerIds = Object.keys(rooms[roomId].players);
-		io.sockets.sockets.get(playerIds[0]).emit("roomFull");
+	if (Object.keys(room.players).length === 2 && room.type == "normal") {
+		const playerIds = Object.keys(room.players);
+		io.sockets.sockets.get(playerIds[0]).emit("roomFull", room.type);
+	} else if (Object.keys(room.players).length === 2 && room.type == "tournament") {
+		const playerIds = Object.keys(room.players);
+		io.sockets.sockets.get(playerIds[0]).emit("roomFull", room.type);
+		io.sockets.sockets.get(playerIds[1]).emit("roomFull", room.type);
+
+
+		if (Object.keys(room.players).length === 2 && !room.gameStarted) {
+			setTimeout(() => {
+			const playerIds = Object.keys(room.players);
+			room.gameStarted = true;
+
+			games[roomId] = new Game(playerIds[0], playerIds[1]);
+			const settings = { // there might be a better way to do this oh well
+				ballSettings: {
+					ballSize: 20,
+					ballSpeed: 3
+				},
+				playerSettings: {
+	
+				}
+			};
+			games[roomId].settings(settings);
+			initializeWebRTC(roomId);
+			const socketsInRoomAdapter = io.sockets.adapter.rooms.get(roomId);
+			log.info(`Adapter state for room ${roomId} right before emit: Size=${socketsInRoomAdapter?.size}, IDs=${[...socketsInRoomAdapter || []]}`);
+			
+			io.to(roomId).emit("startGame", roomId, settings);
+		}, 10000); }
 	}
 }

@@ -484,30 +484,52 @@ export class frontEndGame {
 			sizeTxt.textContent = "Lobby size: " + playerAmount + "/2";
 		});
 		
-		socket.on("roomFull", () => {
-			const strtBtn = document.getElementById("start-btn");
-			const gameEdit = document.getElementById("edit-game");
-		
-			const ballSize  = (document.getElementById("ball-size") as HTMLInputElement)
-			const ballSpeed = (document.getElementById("ball-speed") as HTMLInputElement)
-		
-			strtBtn.hidden = false
-			gameEdit.hidden = false;
-		
-			strtBtn.addEventListener("click", () => {
-				const ballSizeValue = ballSize.value.trim() === "" ? ballSize.placeholder : ballSize.value;
-				const ballSpeedValue = ballSpeed.value.trim() === "" ? ballSpeed.placeholder : ballSpeed.value;
-		
-				socket.emit("hostStart", {
-					ballSettings: {
-						ballSize: ballSizeValue,
-						ballSpeed: ballSpeedValue
-					},
-					playerSettings: {
-		
-					}
+		socket.on("roomFull", (type) => {
+
+
+			if (type === "normal") {
+				const strtBtn = document.getElementById("start-btn");
+				const gameEdit = document.getElementById("edit-game");
+			
+				const ballSize  = (document.getElementById("ball-size") as HTMLInputElement)
+				const ballSpeed = (document.getElementById("ball-speed") as HTMLInputElement)
+			
+				strtBtn.hidden = false
+				gameEdit.hidden = false;
+			
+				strtBtn.addEventListener("click", () => {
+					const ballSizeValue = ballSize.value.trim() === "" ? ballSize.placeholder : ballSize.value;
+					const ballSpeedValue = ballSpeed.value.trim() === "" ? ballSpeed.placeholder : ballSpeed.value;
+			
+					socket.emit("hostStart", {
+						ballSettings: {
+							ballSize: ballSizeValue,
+							ballSpeed: ballSpeedValue
+						},
+						playerSettings: {
+			
+						}
+					});
 				});
-			});
+			}
+			else if (type === "tournament") {
+				const container = document.getElementById("game-container")
+				const countdownElement = document.createElement("h1");
+				countdownElement.id = "countdown";
+				countdownElement.textContent = "10";
+				container.appendChild(countdownElement);
+
+				let count = 10;
+				const intervalId = setInterval(() => {
+				  count--;
+				  countdownElement.textContent = count.toString();
+			
+				  if (count === 0) {
+					clearInterval(intervalId);
+					countdownElement.remove();
+				  }
+				}, 1000);
+			}
 		})
 		
 		socket.on("startGame", (roomId : string, settings) => {
