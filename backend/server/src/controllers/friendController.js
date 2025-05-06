@@ -4,9 +4,9 @@ const friendRequest = async function(req, reply) {
   const db = req.server.db
 
   if (!friendId) return reply.code(400).send({ error: "friend id is required" })
-  
+
   if (userId === friendId) return reply.code(400).send({ error: "Cannot send friend request to yourself" })
-  
+
   try {
     const existing = db
       .prepare('SELECT * FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)')
@@ -17,7 +17,7 @@ const friendRequest = async function(req, reply) {
       else if (existing.status = 'accepted') return reply.code(400).send({ error: "Users are already friends" })
       else if (existing.status = 'blocked') return reply.code(400).send({ error: "User is blocked" })
     }
-    
+
     db.prepare("INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, ?)")
       .run(userId, friendId, 'pending')
 
@@ -31,8 +31,12 @@ const checkPending = async function(req, reply) {
   const db = req.server.db
 
   try {
-    const friendRequests = db.prepare('SELECT user_id FROM friends WHERE friend_id = ? AND status = ?')
-      .all(req.user.id, 'pending')
+    const friendRequests = db.prepare(`
+      SELECT users.name
+      FROM friends 
+      JOIN users ON users.id = friends.user_id
+      WHERE friend_id = ? AND status = ?
+    `).all(req.user.id, 'pending')
     
     if (friendRequests.length === 0) return reply.code(204).send()
     
@@ -96,8 +100,12 @@ const getFriends = async function(req, reply) {
   const db = req.server.db
 
   try {
-    const friends = db.prepare('SELECT friend_id FROM friends WHERE user_id = ? AND status = ?')
-      .all(req.user.id, 'accepted')
+    const friends = db.prepare(`
+      SELECT users.*
+      FROM friends
+      JOIN users ON users.id = friends.friend_id
+      WHERE friends.user_id = ? AND friends.status = ?
+    `).all(req.user.id, 'accepted')
 
     if (friends.length === 0) return reply.code(204).send()
     
@@ -108,10 +116,27 @@ const getFriends = async function(req, reply) {
   }
 }
 
+const searchFriends = async function(req, reply) {
+  const db = req.server.db
+  const { query } = req.query
+  try {
+    const results = db.prepare(`
+      SELECT * FROM users
+      WHERE name LIKE ? COLLATE NOCASE
+    `).all(`%${query}%`)
+
+    return reply.send(results)
+  } catch (error) {
+    console.log(error)
+    return reply.code(500).send({ error: error.message })
+  }
+}
+
 export { 
   friendRequest, 
   checkPending, 
   acceptRequest, 
   blockRequest, 
-  getFriends
- }
+  getFriends,
+  searchFriends
+}

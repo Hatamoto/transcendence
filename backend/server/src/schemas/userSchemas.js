@@ -1,12 +1,14 @@
 import { 
   getUsers,
+  searchUsers,
   addUser,
   getUser,
   deleteUser,
   updateUser,
   updatePassword,
   getDashboard,
-  uploadAvatar
+  uploadAvatar,
+  searchUsers
 } from '../controllers/userController.js'
 import authenticateToken from '../middleware/authentication.js'
 import User from '../models/userModel.js'
@@ -158,6 +160,25 @@ const uploadOpts = {
   handler: uploadAvatar,
 }
 
+const searchUsersOpts = {
+  schema: {
+    querystring: {
+      type: 'object',
+      required: ['query'],
+      properties: {
+        query: { type: 'string' },
+      },
+    },
+    response: {
+      200: {
+        type: 'array',
+        items: User,
+      },
+    },
+  },
+  handler: searchUsers,
+}
+
 export {
   getUserOpts,
   getUsersOpts,
@@ -166,5 +187,6 @@ export {
   updateUserOpts,
   updatePasswordOpts,
   dashboardOpts,
-  uploadOpts
+  uploadOpts,
+  searchUsersOpts
 }

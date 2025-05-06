@@ -33,7 +33,7 @@ const createTournament = async function(req, reply) {
 
     return reply.send(tournament)
   } catch (error) {
-	console.log(error)
+	  console.log(error)
     return reply.code(500).send({ error: error.message })
   }
 }
@@ -50,6 +50,7 @@ const getTournaments = async function(req, reply) {
     
     return reply.send(tournaments)
   } catch (error) {
+    console.log(error)
     return reply.code(500).send({ error: error.message })
   }
 }
@@ -103,6 +104,7 @@ const joinTournament = async function(req, reply) {
       tournamentId: tournament.id
     })
   } catch (error) {
+    console.log(error)
     return reply.code(500).send({ error: error.message })
   }
 }
@@ -143,6 +145,7 @@ const setReady = async function(req, reply) {
 
     return reply.send({ players: playerIds, tournament: tournament })
   } catch (error) {
+    console.log(error)
     return reply.code(500).send({ error: error.message })
   }
 }
@@ -220,6 +223,7 @@ const startTournament = async function(req, reply) {
 
     return reply.send({ bracket: tournamentBracket })
   } catch (error) {
+    console.log(error)
     return reply.code(500).send({ error: error.message })
   }
 }
@@ -243,27 +247,6 @@ const getTournamentParticipant = async function(req, reply) {
   } catch (error) {
       console.log(error)
       return reply.code(500).send({ error: error.message })
-  }
-}
-
-function findGameRoom() {
-  const userId = 1
-
-  const match = db.prepare('SELECT * FROM matches WHERE (player_one_id = ? OR player_two_id = ?) AND status = ?')
-    .get(userId, userId, 'waiting')
-  
-  if (!match) {
-
-  }
-
-  if (!match.room_id) {
-    const roomId = 1
-
-    db.prepare('UPDATE matches room_id = ? WHERE id = ?')
-      .run(roomId, match.id)
-  } else {
-    db.prepare('UPDATE matches status = ? WHERE id = ?')
-      .run('in_progress', match.id)
   }
 }
 

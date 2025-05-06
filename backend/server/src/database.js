@@ -31,9 +31,9 @@ async function dbInit(fastify, options) {
 // `)
 
 //   db.exec(`
-//     ALTER TABLE users ADD COLUMN number TEXT DEFAULT NULL;
+//     ALTER TABLE users RENAME COLUMN status TO online_status;
 //  `);
- 
+
 //  db.exec(`
 //     CREATE UNIQUE INDEX IF NOT EXISTS unique_number_index ON users (number);
 //  `);
@@ -45,7 +45,7 @@ async function dbInit(fastify, options) {
       name TEXT UNIQUE NOT NULL,
       email TEXT UNIQUE NOT NULL,
       password TEXT,
-      status INTEGER NOT NULL DEFAULT 0 CHECK(status IN (0 ,1)),
+      online_status INTEGER NOT NULL DEFAULT 0 CHECK(online_status IN (0 ,1)),
       wins INTEGER NOT NULL DEFAULT 0,
       losses INTEGER NOT NULL DEFAULT 0,
       avatar TEXT NOT NULL,
