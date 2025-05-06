@@ -4,6 +4,7 @@ import { Game } from './game/game.js';
 import { Logger, LogLevel } from './utils/logger.js';
 import { startChat } from "./chat.js";
 import db from './dbInstance.js'
+import updateBracket from "./utils/updateBracket.js";
 
 const log = new Logger(LogLevel.INFO);
 
@@ -380,6 +381,7 @@ function initializeWebRTC(roomId) {
 
 // Game loop for updating game state
 // and sending it to players
+
 function startGameLoop(roomId) {
 	const room = rooms[roomId];
 	const game = games[roomId];
@@ -397,7 +399,7 @@ function startGameLoop(roomId) {
 	if (game.getScores()[0] >= 5 || game.getScores()[1] >= 5) {
 		game.stop();
 		const winner = game.getScores()[0] >= 5 ? 0 : 1;
-	
+
 		if (room.type === "normal") {
 			room.gameStarted = false; // Allow rematch
 			if (Object.keys(room.players).length === 1) {
@@ -409,23 +411,17 @@ function startGameLoop(roomId) {
       const loserId = playerIds[1 - winner].dbId
 
       try {
-        const match = db.prepare(`
-          SELECT * FROM matches 
-          WHERE (player_one_id = ? AND player_two_id = ? AND status = ?) 
-          OR (player_one_id = ? AND player_two_id = ? AND status = ?)
-        `).get(winnerId, loserId, 'in_progress')
-
-        
+        updateBracket(winnerId, loserId)
       } catch (error) {
           console.log(error)
       }
 		}
-	
+
 		io.to(roomId).emit('gameOver', winner + 1, room.type);
-	
+
 		for (const playerId in room.players) {
 			const player = room.players[playerId];
-	
+
 			if (player.dataChannel) {
 				player.dataChannel.close();
 				player.dataChannel = null;
