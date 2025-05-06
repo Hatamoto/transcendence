@@ -60,7 +60,7 @@ const Home: React.FC = () => {
 				</Link>
 		
 				<Link
-					to="/login"
+					to="/register"
 					className="w-44 h-44 bg-black text-white rounded-md hover:bg-green-700 flex flex-col items-center justify-center text-center text-2xl font-bold border-2 border-green-500"
 					>
 					<img src="../register.png" alt="Register Icon" className="w-2/4 h-2/4 mb-2" />

@@ -3,8 +3,8 @@ interface AuthFetchOptions {
 	method: string;
 	body?: string;
 	headers: {
-	  'Content-Type': string;
-	  'Authorization': string;
+		'Content-Type': string;
+		'Authorization': string;
 	};
 }
 
@@ -13,6 +13,17 @@ interface AuthFetchResponse {
 	error?: string;
 	newToken?: string;
 	users?: User[];
+	request_count?: number;
+	data?: User[];
+}
+
+export interface User {
+	name: string;
+	online_status?: boolean;
+	wins?: number;
+	losses?: number;
+	avatarPath?: string;
+	id: number;
 }
 
 async function authFetch(url: string, options: AuthFetchOptions): Promise<AuthFetchResponse> {
@@ -61,6 +72,7 @@ async function authFetch(url: string, options: AuthFetchOptions): Promise<AuthFe
 			sessionStorage.removeItem(userId);
 			sessionStorage.setItem('activeUserId', userId.toString());
 			sessionStorage.setItem(userId.toString(), JSON.stringify({accessToken: newResponse.accessToken, refreshToken: refreshToken}));
+
 			return {
 				status: 1,
 				error: 'accessToken refreshed',
@@ -78,7 +90,9 @@ async function authFetch(url: string, options: AuthFetchOptions): Promise<AuthFe
 	return {
 		status: response.status,
 		error: responseData.error,
-		users: responseData
+		users: responseData,
+		request_count: responseData.request_count,
+		data: responseData.data
 	};
 }
 
@@ -286,7 +300,7 @@ export async function deleteUser(userData: DeleteUserRequest): Promise<DeleteUse
 			return {
 			status: response.status,
 			error: response.error || 'User delete failed'
-			}
+		}
 		return {
 			status: response.status,
 			error: response.error || 'User delete successful'
@@ -300,8 +314,6 @@ export async function deleteUser(userData: DeleteUserRequest): Promise<DeleteUse
 		};
 	}
 } //force logaout/delete if refreshToken has expired?
-
-
 
 
 export interface FriendRequestRequest {
@@ -353,11 +365,11 @@ export async function friendRequest(requestData: FriendRequestRequest): Promise<
 
 		if (response.status >= 300)
 			return {
-		status: response.status,
-		error: response.error || 'Friend request failed'
-	}
-	return {
-		status: response.status,
+			status: response.status,
+			error: response.error || 'Friend request failed'
+		}
+		return {
+			status: response.status,
 			error: response.error || 'Friend request sent successfully'
 		};
 
@@ -371,6 +383,208 @@ export async function friendRequest(requestData: FriendRequestRequest): Promise<
 }
 
 // with id that doesnt exist in the database. "FOREIGNkey error?? what is this Tomi?"
+
+export interface checkPendingRequest {
+	accToken: string;
+}
+
+
+interface checkPendingResponse {
+	status: number;
+	request_count?: number;
+	error?: string;
+	data?: User[];
+}
+
+export async function checkPending(requestData: checkPendingRequest): Promise<checkPendingResponse> {
+	
+	try {
+			const options = {
+				method: 'GET',
+				headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${requestData.accToken}`
+				}
+			}
+
+		const response = await authFetch('/api/friend/check_pending', options);
+
+		if (response.status === 1) {
+			const retryResponse = await fetch(`/api/friend/check_pending`, {
+				method: 'GET',
+				headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${response.newToken}`
+				}
+			});
+
+			if (retryResponse.status === 204)
+				return {
+				status: response.status,
+				request_count: response.request_count
+			}
+
+			const responseData = await retryResponse.json();
+		
+			if (!retryResponse.ok)
+				return {
+				status: retryResponse.status,
+				request_count: responseData.request_count
+				}
+			return {
+				status: retryResponse.status,
+				request_count: responseData.request_count,
+				data: responseData.data
+			};
+		}
+
+		if (response.status >= 300)
+			return {
+			status: response.status,
+			request_count: response.request_count
+		}
+		if (response.status === 204)
+			return {
+			status: response.status,
+			request_count: response.request_count
+		}
+		return {
+			status: response.status,
+			request_count: response.request_count,
+			data: response.data
+		}
+
+	} catch (error) {
+		console.error("getFriends Error:", error);
+		return {
+			status: 500,
+			error: 'Something went wrong. Please try again.'
+		};
+	}
+}
+
+export interface friendActionRequest {
+	accToken: string;
+	friendId: number;
+}
+
+export interface friendActionResponse {
+	status: number;
+	error?: string;
+}
+
+export async function acceptRequest(requestData: friendActionRequest): Promise<friendActionResponse> {
+
+	try {
+			const options = {
+				method: 'POST',
+				body: JSON.stringify({ friendId: requestData.friendId }),
+				headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${requestData.accToken}`
+				}
+			}
+
+		const response = await authFetch('/api/friend/accept', options);
+
+		if (response.status === 1) {
+			const retryResponse = await fetch(`/api/friend/accept`, {
+				method: 'POST',
+				body: JSON.stringify({ friendId: requestData.friendId }),
+				headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${response.newToken}`
+				}
+			});
+
+			const responseData = await retryResponse.json();
+		
+			if (!retryResponse.ok)
+				return {
+				status: retryResponse.status,
+				error: responseData.error || 'Accepting request failed'
+				}
+			return {
+				status: retryResponse.status,
+				error: responseData.error || 'Accepting request was successfully'
+			};
+		};
+
+		if (response.status >= 300)
+			return {
+			status: response.status,
+			error: response.error || 'Accepting request failed'
+		}
+		return {
+			status: response.status,
+			error: response.error || 'Accepting request was successfully'
+		};
+
+	} catch (error) {
+		console.error("acceptRequest Error:", error);
+		return {
+			status: 500,
+			error: 'Something went wrong. Please try again.'
+		};
+	}
+}
+
+export async function declineRequest(requestData: friendActionRequest): Promise<friendActionResponse> {
+	
+	try {
+			const options = {
+				method: 'POST',
+				body: JSON.stringify({ friendId: requestData.friendId }),
+				headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${requestData.accToken}`
+				}
+			}
+
+		const response = await authFetch('/api/friend/block', options);
+
+		if (response.status === 1) {
+			const retryResponse = await fetch(`/api/friend/block`, {
+				method: 'POST',
+				body: JSON.stringify({ friendId: requestData.friendId }),
+				headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${response.newToken}`
+				}
+			});
+
+			const responseData = await retryResponse.json();
+		
+			if (!retryResponse.ok)
+				return {
+				status: retryResponse.status,
+				error: responseData.error || 'Declining request failed'
+				}
+			return {
+				status: retryResponse.status,
+				error: responseData.error || 'Declining request was successfully'
+			};
+		};
+
+		if (response.status >= 300)
+			return {
+			status: response.status,
+			error: response.error || 'Declining request failed'
+		}
+		return {
+			status: response.status,
+			error: response.error || 'Declining request was successfully'
+		};
+
+
+	} catch (error) {
+		console.error("declineRequest Error:", error);
+		return {
+			status: 500,
+			error: 'Something went wrong. Please try again.'
+		};
+	}
+}
 
 interface getAllUsersResponse {
 	status: number;
@@ -439,6 +653,13 @@ export async function getFriends(requestData: getFriendsRequest): Promise<getFri
 				}
 			});
 
+			if (retryResponse.status === 204) 
+				return {
+				status: retryResponse.status,
+				// error: responseData.error || 'Empty friends list',
+				users: []
+			}
+
 			const responseData = await retryResponse.json();
 		
 			if (!retryResponse.ok)
@@ -460,6 +681,7 @@ export async function getFriends(requestData: getFriendsRequest): Promise<getFri
 		if (response.status === 204)
 			return {
 			status: response.status,
+			// error: response.error || 'Empty friends list',
 			users: []
 		}
 		return {
@@ -517,13 +739,6 @@ interface ApiReturn<T> {
 // 	data?: string;
 // }
 
-export interface User {
-	name: string;
-	onlineStatus: boolean;
-	wins: number;
-	losses: number;
-	avatarPath: string;
-}
 
 async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
 	const { method, url, body, headers } = options;

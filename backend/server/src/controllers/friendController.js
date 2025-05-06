@@ -31,8 +31,12 @@ const checkPending = async function(req, reply) {
   const db = req.server.db
 
   try {
-    const friendRequests = db.prepare('SELECT user_id FROM friends WHERE friend_id = ? AND status = ?')
-      .all(req.user.id, 'pending')
+    const friendRequests = db.prepare(`
+      SELECT users.name, users.id
+      FROM friends 
+      JOIN users ON users.id = friends.user_id
+      WHERE friend_id = ? AND status = ?
+    `).all(req.user.id, 'pending')
     
     if (friendRequests.length === 0) return reply.code(204).send()
     
@@ -62,7 +66,7 @@ const acceptRequest = async function(req, reply) {
     db.prepare('UPDATE friends SET status = ? WHERE user_id = ? AND friend_id = ?')
       .run('accepted', friendId, userId)
 
-    return reply.send(`Friend request from user ${friendId} was accepted`)
+    return reply.send({ error: `Friend request from user ${friendId} was accepted`})
   } catch (error) {
     console.error('Database error:', error)
     return reply.code(500).send({ error: error.message })
@@ -85,7 +89,7 @@ const blockRequest = async function(req, reply) {
     db.prepare('UPDATE friends SET status = ? WHERE user_id = ? AND friend_id = ?')
       .run('blocked', friendId, userId)
 
-    return reply.send(`Friend request from user ${friendId} was blocked`)
+    return reply.send({ error: `Friend request from user ${friendId} was blocked`})
   } catch (error) {
     console.error('Database error:', error)
     return reply.code(500).send({ error: error.message })

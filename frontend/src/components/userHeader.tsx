@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { friendRequest, FriendRequestRequest, getFriendsRequest } from "../services/api";
+import { checkPending, friendRequest, FriendRequestRequest, getFriendsRequest, acceptRequest, declineRequest, friendActionRequest } from "../services/api";
 import { useToast } from "./toastBar/toastContext";
 import { getAllUsers, getFriends } from "../services/api";
 
@@ -12,22 +12,24 @@ interface UserHeaderProps {
 interface FriendRequestProps {
 	id: string;
 }
+
+interface pendingRequestProps {
+	name: string;
+	id: number;
+}
+
 // const UserHeader: React.FC<UserHeaderProps> = ({ userName }) => {
 
 const UserHeader: React.FC = () => {
 
 		const toast = useToast();
 
-		const [formState, setFormState] = useState<FriendRequestProps>({
-			id: ''
-		});
+		const [formState, setFormState] = useState<FriendRequestProps>({id: ''});
+		const [pendingRequests, setPendingRequests] = useState<pendingRequestProps[]>([]);
 	
 		const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 			const { name, value } = event.target;
-			setFormState(prevState => ({
-				...prevState,
-				[name]: value
-			}));
+			setFormState(prevState => ({...prevState, [name]: value}));
 		};
 
 		const userId = sessionStorage.getItem('activeUserId');
@@ -45,15 +47,42 @@ const UserHeader: React.FC = () => {
 			const response = await friendRequest(user);
 
 			if (response.status == 200) {
-				
 				toast.open(response.error, "success");
+				setFormState(prevState => ({...prevState, id: '',}));
 			} else {
 				toast.open(response.error, "error");
-				
-				setFormState(prevState => ({
-					...prevState,
-					id: '',
-				}));
+				setFormState(prevState => ({...prevState, id: '',}));
+			}
+		}
+
+		
+		const handleAccept = async (friendId: number) => {
+			
+			const info: friendActionRequest = {
+				accToken: sessionData.accessToken,
+				friendId: friendId,
+			};
+			
+			const response = await acceptRequest(info);
+			
+			if (response.status === 200) {
+				toast.open(response.error, "info");
+				setPendingRequests((prev) => prev.filter((req) => req.id !== friendId));
+			}
+		}
+
+		const handleDecline = async (friendId: number) => {
+
+			const info: friendActionRequest = {
+				accToken: sessionData.accessToken,
+				friendId: friendId,
+			};
+
+			const response = await declineRequest(info);
+
+			if (response.status === 200) {
+				toast.open(response.error, "info");
+				setPendingRequests((prev) => prev.filter((req) => req.id !== friendId));
 			}
 		}
 	
@@ -71,7 +100,7 @@ const UserHeader: React.FC = () => {
 				} else {
 					toast.open(response.error, "error");
 					console.error("Error fetching users:", response);
-				}
+				} // changing this to searchUsers endpoint api/users/search
 
 				const token: getFriendsRequest = {
 					accToken: sessionData.accessToken,
@@ -79,11 +108,24 @@ const UserHeader: React.FC = () => {
 				
 				const response2 = await getFriends(token);
 
-				if (Array.isArray(response2.users)) {
+				if (Array.isArray(response2.users) && response2.users.length !== 0) {
 					sessionStorage.setItem('friends', JSON.stringify(response2.users));
-				} else {
-					toast.open(response2.error, "error");
-					console.error("Error fetching friends:", response2);
+				} 
+				// else {
+				// 	toast.open(response2.error, "error");
+				// }
+
+				const token2: getFriendsRequest = {
+					accToken: sessionData.accessToken,
+				}
+
+				const response3 = await checkPending(token2);
+
+				if (response3.status < 204) {
+					console.log("data from friend request" ,response3.data)
+					toast.open("we have pending friend request", "info");
+					
+					setPendingRequests(response3.data);
 				}
 			}
 				
@@ -139,8 +181,33 @@ const UserHeader: React.FC = () => {
 					</button>
 
 				</form>
+		
+				{pendingRequests.length > 0 && (
+					<div className="w-full px-4">
+						<h2 className="text-lg font-semibold mb-2 text-black">Pending Requests:</h2>
+						{pendingRequests.map((req) => (
+							<div key={req.id} className="flex items-center justify-between bg-white p-2 rounded mb-2">
+								<span className="text-black">{req.name}</span>
+								<div className="space-x-2">
+									<button
+										onClick={() => handleAccept(req.id)}
+										className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+									>
+										Accept
+									</button>
+									<button
+										onClick={() => handleDecline(req.id)}
+										className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+									>
+										Decline
+									</button>
+								</div>
+							</div>
+						))}
+					</div>
+				)}
 
-			</div>
+		</div>
 		</>
 	  );
 }

@@ -2,7 +2,7 @@ import { OAuth2Client } from 'google-auth-library'
 const client = new OAuth2Client(process.env.CLIENT_ID);
 
 function generateAccessToken (req, user) {
-  return req.server.jwt.sign(user, { expiresIn: '15m' })
+  return req.server.jwt.sign(user, { expiresIn: '10m' })
 }
 
 async function verifyIdToken(idToken) {
@@ -31,7 +31,7 @@ const completeLogin = async function(req, reply, user) {
       { expiresIn: '7d' }
     )
 
-    db.prepare('UPDATE users SET status = 1 WHERE name = ?')
+    db.prepare('UPDATE users SET online_status = 1 WHERE name = ?')
       .run(user.name)
   
     db.prepare('INSERT INTO refresh_tokens (user_id, refresh_token) VALUES (?, ?)')
@@ -49,7 +49,7 @@ const completeGoogleLogin = async function(req, reply, user) {
     const accessToken = generateAccessToken(req, { id: user.id, name: user.name })
     const refreshToken = req.server.jwt.sign({ id: user.id, name: user.name }, process.env.REFRESH_TOKEN_SECRET)
   
-    const updateStatement = req.server.db.prepare('UPDATE users SET status = 1 WHERE name = ?')
+    const updateStatement = req.server.db.prepare('UPDATE users SET online_status = 1 WHERE name = ?')
     updateStatement.run(user.name)
   
     const insertStatement = req.server.db.prepare('INSERT INTO refresh_tokens (user_id, refresh_token) VALUES (?, ?)')
