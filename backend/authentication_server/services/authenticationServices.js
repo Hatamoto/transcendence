@@ -31,6 +31,8 @@ const completeLogin = async function(req, reply, user) {
       { expiresIn: '7d' }
     )
 
+
+    
     db.prepare('UPDATE users SET online_status = 1 WHERE name = ?')
       .run(user.name)
   

@@ -66,6 +66,9 @@ const acceptRequest = async function(req, reply) {
     db.prepare('UPDATE friends SET status = ? WHERE user_id = ? AND friend_id = ?')
       .run('accepted', friendId, userId)
 
+    db.prepare('INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, ?)')
+      .run(userId, friendId, 'accepted');
+
     return reply.send({ error: `Friend request from user ${friendId} was accepted`})
   } catch (error) {
     console.error('Database error:', error)
@@ -100,8 +103,12 @@ const getFriends = async function(req, reply) {
   const db = req.server.db
 
   try {
-    const friends = db.prepare('SELECT friend_id FROM friends WHERE user_id = ? AND status = ?')
-      .all(req.user.id, 'accepted')
+    const friends = db.prepare(`
+      SELECT users.*
+      FROM friends
+      JOIN users ON users.id = friends.friend_id
+      WHERE friends.user_id = ? AND friends.status = ?
+    `).all(req.user.id, 'accepted')
 
     if (friends.length === 0) return reply.code(204).send()
     

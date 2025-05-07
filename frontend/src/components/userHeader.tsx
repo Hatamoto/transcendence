@@ -18,6 +18,13 @@ interface pendingRequestProps {
 	id: number;
 }
 
+interface friendsList {
+	name: string;
+	online_status?: number;
+	id: number;
+	avatar?: string;
+}
+
 // const UserHeader: React.FC<UserHeaderProps> = ({ userName }) => {
 
 const UserHeader: React.FC = () => {
@@ -26,6 +33,7 @@ const UserHeader: React.FC = () => {
 
 		const [formState, setFormState] = useState<FriendRequestProps>({id: ''});
 		const [pendingRequests, setPendingRequests] = useState<pendingRequestProps[]>([]);
+		const [friensList, setFriendsList] = useState<friendsList[]>([]);
 	
 		const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 			const { name, value } = event.target;
@@ -92,15 +100,15 @@ const UserHeader: React.FC = () => {
 
 			if (!visibleState) {
 				
-				const response = await getAllUsers();
-				console.log(response.users);//test log
+				// const response = await getAllUsers();
+				// console.log(response.users);//test log
 	
-				if (Array.isArray(response.users)) {
-					sessionStorage.setItem('users', JSON.stringify(response.users));
-				} else {
-					toast.open(response.error, "error");
-					console.error("Error fetching users:", response);
-				} // changing this to searchUsers endpoint api/users/search
+				// if (Array.isArray(response.users)) {
+				// 	sessionStorage.setItem('users', JSON.stringify(response.users));
+				// } else {
+				// 	toast.open(response.error, "error");
+				// 	console.error("Error fetching users:", response);
+				// } // changing this to searchUsers endpoint api/users/search
 
 				const token: getFriendsRequest = {
 					accToken: sessionData.accessToken,
@@ -110,6 +118,9 @@ const UserHeader: React.FC = () => {
 
 				if (Array.isArray(response2.users) && response2.users.length !== 0) {
 					sessionStorage.setItem('friends', JSON.stringify(response2.users));
+					console.log(response2.users);//test log
+
+					setFriendsList(response2.users)
 				} 
 				// else {
 				// 	toast.open(response2.error, "error");
@@ -121,7 +132,7 @@ const UserHeader: React.FC = () => {
 
 				const response3 = await checkPending(token2);
 
-				if (response3.status < 204) {
+				if (response3.status < 204 && Array.isArray(response3.data)) {
 					console.log("data from friend request" ,response3.data)
 					toast.open("we have pending friend request", "info");
 					
@@ -182,7 +193,7 @@ const UserHeader: React.FC = () => {
 
 				</form>
 		
-				{pendingRequests.length > 0 && (
+				{pendingRequests && pendingRequests.length > 0 && (
 					<div className="w-full px-4">
 						<h2 className="text-lg font-semibold mb-2 text-black">Pending Requests:</h2>
 						{pendingRequests.map((req) => (
@@ -205,6 +216,25 @@ const UserHeader: React.FC = () => {
 							</div>
 						))}
 					</div>
+				)}
+
+				{friensList && friensList.length > 0 && (
+				<div className="w-full px-4 gap-4">
+					{friensList.map((req) => (
+					<div key={req.id} className="flex items-center justify-between bg-white p-2 rounded mb-2">
+						<div className="flex items-center">
+						<img src={`http://localhost:4000/${req.avatar}`} alt="User Avatar" className="w-8 h-8 rounded-full mr-2" />
+						<span className="text-black">{req.name}</span>
+						</div>
+						
+						<span
+						className={`w-4 h-4 rounded-full ${
+							req.online_status === 1 ? "bg-green-600" : "bg-red-500"
+						} inline-block ml-2`}
+						/>
+					</div>
+					))}
+				</div>
 				)}
 
 		</div>

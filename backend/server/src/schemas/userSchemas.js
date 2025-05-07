@@ -1,5 +1,6 @@
 import { 
   getUsers,
+  searchUsers,
   addUser,
   getUser,
   deleteUser,
@@ -158,6 +159,25 @@ const uploadOpts = {
   handler: uploadAvatar,
 }
 
+const searchUsersOpts = {
+  schema: {
+    querystring: {
+      type: 'object',
+      required: ['query'],
+      properties: {
+        query: { type: 'string' },
+      },
+    },
+    response: {
+      200: {
+        type: 'array',
+        items: User,
+      },
+    },
+  },
+  handler: searchUsers,
+}
+
 export {
   getUserOpts,
   getUsersOpts,
@@ -166,5 +186,6 @@ export {
   updateUserOpts,
   updatePasswordOpts,
   dashboardOpts,
-  uploadOpts
+  uploadOpts,
+  searchUsersOpts
 }

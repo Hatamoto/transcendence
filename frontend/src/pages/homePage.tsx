@@ -49,7 +49,7 @@ const Home: React.FC = () => {
 		<>
 		<Background />
 		<Header />
-		<div className="flex gap-6 items-center justify-center min-h-screen">
+			<div className="flex gap-6 items-center justify-center p-101">
 		
 				<Link
 					to="/login"

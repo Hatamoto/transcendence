@@ -19,10 +19,10 @@ interface AuthFetchResponse {
 
 export interface User {
 	name: string;
-	online_status?: boolean;
+	online_status?: number;
 	wins?: number;
 	losses?: number;
-	avatarPath?: string;
+	avatar?: string;
 	id: number;
 }
 

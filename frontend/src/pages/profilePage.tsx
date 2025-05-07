@@ -39,7 +39,7 @@ const ProfilePage: React.FC = () => {
 		<>
 		<UserHeader />
 
-		<div className="flex flex-col items-center justify-center min-h-screen gap-6">
+		<div className="flex flex-col items-center justify-center gap-6 p-101">
 			<div className="bg-white p-6 rounded-lg w-96 flex flex-col gap-4 items-center shadow-md">
 				<Link
 					to="/user"

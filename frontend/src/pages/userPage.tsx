@@ -39,7 +39,7 @@ const UserPage: React.FC = () => {
 		<>
 		<UserHeader />
 
-		<div className="flex flex-col items-center justify-center min-h-screen gap-6">
+		<div className="flex flex-col items-center justify-center gap-6 p-101">
   			<div className="flex gap-6">
 
 				<Link 
