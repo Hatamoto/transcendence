@@ -49,7 +49,7 @@ const Home: React.FC = () => {
 		<>
 		<Header />
 		<Background />
-			<div className="flex flex-col items-center justify-center min-h-screen">
+			<div className="flex flex-col items-center justify-center p-50">
 			<div className="bg-white p-6 rounded-lg w-96 flex flex-col gap-4 items-center shadow-md">
 			  	<Link 
 					to="/game"
