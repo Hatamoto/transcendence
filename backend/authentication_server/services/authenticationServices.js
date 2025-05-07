@@ -31,8 +31,8 @@ const completeLogin = async function(req, reply, user) {
       { expiresIn: '7d' }
     )
 
-    db.prepare('UPDATE users SET online_status = 1 WHERE name = ?')
-      .run(user.name)
+    //db.prepare('UPDATE users SET online_status = 1 WHERE name = ?')
+    //  .run(user.name)
   
     db.prepare('INSERT INTO refresh_tokens (user_id, refresh_token) VALUES (?, ?)')
       .run(user.id, refreshToken)

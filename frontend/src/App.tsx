@@ -29,12 +29,36 @@ export const router = createBrowserRouter([
 const App: React.FC = () => {
 
   return (
-    <div
+	<>
+      <style>{`
+        /* WebKit scrollbar styles */
+        ::-webkit-scrollbar {
+          width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+          background: #000000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+          background-color: #20d61a;
+          border-radius: 5px;
+          border: 2px solid #f0f0f0;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+          background: #555;
+        }
+		  
+      `}</style>
+
+	  <div
       style={{ cursor: "url('cursor.png'), auto" }}
       className="min-h-screen"
     >
       <RouterProvider router={router}></RouterProvider>
     </div>
+	</>
   )
 }
 
