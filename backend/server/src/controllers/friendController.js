@@ -66,7 +66,10 @@ const acceptRequest = async function(req, reply) {
     db.prepare('UPDATE friends SET status = ? WHERE user_id = ? AND friend_id = ?')
       .run('accepted', friendId, userId)
 
-    return reply.send(`Friend request from user ${friendId} was accepted`)
+    db.prepare('INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, ?)')
+      .run(userId, friendId, 'accepted');
+
+    return reply.send({ error: `Friend request from user ${friendId} was accepted`})
   } catch (error) {
     console.error('Database error:', error)
     return reply.code(500).send({ error: error.message })
@@ -89,7 +92,7 @@ const blockRequest = async function(req, reply) {
     db.prepare('UPDATE friends SET status = ? WHERE user_id = ? AND friend_id = ?')
       .run('blocked', friendId, userId)
 
-    return reply.send(`Friend request from user ${friendId} was blocked`)
+    return reply.send({ error: `Friend request from user ${friendId} was blocked`})
   } catch (error) {
     console.error('Database error:', error)
     return reply.code(500).send({ error: error.message })

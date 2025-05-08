@@ -20,6 +20,8 @@ const ProtectedRoutes: React.FC<{children: React.ReactNode}> = ({children}) => {
 		toast.open("Unauthorized", "error");
 		return <Navigate to="/login" replace />;
 	}
+
+	//add api call to get new token here.
 	return <>{children}</>;
 }
 

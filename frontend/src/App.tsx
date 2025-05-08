@@ -10,20 +10,20 @@ import TournamentsPage from './pages/tournamentPage.js'
 import ProfilePage from './pages/profilePage'
 import ProtectedRoutes from './components/authRoutes'
 
-// //import "./index.css";
+// import "../output.css";
 
 export const router = createBrowserRouter([
   {path: "/", element:<Home />},
   {path: "/home", element:<Home />},
   {path: "/login", element:<Login/> },
   {path: "/register", element: <Registration />},
-{	path: "/game", element: <ProtectedRoutes> <GameRoom matchType="normal" /></ProtectedRoutes> },
-	{path: "/solo-game", element: <ProtectedRoutes> <GameRoom matchType="solo" /></ProtectedRoutes> },
-	{path: "/tour-game", element: <ProtectedRoutes> <GameRoom matchType="tournament" /></ProtectedRoutes> },
-  {path: "/tournaments", element: <ProtectedRoutes> <TournamentsPage /></ProtectedRoutes>},
+	{path: "/game", element: <ProtectedRoutes><GameRoom matchType="normal" /></ProtectedRoutes> },
+	{path: "/tour-game", element: <ProtectedRoutes><GameRoom matchType="tournament" /></ProtectedRoutes> },
+	{path: "/solo-game", element: <ProtectedRoutes><GameRoom matchType="solo" /></ProtectedRoutes> },
+  {path: "/tournaments", element: <ProtectedRoutes><TournamentsPage /></ProtectedRoutes>},
   {path: "/user", element: <ProtectedRoutes><UserPage /></ProtectedRoutes>},
+  {path: "/user/profile", element: <ProtectedRoutes><ProfilePage /></ProtectedRoutes>},
   {path: "*", element: <NoPage />},
-  {path: "/user/profile", element: <ProtectedRoutes><ProfilePage /></ProtectedRoutes>}
 ]);
 
 const App: React.FC = () => {
