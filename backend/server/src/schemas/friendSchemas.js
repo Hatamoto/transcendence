@@ -6,6 +6,7 @@ import {
   getFriends
 } from '../controllers/friendController.js'
 import authenticateToken from '../middleware/authentication.js'
+import User from '../models/userModel.js'
 
 const friendRequestOpts = {
   schema: {
@@ -53,7 +54,14 @@ const blockRequestOpts = {
 }
 
 const getFriendsOpts = {
-  schema: {},
+  schema: {
+    response: {
+      200: {
+        type: 'array',
+        items: User,
+      },
+    },
+  },
   preHandler: authenticateToken,
   handler: getFriends,
 }

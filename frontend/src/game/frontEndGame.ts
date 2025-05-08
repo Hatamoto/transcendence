@@ -2,6 +2,7 @@
 import { Logger, LogLevel } from '../utils/logger.js';
 import { TURN_URL, TURN_USER, TURN_PASS, EXT_IP, STUN_URL} from '../config/env-config.js';
 import { setupButtons  } from './matchmaking.js';
+import { router } from '../App';
 
 const log = new Logger(LogLevel.INFO);
 
@@ -148,7 +149,6 @@ export class frontEndGame {
     private keyUpHandler: (e: KeyboardEvent) => void;
 
 	constructor() {
-		this.container = document.getElementById("game-container");
 		this.player1 = new Player(50, 10, 300, 10);
 		this.player2 = new Player(50, 10, 300, 780);
 
@@ -210,6 +210,7 @@ export class frontEndGame {
 
 	createCanvas()
 	{
+		this.container = document.getElementById("game-container");
 		this.gameCanvas = document.createElement("canvas");
 		this.container.appendChild(this.gameCanvas);
 		this.ctx = this.gameCanvas.getContext("2d")!;
@@ -402,152 +403,190 @@ export class frontEndGame {
 
 	socketLogic(socket)
 	{
-	socket.on('offer', async (offer) => {
-		try {
+		socket.on('offer', async (offer) => {
+			try {
+				if (!this.peerConnection) {
+					// const config = await this.loadIceConfig();
+					// this.configuration = config;
+					this.peerConnection = new RTCPeerConnection(this.configuration);
+					log.info("Peer connection created");
+					this.setupPeerConnectionEvents(socket);
+				}
+
+				log.info("Frontend received offer");
+				log.debug(offer);
+				await this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+				
+				const answer = await this.peerConnection.createAnswer();
+				await this.peerConnection.setLocalDescription(answer);
+				socket.emit('answer', answer);
+				log.info("Frontend sent answer.");
+				log.debug(this.peerConnection.localDescription);
+				if (this.bufferedCandidates && this.bufferedCandidates.length > 0) {
+					log.info("Processing buffered ICE candidates");
+					for (const candidate of this.bufferedCandidates) {
+						await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+					}
+					this.bufferedCandidates = [];
+				}
+			} catch (e) {
+				log.error("Error handling offer:", e);
+			}
+		});
+		
+		socket.on('answer', async (answer) => {
+			await this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));		  
+		});
+
+		socket.on('ice-candidate', async (candidate) => {
 			if (!this.peerConnection) {
+				log.warn("Received ICE candidate but peer connection not created yet");
+				return;
+			}
+			
+			try {
+				// Buffer ICE candidates until remote description is set
+				if (!this.peerConnection.remoteDescription) {
+					log.info("Buffering ICE candidate until remote description is set");
+					this.bufferedCandidates = this.bufferedCandidates || [];
+					this.bufferedCandidates.push(candidate);
+				} else {
+					// Add ICE candidate if remote description is already set
+					await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+					log.info("Added ICE candidate successfully");
+				}
+			} catch (e) {
+				log.error("Error adding received ICE candidate", e);
+			}
+		});
+
+		socket.on("connect", () => {
+			log.info("Connected to server");
+			const strtBtn = document.getElementById("start-btn");
+			const gameEdit = document.getElementById("edit-game");
+		
+			if (strtBtn)
+				strtBtn.hidden = true;
+			if (gameEdit)
+				gameEdit.hidden = true;
+		});
+		
+		socket.on("playerJoined", (playerAmount) => {
+			const sizeTxt = document.getElementById("size-txt");
+		
+			sizeTxt.textContent = "Lobby size: " + playerAmount + "/2";
+		});
+		
+		socket.on("playerDisconnected", (playerAmount) => {
+			log.info("Player disconnected");
+			const sizeTxt = document.getElementById("size-txt");
+		
+			sizeTxt.textContent = "Lobby size: " + playerAmount + "/2";
+		});
+		
+		socket.on("roomFull", (type) => {
+
+
+			if (type === "normal") {
+				const strtBtn = document.getElementById("start-btn");
+				const gameEdit = document.getElementById("edit-game");
+			
+				const ballSize  = (document.getElementById("ball-size") as HTMLInputElement)
+				const ballSpeed = (document.getElementById("ball-speed") as HTMLInputElement)
+			
+				strtBtn.hidden = false
+				gameEdit.hidden = false;
+			
+				strtBtn.addEventListener("click", () => {
+					const ballSizeValue = ballSize.value.trim() === "" ? ballSize.placeholder : ballSize.value;
+					const ballSpeedValue = ballSpeed.value.trim() === "" ? ballSpeed.placeholder : ballSpeed.value;
+			
+					socket.emit("hostStart", {
+						ballSettings: {
+							ballSize: ballSizeValue,
+							ballSpeed: ballSpeedValue
+						},
+						playerSettings: {
+			
+						}
+					});
+				});
+			}
+			else if (type === "tournament") {
+				const container = document.getElementById("game-container")
+				const countdownElement = document.createElement("h1");
+				countdownElement.id = "countdown";
+				countdownElement.textContent = "10";
+				container.appendChild(countdownElement);
+
+				let count = 10;
+				const intervalId = setInterval(() => {
+				  count--;
+				  countdownElement.textContent = count.toString();
+			
+				  if (count === 0) {
+					clearInterval(intervalId);
+					countdownElement.remove();
+				  }
+				}, 1000);
+			}
+		})
+		
+		socket.on("startGame", (roomId : string, settings) => {
+			const select = document.getElementById("colorSelect") as HTMLSelectElement;
+			const color = select.options[select.selectedIndex].value;
+		
+			const winnerElement = document.getElementById("winner-text");
+			if (winnerElement) {
+				winnerElement.remove();
+			}
+		
+			document.getElementById("gameroom-page").hidden = true;
+			log.info("Game started in room:", roomId);
+			game.createCanvas();
+			game.settings(settings, color);
+
+			if (this.peerConnection == null) {
 				// const config = await this.loadIceConfig();
 				// this.configuration = config;
 				this.peerConnection = new RTCPeerConnection(this.configuration);
 				log.info("Peer connection created");
 				this.setupPeerConnectionEvents(socket);
 			}
-
-			log.info("Frontend received offer");
-			log.debug(offer);
-			await this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-			
-			const answer = await this.peerConnection.createAnswer();
-			await this.peerConnection.setLocalDescription(answer);
-			socket.emit('answer', answer);
-			log.info("Frontend sent answer.");
-			log.debug(this.peerConnection.localDescription);
-			if (this.bufferedCandidates && this.bufferedCandidates.length > 0) {
-				log.info("Processing buffered ICE candidates");
-				for (const candidate of this.bufferedCandidates) {
-					await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-				}
-				this.bufferedCandidates = [];
-			}
-		} catch (e) {
-			log.error("Error handling offer:", e);
-		}
-	});
-	
-	socket.on('answer', async (answer) => {
-		await this.peerConnection.setRemoteDescription(new RTCSessionDescription(answer));		  
-	});
-
-	socket.on('ice-candidate', async (candidate) => {
-		if (!this.peerConnection) {
-			log.warn("Received ICE candidate but peer connection not created yet");
-			return;
-		}
-		
-		try {
-			// Buffer ICE candidates until remote description is set
-			if (!this.peerConnection.remoteDescription) {
-				log.info("Buffering ICE candidate until remote description is set");
-				this.bufferedCandidates = this.bufferedCandidates || [];
-				this.bufferedCandidates.push(candidate);
-			} else {
-				// Add ICE candidate if remote description is already set
-				await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-				log.info("Added ICE candidate successfully");
-			}
-		} catch (e) {
-			log.error("Error adding received ICE candidate", e);
-		}
-	});
-
-	socket.on("connect", () => {
-		log.info("Connected to server");
-		const strtBtn = document.getElementById("start-btn");
-		const gameEdit = document.getElementById("edit-game");
-	
-		if (strtBtn)
-			strtBtn.hidden = true;
-		if (gameEdit)
-			gameEdit.hidden = true;
-	});
-	
-	socket.on("playerJoined", (playerAmount) => {
-		const sizeTxt = document.getElementById("size-txt");
-	
-		sizeTxt.textContent = "Lobby size: " + playerAmount + "/2";
-	});
-	
-	socket.on("playerDisconnected", (playerAmount) => {
-		log.info("Player disconnected");
-		const sizeTxt = document.getElementById("size-txt");
-	
-		sizeTxt.textContent = "Lobby size: " + playerAmount + "/2";
-	});
-	
-	socket.on("roomFull", () => {
-		const strtBtn = document.getElementById("start-btn");
-		const gameEdit = document.getElementById("edit-game");
-	
-		const ballSize  = (document.getElementById("ball-size") as HTMLInputElement)
-		const ballSpeed = (document.getElementById("ball-speed") as HTMLInputElement)
-	
-		strtBtn.hidden = false
-		gameEdit.hidden = false;
-	
-		strtBtn.addEventListener("click", () => {
-			const ballSizeValue = ballSize.value.trim() === "" ? ballSize.placeholder : ballSize.value;
-			const ballSpeedValue = ballSpeed.value.trim() === "" ? ballSpeed.placeholder : ballSpeed.value;
-	
-			socket.emit("hostStart", {
-				ballSettings: {
-					ballSize: ballSizeValue,
-					ballSpeed: ballSpeedValue
-				},
-				playerSettings: {
-	
-				}
-			});
+			game.updateGraphics();
 		});
-	})
-	
-	socket.on("startGame", (roomId : string, settings) => {
-		const select = document.getElementById("colorSelect") as HTMLSelectElement;
-		const color = select.options[select.selectedIndex].value;
-	
-		const winnerElement = document.getElementById("winner-text");
-		if (winnerElement) {
-			winnerElement.remove();
-		}
-	
-		document.getElementById("gameroom-page").hidden = true;
-		log.info("Game started in room:", roomId);
-		game.createCanvas();
-		game.settings(settings, color);
-		//game.updateGraphics();
-	});
-	
-	socket.on("gameOver", (winner : number) => {
-		document.getElementById("gameroom-page").hidden = false;
-		var winnerElement = document.createElement("span");
-		winnerElement.id = "winner-text";
-		winnerElement.textContent = "Winner: " + winner;
-		const container = document.getElementById("game-container");
-	
-		var canvas = container.querySelector("canvas");
-	
-		canvas.remove();
-	
-		container.prepend(winnerElement);
-	});
-}
+		
+		socket.on("gameOver", (winner : number, type : string) => {
+			if (type == "solo")
+				document.getElementById("gameroom-page").hidden = false;
+			var winnerElement = document.createElement("span");
+			winnerElement.id = "winner-text";
+			winnerElement.textContent = "Winner: " + winner;
+			const container = document.getElementById("game-container");
+		
+			var canvas = container.querySelector("canvas");
+		
+			canvas.remove();
+		
+			container.prepend(winnerElement);
+			game.cleanUp();
+			if (type == "tournament")
+			{
+				setTimeout(() => {
+					router.navigate("/tournaments");
+				  }, 3000);
+			}
+		});
+	}
 }
 
 
 let game : frontEndGame;
 let animationFrameId: number | null = null;
 
-export function createNewGame(matchType : string, socket)
+export function createNewGame(matchType : string, socket, userId : string)
 {
-	setupButtons(socket);
+	setupButtons(socket, userId);
 	game = new frontEndGame();
 	if (matchType != "solo")
 	{
@@ -559,7 +598,8 @@ export function cleanGame()
 {
 	if (animationFrameId != null)
 		cancelAnimationFrame(animationFrameId);
-	game.cleanUp();
+	if (game)
+		game.cleanUp();
 	game = null;
 } 
 

@@ -16,7 +16,7 @@ const logoutUser = async function(req, reply) {
     db.prepare('DELETE FROM refresh_tokens WHERE refresh_token = ?')
       .run(token)
 
-    db.prepare('UPDATE users SET status = 0 WHERE id = ?')
+    db.prepare('UPDATE users SET online_status = 0 WHERE id = ?')
       .run(userId.user_id)
   
     return reply.code(204).redirect('/')

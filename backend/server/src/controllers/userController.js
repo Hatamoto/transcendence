@@ -204,6 +204,22 @@ const uploadAvatar = async function(req, reply) {
   }
 }
 
+const searchUsers = async function(req, reply) {
+  const db = req.server.db
+  const { query } = req.query
+  try {
+    const results = db.prepare(`
+      SELECT * FROM users
+      WHERE name LIKE ? COLLATE NOCASE
+    `).all(`%${query}%`)
+
+    return reply.send(results)
+  } catch (error) {
+    console.log(error)
+    return reply.code(500).send({ error: error.message })
+  }
+}
+
 export { 
   getUser,
   addUser,
@@ -212,5 +228,6 @@ export {
   updateUser,
   updatePassword,
   getDashboard,
-  uploadAvatar
+  uploadAvatar,
+  searchUsers
 }

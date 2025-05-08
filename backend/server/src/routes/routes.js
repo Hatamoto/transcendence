@@ -2,7 +2,8 @@ import { getExternalIP } from '../utils/externalIp.js';
 
 import { 
   getUserOpts, 
-  getUsersOpts, 
+  getUsersOpts,
+  searchUsersOpts,
   addUserOpts, 
   deleteUserOpts, 
   updateUserOpts, 
@@ -22,7 +23,8 @@ import {
   createTournamentOpts,
   joinTournamentOpts,
   setReadyOpts,
-  startTournamentOpts
+  startTournamentOpts,
+  getTournamentParticipantOpts
 } from '../schemas/tournamentSchemas.js'
 
 let cachedIP = null;
@@ -51,6 +53,7 @@ async function root (fastify, options) {
 
 async function userRoutes (fastify, options) {
   fastify.get('/api/users', getUsersOpts) //Palauttaa User objektin joka käyttäjälle mikä sisältää: id, name, status(1 = online, 0 = offline), wins, losses, path avatariin
+  fastify.get('/api/users/search', searchUsersOpts)
   fastify.get('/api/user/:id', getUserOpts) //Vaatii parametrina ID:n ja palauttaa User objektin id:n perusteella
   fastify.get('/api/dashboard', dashboardOpts) //mahdollista käyttää myöhemmin esim profiili sivuna, redirectaa käyttäjän loginin jälkeen
   fastify.put('/api/upload', uploadOpts) //Avatarin uploadaamiseen, ottaa kuva tiedoston ja tallentaa kuvan avatars kansioon ja pathin databaseen
@@ -70,6 +73,7 @@ async function friendRoutes (fastify, options) {
 
 async function tournamentRoutes (fastify, options) {
   fastify.get('/api/tournaments', getTournamentsOpts)
+  fastify.get('/api/tournament/:tournamentId', getTournamentParticipantOpts)
   fastify.post('/api/tournament/create', createTournamentOpts)
   fastify.post('/api/tournament/:tournamentId/join', joinTournamentOpts)
   fastify.post('/api/tournament/:tournamentId/start', startTournamentOpts)

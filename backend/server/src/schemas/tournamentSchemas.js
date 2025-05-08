@@ -3,7 +3,8 @@ import {
   getTournaments,
   joinTournament,
   setReady,
-  startTournament
+  startTournament,
+  getTournamentParticipant
 } from '../controllers/tournamentController.js'
 import Tournament from '../models/tournamentModel.js'
 import Match from '../models/matchModel.js'
@@ -99,10 +100,25 @@ const startTournamentOpts = {
   handler: startTournament,
 }
 
+const getTournamentParticipantOpts = {
+  schema: {
+    params: {
+      type: 'object',
+      required: ['tournamentId'],
+      properties: {
+        tournamentId: { type: 'integer' },
+      },
+    },
+  },
+  preHandler: authenticateToken,
+  handler: getTournamentParticipant,
+}
+
 export { 
   createTournamentOpts,
   getTournamentsOpts,
   joinTournamentOpts,
   setReadyOpts,
-  startTournamentOpts
+  startTournamentOpts,
+  getTournamentParticipantOpts
 }
