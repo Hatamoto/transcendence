@@ -171,7 +171,7 @@ export async function loginUser(userData: LoginRequest, captchaToken): Promise<L
 	try {
 		const response = await fetch(`${API_AUTH_URL}/api/login`, {
 			method: 'POST',
-			body: JSON.stringify(userData, captchaToken),            
+			body: JSON.stringify({ ...userData, captchaToken}),
 			headers: {
 			'Content-Type': 'application/json',
 			}

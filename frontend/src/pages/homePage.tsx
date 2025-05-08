@@ -48,6 +48,7 @@ const Home: React.FC = () => {
 	return (
 		<>
 		<Header />
+		<Background/>
 			<div className="flex gap-6 items-center justify-center p-101">
 		
 				<Link

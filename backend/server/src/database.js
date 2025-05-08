@@ -38,6 +38,7 @@ async function dbInit(fastify, options) {
 //     CREATE UNIQUE INDEX IF NOT EXISTS unique_number_index ON users (number);
 //  `);
 
+
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY,
