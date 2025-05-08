@@ -67,11 +67,13 @@ async function dbInit(fastify, options) {
     CREATE TABLE IF NOT EXISTS tournaments (
       id INTEGER PRIMARY KEY,
       name TEXT NOT NULL,
+      winner INTEGER,
       size INTEGER,
       created_by INTEGER,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       status TEXT NOT NULL CHECK(status IN ('created', 'ready', 'in_progress', 'completed')),
-      FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+      FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+      FOREIGN KEY (winner) REFERENCES users(id) ON DELETE SET NULL
     );
   `)
 
