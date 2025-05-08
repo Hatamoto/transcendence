@@ -1,7 +1,7 @@
 import UserHeader from "../components/userHeader";
 import { Link, Navigate } from 'react-router-dom';
 import React from 'react';
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 
 export interface tournament {
@@ -95,14 +95,58 @@ export async function starterTour(): Promise<number> {
 	}
 }
 
+export async function getTournaments() 
+{
+	const userId = sessionStorage.getItem('activeUserId');
+	
+	const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}')
+	
+	try {
+		const response = await fetch('/api/tournaments', {
+			method: 'GET',
+			headers: {
+			'Authorization': `Bearer ${sessionData.accessToken}`
+			}
+		});
+
+		const responseData = await response.json();
+		console.log(responseData.error);
+		console.log(responseData.bracket)
+
+		return responseData;
+
+	} catch (error) {
+		console.error("Login error:", error);
+	}
+}
 
 const TournamentsPage: React.FC = () => {
 	const [showForm, setShowForm] = useState(false);
 	const [showList, setShowList] = useState(false);
+	const [fetchedTournaments, setFetchedTournaments] = useState<any[]>([]);
+	const tourName = useRef<HTMLInputElement>(null);
+	const tourSize = useRef<HTMLInputElement>(null);
 
+
+	const fetchTournaments = async () => {
+		try {
+		  const data = await getTournaments();
+
+		  if (Array.isArray(data)) {
+			setFetchedTournaments(data);
+		  } else {
+			console.error("Unexpected data format:", data);
+		  }
+		} catch (error) {
+		  console.error("Failed to fetch tournaments", error);
+		}
+	  };
 
 	const createTour = () => {
-		createrTour({name: "paskaturnaus", size: 2}).then((response) => {
+		const name = tourName.current.value.trim() || tourName.current.placeholder;
+		const size = tourSize.current.value.trim() || tourSize.current.placeholder;
+
+		createrTour({name: name, size: size}).then((response) => {
 			if (response == 200) {
 				console.log("Tournament created");
 			} else {
@@ -110,6 +154,7 @@ const TournamentsPage: React.FC = () => {
 			}
 		}
 		);
+		setShowForm(false);
 	}
 
 	const joinTour = () => {
@@ -134,20 +179,9 @@ const TournamentsPage: React.FC = () => {
 		);
 	}
 
-	const tournaments = Array.from({ length: 200 }, (_, i) => ({
-		id: i,
-		name: `Tournament ${i + 1}`,
-		players: `${4 + i}/${20} players`, // Latter number needs to be set to the tournaments max players
-	  }));								  // first one to the current ones
-
-
 	return (
 		<>
 		<UserHeader />
-		<button onClick={createTour} 
-		id="create-tour" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
-					create tournament
-		</button>
 		<button onClick={joinTour} 
 		id="test-tour" className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-700 text-center">
 					join tournament
@@ -174,7 +208,10 @@ const TournamentsPage: React.FC = () => {
       </button>
 
 	  <button
-        onClick={() => setShowList(true)}
+          onClick={() => {
+			setShowList(true);
+			fetchTournaments();
+		  }}
         className="px-4 py-2 bg-blue-600 text-white rounded shadow"
       >
         Tournament list
@@ -188,6 +225,7 @@ const TournamentsPage: React.FC = () => {
               id="tour-name"
               type="text"
               placeholder="Among us Skibidi fortnite"
+			  ref={tourName}
               className="block w-full p-2 border border-gray-300 rounded mb-4"
             />
             <p className="text-center text-gray-600 mb-4">Tournament size</p>
@@ -195,11 +233,12 @@ const TournamentsPage: React.FC = () => {
               id="tour-size"
               type="text"
               placeholder="4"
+			  ref={tourSize}
               className="block w-full p-2 border border-gray-300 rounded mb-4"
             />
 			<button
-              onClick={() => setShowForm(false)}
-              className="w-full bg-green-500 text-white p-2 rounded"
+			onClick={createTour}
+			className="w-full bg-green-500 text-white p-2 rounded"
             >
               Confirm
             </button>
@@ -219,7 +258,7 @@ const TournamentsPage: React.FC = () => {
 			<p className="text-center text-gray-600 mb-4">Tournaments</p>
 
 			<div className="overflow-y-auto space-y-4 pr-2 flex-grow">
-				{tournaments.map((tour) => (
+				{fetchedTournaments.map((tour) => (
 				<div
 					key={tour.id}
 					className="flex items-center justify-between border p-3 rounded"
