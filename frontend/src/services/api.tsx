@@ -529,7 +529,7 @@ export async function acceptRequest(requestData: friendActionRequest): Promise<f
 	}
 }
 
-export async function declineRequest(requestData: friendActionRequest): Promise<friendActionResponse> {
+export async function blockRequest(requestData: friendActionRequest): Promise<friendActionResponse> {
 	
 	try {
 			const options = {
@@ -558,27 +558,27 @@ export async function declineRequest(requestData: friendActionRequest): Promise<
 			if (!retryResponse.ok)
 				return {
 				status: retryResponse.status,
-				error: responseData.error || 'Declining request failed'
+				error: responseData.error || 'Blocking request failed'
 				}
 			return {
 				status: retryResponse.status,
-				error: responseData.error || 'Declining request was successfully'
+				error: responseData.error || 'Blocking request was successfully'
 			};
 		};
 
 		if (response.status >= 300)
 			return {
 			status: response.status,
-			error: response.error || 'Declining request failed'
+			error: response.error || 'Blocking request failed'
 		}
 		return {
 			status: response.status,
-			error: response.error || 'Declining request was successfully'
+			error: response.error || 'Blocking request was successfully'
 		};
 
 
 	} catch (error) {
-		console.error("declineRequest Error:", error);
+		console.error("blockRequest Error:", error);
 		return {
 			status: 500,
 			error: 'Something went wrong. Please try again.'

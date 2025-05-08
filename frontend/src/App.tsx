@@ -52,12 +52,7 @@ const App: React.FC = () => {
 		  
       `}</style>
 
-	  <div
-      style={{ cursor: "url('cursor.png'), auto" }}
-      className="min-h-screen"
-    >
       <RouterProvider router={router}></RouterProvider>
-    </div>
 	</>
   )
 }

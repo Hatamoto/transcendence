@@ -7,20 +7,22 @@ const Header: React.FC = () => {
 
 	return (
 		<header className="bg-black text-white py-10 px-10 shadow-lg flex items-center justify-between">
-		  {/* Left Side: Title and Subheading */}
-		  <div className="flex items-center space-x-10">
+
+		  	<div className="flex items-center space-x-10">
 			<h1 className="text-5xl font-extrabold tracking-tight text-green-500">
-			  ft_transcendence
+			 	ft_transcendence
 			</h1>
-		  </div>
+		  	</div>
 	
-		  {/* Navigation Menu */}
-		  <nav>
-		  <ul className="flex space-x-8">
+
+			  {/* bg-black text-white rounded-md hover:bg-green-700 text-2xl font-bold border-2 border-green-500 px-4 py-2 */}
+
+		  	<nav>
+		  	<ul className="flex space-x-8">
 				<li>
 				<Link
 					to="/"
-					className="text-green-300 hover:text-green-500 transition duration-300"
+					className="bg-black px-3 py-2 text-white rounded-md hover:bg-green-700 text-2xl font-bold border-2 border-green-500 transition duration-50"
 				>
 					Home
 				</Link>
@@ -28,7 +30,7 @@ const Header: React.FC = () => {
 				<li>
 				<Link
 					to="/login"
-					className="text-green-300 hover:text-green-500 transition duration-300"
+					className="bg-black px-3 py-2 text-white rounded-md hover:bg-green-700 text-2xl font-bold border-2 border-green-500 transition duration-50"
 				>
 					Login
 				</Link>
@@ -36,13 +38,14 @@ const Header: React.FC = () => {
 				<li>
 				<Link
 					to="/register"
-					className="text-green-300 hover:text-green-500 transition duration-300"
+					className="bg-black px-3 py-2 text-white rounded-md hover:bg-green-700 text-2xl font-bold border-2 border-green-500 transition duration-50"
 				>
 					Register
 				</Link>
 				</li>
 			</ul>
 			</nav>
+
 		</header>
 	  );
 }
