@@ -104,8 +104,9 @@ const getFriends = async function(req, reply) {
       SELECT users.*
       FROM friends
       JOIN users ON users.id = friends.friend_id
-      WHERE friends.user_id = ? AND friends.status = ?
-    `).all(req.user.id, 'accepted')
+      WHERE (friends.user_id = ? OR friends.friend_id = ?)
+      AND friends.status = ?
+    `).all(req.user.id, req.user.id, 'accepted')
 
     if (friends.length === 0) return reply.code(204).send()
     
