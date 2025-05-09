@@ -15,7 +15,7 @@ const friendRequest = async function(req, reply) {
     if (existing) {
       if (existing.status = 'pending') return reply.code(400).send({ error: "Friend request already sent" })
       else if (existing.status = 'accepted') return reply.code(400).send({ error: "Users are already friends" })
-      else if (existing.status = 'blocked') return reply.code(400).send({ error: "User is blocked" })
+      else if (existing.status = 'blocked' && existing.friend_id === userId) return reply.code(400).send({ error: "User is blocked" })
     }
 
     db.prepare("INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, ?)")
