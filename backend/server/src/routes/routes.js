@@ -16,7 +16,8 @@ import {
   checkPendingOpts, 
   acceptRequestOpts,
   blockRequestOpts,
-  getFriendsOpts
+  getFriendsOpts,
+  declineRequestOpts
 } from '../schemas/friendSchemas.js'
 import { 
   getTournamentsOpts,
@@ -69,6 +70,7 @@ async function friendRoutes (fastify, options) {
   fastify.post('/api/friend/request', friendRequestOpts) //Vaatii request bodyssa friendId joka on sen käyttäjän id joka halutaan lisätä kaveriksi
   fastify.post('/api/friend/accept', acceptRequestOpts)
   fastify.post('/api/friend/block', blockRequestOpts)
+  fastify.post('/api/friend/decline', declineRequestOpts)
 }
 
 async function tournamentRoutes (fastify, options) {

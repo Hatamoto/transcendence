@@ -158,6 +158,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
 	userId: number;
+	name: string,
 	accessToken: string;
 	refreshToken: string;
 	status: number;
@@ -181,6 +182,7 @@ export async function loginUser(userData: LoginRequest, captchaToken): Promise<L
 
 		if (!response.ok)
 			return { userId: 0,
+				name: '',
 				accessToken: '',
 				refreshToken: '',
 				status: response.status,
@@ -188,6 +190,7 @@ export async function loginUser(userData: LoginRequest, captchaToken): Promise<L
 			}
 		return {
 			userId: responseData.userId,
+			name: responseData.name,
 			accessToken: responseData.accessToken,
 			refreshToken: responseData.refreshToken,
 			status: response.status,
@@ -198,6 +201,7 @@ export async function loginUser(userData: LoginRequest, captchaToken): Promise<L
 		console.error("Login error:", error);
 		return {
 			userId: 0,
+			name: '',
 			accessToken: '',
 			refreshToken: '',
 			status: 500,
@@ -529,6 +533,62 @@ export async function acceptRequest(requestData: friendActionRequest): Promise<f
 	}
 }
 
+export async function declineRequest(requestData: friendActionRequest): Promise<friendActionResponse> {
+
+	try {
+			const options = {
+				method: 'POST',
+				body: JSON.stringify({ friendId: requestData.friendId }),
+				headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${requestData.accToken}`
+				}
+			}
+
+		const response = await authFetch('/api/friend/decline', options);
+
+		if (response.status === 1) {
+			const retryResponse = await fetch(`/api/friend/decline`, {
+				method: 'POST',
+				body: JSON.stringify({ friendId: requestData.friendId }),
+				headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${response.newToken}`
+				}
+			});
+
+			const responseData = await retryResponse.json();
+		
+			if (!retryResponse.ok)
+				return {
+				status: retryResponse.status,
+				error: responseData.error || 'Declining request failed'
+				}
+			return {
+				status: retryResponse.status,
+				error: responseData.error || 'Declining request was successfully'
+			};
+		};
+
+		if (response.status >= 300)
+			return {
+			status: response.status,
+			error: response.error || 'Declining request failed'
+		}
+		return {
+			status: response.status,
+			error: response.error || 'Declining request was successfully'
+		};
+
+	} catch (error) {
+		console.error("acceptRequest Error:", error);
+		return {
+			status: 500,
+			error: 'Something went wrong. Please try again.'
+		};
+	}
+}
+
 export async function blockRequest(requestData: friendActionRequest): Promise<friendActionResponse> {
 	
 	try {
@@ -595,7 +655,6 @@ interface getAllUsersResponse {
 export async function getAllUsers(): Promise<getAllUsersResponse> {
 
 	try {
-
 		const response = await fetch('/api/users' ,{
 			method: 'GET'
 		});
@@ -604,8 +663,8 @@ export async function getAllUsers(): Promise<getAllUsersResponse> {
 
 		if (!response.ok)
 			return {
-		status: response.status,
-		error: responseData.error || 'Fetching users failed',
+			status: response.status,
+			error: responseData.error || 'Fetching users failed',
 		}
 		return {
 			status: response.status,
@@ -614,6 +673,44 @@ export async function getAllUsers(): Promise<getAllUsersResponse> {
 
 	} catch (error) {
 		console.error("getAllUsers Error:", error);
+		return {
+			status: 500,
+			error: 'Something went wrong. Please try again.'
+		};
+	}
+}
+
+export interface searchUsersRequest {
+	query: string;
+}
+
+interface searchUsersResponse {
+	status: number;
+	error?: string;
+	users?: User[];
+}
+
+export async function searchUsers(searchInput: searchUsersRequest): Promise<searchUsersResponse> {
+	
+	try {
+		const response = await fetch(`/api/users/search?query=${searchInput.query}`, {
+			method: 'GET'
+		});
+
+		const responseData = await response.json();
+
+		if (!response.ok)
+			return {
+			status: response.status,
+			error: responseData.error || 'Searching users failed',
+		}
+		return {
+			status: response.status,
+			users: responseData
+		}
+
+	} catch (error) {
+		console.error("searchUsers Error:", error);
 		return {
 			status: 500,
 			error: 'Something went wrong. Please try again.'
@@ -722,17 +819,17 @@ export async function getFriends(requestData: getFriendsRequest): Promise<getFri
 
 
 
-interface ApiOptions {
-	method: string;
-	url: string;
-	body?: Record<string, any>;
-	headers?: Record<string, string>;
-}
+// interface ApiOptions {
+// 	method: string;
+// 	url: string;
+// 	body?: Record<string, any>;
+// 	headers?: Record<string, string>;
+// }
 
-interface ApiReturn<T> {
-	status: number;
-	data?: T;
-}
+// interface ApiReturn<T> {
+// 	status: number;
+// 	data?: T;
+// }
 
 // interface ApiReturn {
 // 	status: number;
@@ -740,75 +837,75 @@ interface ApiReturn<T> {
 // }
 
 
-async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
-	const { method, url, body, headers } = options;
+// async function apiCall<T>(options: ApiOptions): Promise<ApiReturn<T>> {
+// 	const { method, url, body, headers } = options;
 
-	try {
-		const response = await fetch(url, {
-			method,
-			headers,
-			body: body ? JSON.stringify(body) : undefined,
-			credentials: 'include',
-		});
+// 	try {
+// 		const response = await fetch(url, {
+// 			method,
+// 			headers,
+// 			body: body ? JSON.stringify(body) : undefined,
+// 			credentials: 'include',
+// 		});
   
-		const responseData = await response.json();
+// 		const responseData = await response.json();
   
-		if (!response.ok)
-			return { status: response.status, data: undefined };
+// 		if (!response.ok)
+// 			return { status: response.status, data: undefined };
 
-		return { status: response.status, data: responseData }
+// 		return { status: response.status, data: responseData }
 	
-	} catch (error) {
-		throw error; // idk what happens here :()()() saku mita helvettia
-	}
-}
+// 	} catch (error) {
+// 		throw error; // idk what happens here :()()() saku mita helvettia
+// 	}
+// }
 
 
 
-export async function getUser(id: string): Promise<User | number> {
-	const options : ApiOptions = {
-		method: 'GET',
-		url: `/api/user/${id}`, 
-		headers: {
-		'Content-Type': 'application/json',
-		},
-	};
-	const response = await apiCall<User>(options);
-	if (response.status !== 200)
-		return (response.status); //maybe we could return the whole api struct or the json message also
-	return (response.data as User);
-}
+// export async function getUser(id: string): Promise<User | number> {
+// 	const options : ApiOptions = {
+// 		method: 'GET',
+// 		url: `/api/user/${id}`, 
+// 		headers: {
+// 		'Content-Type': 'application/json',
+// 		},
+// 	};
+// 	const response = await apiCall<User>(options);
+// 	if (response.status !== 200)
+// 		return (response.status); //maybe we could return the whole api struct or the json message also
+// 	return (response.data as User);
+// }
 
 // export async function getDashboard() {
 // }
 
-export async function uploadAvatar() {
-}
+// export async function uploadAvatar() {
+// }
 
-export async function updateUser(id: string, user: RegistrationRequest) {
-	const options : ApiOptions = {
-		method: 'PUT',
-		url: `/api/user/${id}`,
-		body: user,            
-		headers: {
-		'Content-Type': 'application/json',
-		},
-	};
-	return ((await apiCall(options)).status);
-}
+// export async function updateUser(id: string, user: RegistrationRequest) {
+// 	const options : ApiOptions = {
+// 		method: 'PUT',
+// 		url: `/api/user/${id}`,
+// 		body: user,            
+// 		headers: {
+// 		'Content-Type': 'application/json',
+// 		},
+// 	};
+// 	return ((await apiCall(options)).status);
+// }
 
 // do we pass passwrods as string before backend? IDK
-export async function updatePassword(id: string, password: string) {
-	const options : ApiOptions = {
-		method: 'PUT',
-		url: `/api/user/pwd/${id}`,
-		body: { password: password },
-		headers: {
-		'Content-Type': 'application/json',
-		},
-	};
-	return ((await apiCall(options)).status);
-}
+// export async function updatePassword(id: string, password: string) {
+// 	const options : ApiOptions = {
+// 		method: 'PUT',
+// 		url: `/api/user/pwd/${id}`,
+// 		body: { password: password },
+// 		headers: {
+// 		'Content-Type': 'application/json',
+// 		},
+// 	};
+// 	return ((await apiCall(options)).status);
+// }
 
 // export async function deleteUser(id: string) {
 // 	const options : ApiOptions = {

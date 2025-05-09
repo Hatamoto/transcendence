@@ -13,9 +13,17 @@ const friendRequest = async function(req, reply) {
       .get(userId, friendId, friendId, userId)
 
     if (existing) {
-      if (existing.status = 'pending') return reply.code(400).send({ error: "Friend request already sent" })
-      else if (existing.status = 'accepted') return reply.code(400).send({ error: "Users are already friends" })
-      else if (existing.status = 'blocked') return reply.code(400).send({ error: "User is blocked" })
+      if (existing.status === 'pending') {
+        return reply.code(400).send({ error: "Friend request already sent" })
+      } else if (existing.status === 'accepted') {
+        return reply.code(400).send({ error: "Users are already friends" })
+      } else if (existing.status === 'blocked') {
+        return reply.code(400).send({ error: "User is blocked" })
+      } else if (existing.status === 'declined') {
+        db.prepare('UPDATE friends SET status = ? WHERE user_id = ? AND friend_id = ?')
+          .run('pending', userId, friendId)
+        return reply.send({ message: "Friend request re-sent after being declined" })
+      }
     }
 
     db.prepare("INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, ?)")
@@ -119,10 +127,34 @@ const getFriends = async function(req, reply) {
   }
 }
 
+const declineRequest = async function(req, reply) {
+  const userId = req.user.id
+  const friendId = req.body.friendId
+  const db = req.server.db
+
+  if (!friendId) return reply.code(400).send({ error: "friend id is required" })
+
+  try{
+    const request = db.prepare('SELECT * FROM friends WHERE user_id = ? AND friend_id = ?')
+      .get(friendId, userId)
+  
+    if (!request) return reply.code(404).send({ error: `No friend requests found from user: ${friendId}` })
+
+    db.prepare('UPDATE friends SET status = ? WHERE user_id = ? AND friend_id = ?')
+      .run('declined', friendId, userId)
+
+    return reply.send({error:`Friend request from user ${friendId} was declined`})
+  } catch (error) {
+    console.error('Database error:', error)
+    return reply.code(500).send({ error: error.message })
+  }
+}
+
 export { 
   friendRequest, 
   checkPending, 
   acceptRequest, 
   blockRequest, 
-  getFriends
+  getFriends,
+  declineRequest
 }

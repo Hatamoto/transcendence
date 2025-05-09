@@ -3,7 +3,8 @@ import {
   checkPending, 
   acceptRequest,
   blockRequest,
-  getFriends
+  getFriends,
+  declineRequest
 } from '../controllers/friendController.js'
 import authenticateToken from '../middleware/authentication.js'
 import User from '../models/userModel.js'
@@ -66,10 +67,24 @@ const getFriendsOpts = {
   handler: getFriends,
 }
 
+const declineRequestOpts = {
+  schema: {
+    body: {
+      type: 'object',
+      properties: {
+        friendId: {type: 'integer' },
+      },
+    },
+  },
+  preHandler: authenticateToken,
+  handler: declineRequest,
+}
+
 export { 
   friendRequestOpts, 
   checkPendingOpts, 
   acceptRequestOpts, 
   blockRequestOpts,
-  getFriendsOpts
+  getFriendsOpts,
+  declineRequestOpts
  }

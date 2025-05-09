@@ -1,21 +1,38 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { useState } from "react";
-import { checkPending, friendRequest, FriendRequestRequest, getFriendsRequest, acceptRequest, blockRequest, friendActionRequest } from "../services/api";
+import { useState, useEffect } from "react";
 import { useToast } from "./toastBar/toastContext";
-import { getAllUsers, getFriends } from "../services/api";
+import {
+	getAllUsers,
+	getFriends,
+	checkPending,
+	friendRequest,
+	FriendRequestRequest,
+	getFriendsRequest,
+	acceptRequest,
+	declineRequest,
+	blockRequest,
+	friendActionRequest,
+	searchUsers
+} from "../services/api";
 
 interface UserHeaderProps {
 	userName: string;
 };
 
-interface FriendRequestProps {
-	id: string;
+interface FriendSearchProps {
+	query: string;
+}
+
+interface userList {
+	name: string;
+	id: number;
+	avatar?: string;
 }
 
 interface pendingRequestProps {
 	name: string;
 	id: number;
+	avatar?: string;
 }
 
 interface friendsList {
@@ -25,41 +42,66 @@ interface friendsList {
 	avatar?: string;
 }
 
-// const UserHeader: React.FC<UserHeaderProps> = ({ userName }) => {
-
 const UserHeader: React.FC = () => {
 
+	const [userName, setUserName] = useState('');
+
+	useEffect(() => {
+		const userId = sessionStorage.getItem('activeUserId');
+		if (userId) {
+			const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}');
+			setUserName(sessionData.name);
+		}
+	}, []);
+	
 	const toast = useToast();
-
-	const [formState, setFormState] = useState<FriendRequestProps>({id: ''});
+	
+	const [searchState, setSearchState] = useState<FriendSearchProps>({query: ''});
+	const [userList, setUserList] = useState<userList[]>([]);
 	const [pendingRequests, setPendingRequests] = useState<pendingRequestProps[]>([]);
-	const [friensList, setFriendsList] = useState<friendsList[]>([]);
+	const [friendsList, setFriendsList] = useState<friendsList[]>([]);
+	const [showFriends, setShowFriends] = useState(false);
 
-	const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+	const handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = event.target;
-		setFormState(prevState => ({...prevState, [name]: value}));
+		setSearchState(prevState => ({...prevState, [name]: value}));
 	};
 
 	const userId = sessionStorage.getItem('activeUserId');
 	const sessionData = JSON.parse(sessionStorage.getItem(userId) || '{}')
 
-	const handleSubmit = async (event: React.FormEvent) => {
-		event.preventDefault();
-
+	const handleAddFriend = async (friendId: number) => {
 
 		const user: FriendRequestRequest = {
-			friendId: Number(formState.id),
-			accToken: sessionData.accessToken,
+			friendId: friendId,
+			accToken: sessionData.accessToken
 		};
-	
+
 		const response = await friendRequest(user);
 
-		if (response.status == 200) {
+		if (response.status === 200) {
 			toast.open(response.error, "success");
-			setFormState(prevState => ({...prevState, id: '',}));
+			setUserList((prev) => prev.filter((req) => req.id !== friendId));
 		} else {
 			toast.open(response.error, "error");
-			setFormState(prevState => ({...prevState, id: '',}));
+		}
+	}
+
+	const handleSearch = async (event: React.FormEvent) => {
+		event.preventDefault();
+
+		const searchInput: FriendSearchProps = {
+			query: searchState.query
+		}
+
+		const response = await searchUsers(searchInput);
+
+		if (response.status === 200 && response.users.length !== 0) {
+			setUserList(response.users);
+			console.log(response.users);
+		} else if (response.status === 200 && response.users.length === 0) {
+			toast.open("No Users found", "info");
+			setSearchState(prevState => ({ ...prevState, query: '' }));
 		}
 	}
 
@@ -72,6 +114,21 @@ const UserHeader: React.FC = () => {
 		};
 		
 		const response = await acceptRequest(info);
+		
+		if (response.status === 200) {
+			toast.open(response.error, "info");
+			setPendingRequests((prev) => prev.filter((req) => req.id !== friendId));
+		}
+	}
+
+	const handleDecline = async (friendId: number) => {
+		
+		const info: friendActionRequest = {
+			accToken: sessionData.accessToken,
+			friendId: friendId,
+		};
+		
+		const response = await declineRequest(info);
 		
 		if (response.status === 200) {
 			toast.open(response.error, "info");
@@ -93,8 +150,6 @@ const UserHeader: React.FC = () => {
 			setPendingRequests((prev) => prev.filter((req) => req.id !== friendId));
 		}
 	}
-
-	const [showFriends, setShowFriends] = useState(false);
 
 	const handleOpenFriends = async () => {
 
@@ -132,7 +187,6 @@ const UserHeader: React.FC = () => {
 			if (response3.status < 204 && Array.isArray(response3.data)) {
 				console.log("data from friend request" ,response3.data)
 				// toast.open("we have pending friend request", "info");
-				
 				setPendingRequests(response3.data);
 			}
 
@@ -142,18 +196,17 @@ const UserHeader: React.FC = () => {
 
 	return (
 		<>
-		<header className="bg-black text-white py-10 px-10 shadow-lg flex items-center justify-between">
+		<header className="w-full bg-black text-white py-10 px-10 shadow-lg flex items-center justify-between">
 
 		  <div className="flex items-center space-x-10">
 			<h1 className="text-5xl font-extrabold tracking-tight text-green-500">
-			  Welcome: 
-			  {/* {userName} */}
+			  Welcome: {userName}
 			</h1>
 		  </div>
 
 			<button
 				onClick={handleOpenFriends}
-				className=" bg-black text-white rounded-md hover:bg-green-700 text-2xl font-bold border-2 border-green-500 px-4 py-2 transition duration-50"
+				className=" bg-black text-white rounded-md hover:bg-green-700 text-2xl font-bold border-2 border-green-500 px-3 py-2 transform transition-transform hover:scale-105 duration-100"
 			>
 				Friends
 			</button>
@@ -162,42 +215,70 @@ const UserHeader: React.FC = () => {
 
 		{showFriends && (
 			<div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-				<div className="bg-white p-6 rounded-lg shadow-lg w-[480px] max-h-[80vh] flex flex-col">
+			 	<div className="bg-white p-6 rounded-lg shadow-lg w-[600px] max-h-[80vh] overflow-y-auto flex flex-col">
 				
-
 				<div>
-				<form onSubmit={handleSubmit}>
-					<div className="mb-4">
-						<label htmlFor="id" className="block text-sm font-medium text-black">
-							Add friends by ID
-						</label>
-						<input
-							type="text"
-							id="id"
-							name="id"
-							value={formState.id}
-							onChange={handleInputChange}
-							className="w-full border border-black bg-white rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-							required
-						/>
-					</div>
+					<form onSubmit={handleSearch}>
+						<div className="mb-4">
+							<label htmlFor="query" className="block text-sm font-medium text-black">
+								Add friends by Username
+							</label>
+							<input
+								type="text"
+								name="query"
+								value={searchState.query}
+								onChange={handleSearchInputChange}
+								className="w-full border border-black bg-white rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
+								required //fetches all if this is commented out
+								placeholder="Enter Username ..."
+							/>
+						</div>
 
-					<button
-					type="submit"
-					className="w-full bg-green-500 text-white border border-black py-2 rounded-md hover:bg-green-700 text-center"
-					>
-						Add
-					</button>
+						<button
+						type="submit"
+						className="w-full bg-green-500 text-white border border-black py-2 rounded-md hover:bg-green-700 text-center"
+						>
+							Search
+						</button>
+					</form>
 
-				</form>
-		
-				{pendingRequests && pendingRequests.length > 0 && (
-					<div className="w-full px-4">
-						<h2 className="text-lg font-semibold mb-2 text-black">Pending Requests:</h2>
-						{pendingRequests.map((req) => (
-							<div key={req.id} className="flex items-center justify-between bg-white p-2 rounded mb-2">
+					{userList && userList.length > 0 && (
+					<div className="w-full bg-white mt-1 rounded-md shadow-lg border border-gray-300 overflow-hidden transition-all duration-300 ease-out z-100">
+						{userList.filter((req) => req.id !== Number(userId) && !friendsList.map(friend => friend.id).includes(req.id))
+							.map((req) => (
+						<div key={req.id} className="flex items-center justify-between p-2 hover:bg-gray-100">
+							
+							<div className="flex items-center space-x-2">
+								<img src={`http://localhost:4000/${req.avatar}`} alt="User Avatar" className="w-8 h-8 border border-black rounded-full mr-2" />
 								<span className="text-black">{req.name}</span>
-								<div className="space-x-2">
+							</div>
+
+							<div className="flex space-x-2">
+								<button
+									onClick={() => handleAddFriend(req.id)}
+									className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+								>
+									Add
+								</button>
+							</div>
+
+						</div>
+						))}
+					</div>
+					)}
+			
+					{pendingRequests && pendingRequests.length > 0 && (
+						<div className="w-full px-4 gap-4">
+							<h2 className="text-lg font-semibold mb-2 text-black">Pending Requests:</h2>
+							{pendingRequests.map((req) => (
+								<div key={req.id} className="flex items-center justify-between bg-white p-2 rounded mb-2">
+									
+								<div className="flex items-center space-x-2">
+									<img src={`http://localhost:4000/${req.avatar}`} alt="User Avatar" className="w-8 h-8 border border-black rounded-full mr-2" />
+									<span className="text-black">{req.name}</span>
+								</div>
+
+								<div className="flex space-x-2">
 									<button
 										onClick={() => handleAccept(req.id)}
 										className="bg-green-500 text-white border border-black px-2 py-1 rounded hover:bg-green-600"
@@ -205,39 +286,44 @@ const UserHeader: React.FC = () => {
 										Accept
 									</button>
 									<button
-										onClick={() => handleBlock(req.id)}
+										onClick={() => handleDecline(req.id)}
 										className="bg-red-500 text-white border border-black px-2 py-1 rounded hover:bg-red-600"
+									>
+										Decline
+									</button>
+									<button
+										onClick={() => handleBlock(req.id)}
+										className="bg-gray-800 text-white border border-black px-2 py-1 rounded hover:bg-black"
 									>
 										Block
 									</button>
 								</div>
-							</div>
-						))}
-					</div>
-				)}
 
-				{friensList && friensList.length > 0 && (
-				<div className="w-full px-4 gap-4">
-					<h2 className="text-lg font-semibold mb-2 text-black">Frineds:</h2>
-						{friensList.map((req) => (
-						<div key={req.id} className="flex items-center justify-between bg-white p-2 rounded mb-2">
-							<div className="flex items-center">
-							<img src={`http://localhost:4000/${req.avatar}`} alt="User Avatar" className="w-8 h-8 rounded-full mr-2" />
-							<span className="text-black">{req.name}</span>
-							</div>
-							
-							<span
-							className={`w-4 h-4 rounded-full ${
-								req.online_status === 1 ? "bg-green-600" : "bg-red-500"
-							} inline-block ml-2`}
-							/>
+								</div>
+							))}
 						</div>
-						))}
-				</div>
-				)}
+					)}
 
+					{friendsList && friendsList.length > 0 && (
+					<div className="w-full px-4 gap-4">
+						<h2 className="text-lg font-semibold mb-2 text-black">Frineds:</h2>
+							{friendsList.map((req) => (
+							<div key={req.id} className="flex items-center justify-between bg-white p-2 rounded mb-2">
+								<div className="flex items-center">
+								<img src={`http://localhost:4000/${req.avatar}`} alt="User Avatar" className="w-8 h-8 border border-black rounded-full mr-2" />
+								<span className="text-black">{req.name}</span>
+								</div>
+								
+								<span
+								className={`w-4 h-4 border border-black rounded-full ${
+									req.online_status === 1 ? "bg-green-600" : "bg-red-500"
+								} inline-block ml-2`}
+								/>
+							</div>
+							))}
+					</div>
+					)}
 				</div>
-
 
 				<button
 					onClick={handleOpenFriends}
@@ -245,6 +331,7 @@ const UserHeader: React.FC = () => {
 				>
 					Close
 				</button>
+
 				</div>
 			</div>
 		)}
