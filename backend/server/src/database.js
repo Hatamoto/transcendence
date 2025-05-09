@@ -77,24 +77,24 @@ async function dbInit(fastify, options) {
     );
   `)
 
-  //db.exec(`
-  //  CREATE TABLE IF NOT EXISTS match_history (
-     // id INTEGER PRIMARY KEY,
-    //  player_one_id INTEGER,
-    //  player_two_id INTEGER,
-    //  score_player_one INTEGER,
-     // score_player_two INTEGER,
-      //winner_id INTEGER,
-      //round INTEGER,
-      //tournament_id INTEGER,
-     // match_type TEXT CHECK(match_type IN ('single', 'tournament')),
-  //    date DATETIME DEFAULT CURRENT_TIMESTAMP,
-      //FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE SET NULL,
-      //FOREIGN KEY (winner_id) REFERENCES users(id) ON DELETE SET NULL,
-      //FOREIGN KEY (player_one_id) REFERENCES users(id) ON DELETE SET NULL,
-      //FOREIGN KEY (player_two_id) REFERENCES users(id) ON DELETE SET NULL
-  //  );
-  //`)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS match_history (
+      id INTEGER PRIMARY KEY,
+      user_id INTEGER,
+      opponent_id INTEGER,
+      user_score INTEGER,
+      opponent_score INTEGER,
+      winner_id INTEGER,
+      round INTEGER,
+      tournament_id INTEGER,
+      match_type TEXT CHECK(match_type IN ('single', 'tournament')),
+      date DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (tournament_id) REFERENCES tournaments(id) ON DELETE SET NULL,
+      FOREIGN KEY (winner_id) REFERENCES users(id) ON DELETE SET NULL,
+      FOREIGN KEY (player_one_id) REFERENCES users(id) ON DELETE SET NULL,
+      FOREIGN KEY (player_two_id) REFERENCES users(id) ON DELETE SET NULL
+    );
+  `)
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS matches (
@@ -134,7 +134,7 @@ async function dbInit(fastify, options) {
     CREATE TABLE IF NOT EXISTS friends (
       user_id INTEGER NOT NULL,
       friend_id INTEGER NOT NULL,
-      status TEXT NOT NULL CHECK(status IN ('pending', 'accepted', 'blocked')),
+      status TEXT NOT NULL CHECK(status IN ('pending', 'accepted', 'declined', 'blocked')),
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (user_id, friend_id),
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,

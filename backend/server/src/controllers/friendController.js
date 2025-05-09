@@ -117,10 +117,54 @@ const getFriends = async function(req, reply) {
   }
 }
 
+const declineRequest = async function(req, reply) {
+  const userId = req.user.id
+  const friendId = req.body.friendId
+  const db = req.server.db
+
+  if (!friendId) return reply.code(400).send({ error: "friend id is required" })
+
+  try{
+    const request = db.prepare('SELECT * FROM friends WHERE user_id = ? AND friend_id = ?')
+      .get(friendId, userId)
+  
+    if (!request) return reply.code(404).send({ error: `No friend requests found from user: ${friendId}` })
+
+    db.prepare('UPDATE friends SET status = ? WHERE user_id = ? AND friend_id = ?')
+      .run('declined', friendId, userId)
+
+    return reply.send(`Friend request from user ${friendId} was declined`)
+  } catch (error) {
+    console.error('Database error:', error)
+    return reply.code(500).send({ error: error.message })
+  }
+}
+
+const removeFriend = async function(req, reply) {
+  const userId = req.user.id
+  const { friendId } = req.params
+  const db = req.server.db
+
+  try {
+    const areFriends = db.prepare('SELECT * FROM friends WHERE user_id = ? AND friend_id = ?')
+      .get(userId, friendId)
+    
+    if (!areFriends) return reply.code(404).send({ message: `User ${friendId} is not on your friend list` })
+    
+    db.prepare('DELETE FROM friends WHERE user_id = ? AND friend_id = ?')
+      .run(userId, friendId)
+  } catch (error) {
+    console.error('Database error:', error)
+    return reply.code(500).send({ error: error.message })
+  }
+}
+
 export { 
   friendRequest, 
   checkPending, 
   acceptRequest, 
   blockRequest, 
-  getFriends
+  getFriends,
+  declineRequest,
+  removeFriend
 }
